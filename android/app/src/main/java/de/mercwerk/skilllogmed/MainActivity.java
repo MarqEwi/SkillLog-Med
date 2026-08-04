@@ -1,4 +1,4 @@
-package de.mercwerk.never2late;
+package de.mercwerk.skilllogmed;
 
 import com.getcapacitor.BridgeActivity;
 

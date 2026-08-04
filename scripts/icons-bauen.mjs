@@ -32,9 +32,9 @@ function seite(px, { rund = false, anteil = 1, hintergrund = true, stanzfarbe = 
   let svg = hintergrund
     ? SVG
     : SVG.replace(/<rect width="512" height="512" rx="112" fill="url\(#bg\)"\/>/, "");
-  // Der Stanzkreis hinter der Uhr muss exakt die Fläche treffen, auf der er
+  // Der Stanzkreis hinter dem Haken muss exakt die Fläche treffen, auf der er
   // liegt – beim adaptiven Icon ist das die einfarbige Hintergrundebene.
-  if (stanzfarbe) svg = svg.replace(/(id="uhr-stanze"[^>]*fill=")url\(#bg\)"/, `$1${stanzfarbe}"`);
+  if (stanzfarbe) svg = svg.replace(/(id="stanze"[^>]*fill=")url\(#bg\)"/, `$1${stanzfarbe}"`);
   return `<!doctype html><meta charset="utf-8"><style>
     html,body{margin:0;padding:0;background:transparent}
     #b{width:${px}px;height:${px}px;position:relative;overflow:hidden;
@@ -57,7 +57,7 @@ async function schreibe(pfad, px, opts){
 }
 
 /* ---- Hintergrundfarbe des adaptiven Icons exakt aus dem Logo messen ----
-   Genommen wird die Mitte der Farbfläche, damit Icon-Hintergrund und Logo
+   Genommen wird ein Punkt auf der freien Farbfläche, damit Icon-Hintergrund und Logo
    in der App-Übersicht nahtlos ineinander übergehen. Die Messung steht vor
    dem Rendern, weil der Vordergrund diese Farbe braucht. */
 await page.setViewportSize({ width: 512, height: 512 });
@@ -72,7 +72,7 @@ const farbe = await page.evaluate(async () => {
   c.width = c.height = 512;
   const ctx = c.getContext("2d");
   ctx.drawImage(img, 0, 0, 512, 512);
-  const p = ctx.getImageData(256, 256, 1, 1).data;   // Mitte der Kachel
+  const p = ctx.getImageData(64, 256, 1, 1).data;    // freie Fläche links (die Mitte träfe die EKG-Linie)
   return "#" + [p[0], p[1], p[2]].map(v => v.toString(16).padStart(2, "0").toUpperCase()).join("");
 });
 writeFileSync(`${RES}/values/ic_launcher_background.xml`,
@@ -122,7 +122,7 @@ for (const [dir, [w, h]] of Object.entries(SPLASH)){
     #s{width:${marke}px;height:${marke}px}
     #s svg{width:100%;height:100%;display:block}
     #t{color:#fff;font-size:${Math.round(marke * 0.3)}px;font-weight:700;letter-spacing:-.01em}
-  </style><div id="b"><div id="s">${SVG}</div><div id="t">Never2Late</div></div>`);
+  </style><div id="b"><div id="s">${SVG}</div><div id="t">SkillLog Med</div></div>`);
   const buf = await page.locator("#b").screenshot();
   writeFileSync(`${RES}/${dir}/splash.png`, buf);
   console.log(`${RES}/${dir}/splash.png  (${w}x${h})`);

@@ -1,377 +1,280 @@
-// Fachlogik-Tests: Status, Datum, Wiederholung, Erinnerungen.
-// Der Kern (window.N2L.Core) ist bewusst DOM-frei, deshalb lässt er sich
-// hier direkt und ohne Oberfläche prüfen.
+// Fachlogik: Der Core ist DOM-frei und wird über window.SLM direkt geprüft –
+// Datumsrechnung, Normalisierung, Filter, Statistik, CSV und PDF, ohne Klicks.
 import { test, expect } from "@playwright/test";
-import { appOeffnen } from "./helfer.mjs";
+import { appOeffnen, inTagen } from "./helfer.mjs";
 
 test.beforeEach(async ({ page }) => { await appOeffnen(page); });
 
-test("Datumshilfen rechnen tagesgenau und kappen Monatsenden", async ({ page }) => {
-  const r = await page.evaluate(() => {
-    const C = window.N2L.Core;
+function core(page, fn, arg){
+  return page.evaluate(([f, a]) => {
+    /* eslint-disable no-new-func */
+    return new Function("Core", "arg", "return (" + f + ")(Core, arg)")(window.SLM.Core, a);
+  }, [fn.toString(), arg]);
+}
+
+test("Datumsprüfung fängt unmögliche Daten ab", async ({ page }) => {
+  const r = await core(page, (Core) => ({
+    ok: Core.istIso("2026-02-28"),
+    schalt: Core.istIso("2028-02-29"),
+    rollover: Core.istIso("2026-02-31"),   /* JS würde still auf den 3. März rollen */
+    murks: Core.istIso("31.02.2026"),
+    leer: Core.istIso("")
+  }));
+  expect(r.ok).toBe(true);
+  expect(r.schalt).toBe(true);
+  expect(r.rollover).toBe(false);
+  expect(r.murks).toBe(false);
+  expect(r.leer).toBe(false);
+});
+
+test("Monate addieren kappt aufs Monatsende", async ({ page }) => {
+  const r = await core(page, (Core) => ({
+    a: Core.addMonate("2026-01-31", 1),    /* → 28.02. */
+    b: Core.addMonate("2026-08-31", 1),    /* → 30.09. */
+    c: Core.addMonate("2026-05-15", 12)
+  }));
+  expect(r.a).toBe("2026-02-28");
+  expect(r.b).toBe("2026-09-30");
+  expect(r.c).toBe("2027-05-15");
+});
+
+test("Uhrzeitprüfung akzeptiert nur HH:MM", async ({ page }) => {
+  const r = await core(page, (Core) => ({
+    ok: Core.istZeit("08:15"), mitternacht: Core.istZeit("00:00"),
+    spaet: Core.istZeit("23:59"), falsch: Core.istZeit("24:00"),
+    murks: Core.istZeit("8:15"), leer: Core.istZeit("")
+  }));
+  expect(r).toEqual({ ok: true, mitternacht: true, spaet: true,
+    falsch: false, murks: false, leer: false });
+});
+
+test("Schnellfilter ergeben die richtigen Zeiträume", async ({ page }) => {
+  const r = await core(page, (Core) => {
+    const h = "2026-08-04";
     return {
-      diff: C.tageBis("2026-03-10", "2026-03-01"),
-      negativ: C.tageBis("2026-02-27", "2026-03-01"),
-      ueberJahr: C.tageBis("2027-01-01", "2026-01-01"),
-      addTage: C.addTage("2026-02-27", 3),
-      schaltjahr: C.addTage("2028-02-28", 1),
-      monatsende: C.addMonate("2026-01-31", 1),
-      jahr: C.addMonate("2026-05-14", 12),
-      halb: C.addMonate("2026-08-31", 6),
-      ungueltig: C.istIso("2026-02-31"),
-      gueltig: C.istIso("2026-02-28"),
-      quatsch: C.istIso("14.05.2026")
+      heute: Core.zeitraum("heute", h),
+      sieben: Core.zeitraum("7", h),
+      monat: Core.zeitraum("monat", h),
+      letzterMonat: Core.zeitraum("letzter-monat", h),
+      alle: Core.zeitraum("alle", h)
     };
   });
-  expect(r.diff).toBe(9);
-  expect(r.negativ).toBe(-2);
-  expect(r.ueberJahr).toBe(365);
-  expect(r.addTage).toBe("2026-03-02");
-  expect(r.schaltjahr).toBe("2028-02-29");
-  expect(r.monatsende).toBe("2026-02-28");     // 31.01. + 1 Monat = 28.02.
-  expect(r.jahr).toBe("2027-05-14");
-  expect(r.halb).toBe("2027-02-28");
-  expect(r.ungueltig).toBe(false);
-  expect(r.gueltig).toBe(true);
-  expect(r.quatsch).toBe(false);
+  expect(r.heute).toEqual({ von: "2026-08-04", bis: "2026-08-04" });
+  expect(r.sieben).toEqual({ von: "2026-07-29", bis: "2026-08-04" });
+  expect(r.monat).toEqual({ von: "2026-08-01", bis: "2026-08-04" });
+  expect(r.letzterMonat).toEqual({ von: "2026-07-01", bis: "2026-07-31" });
+  expect(r.alle).toEqual({ von: "", bis: "" });
 });
 
-test("Status: aktiv, bald fällig, abgelaufen, archiviert", async ({ page }) => {
-  const r = await page.evaluate(() => {
-    const C = window.N2L.Core;
-    const heute = "2026-06-15";
-    const bau = (datum, extra) => C.normalisieren(Object.assign({ titel: "X", kategorien: ["ausweise"], datum }, extra));
+test("Normalisierung setzt Standardwerte und Schnappschüsse", async ({ page }) => {
+  const r = await core(page, (Core) => {
+    const e = Core.normalisieren({ massnahmeId: "iv-zugang", datum: "2026-05-01" });
+    const kaputt = Core.normalisieren({ massnahmeId: "gibts-nicht",
+      massnahmeLabel: "Alte Bezeichnung", stufe: "quatsch", setting: "quatsch",
+      zeit: "99:99", tags: ["A", "a", " B ", "A"] });
+    return { e, kaputt };
+  });
+  expect(r.e.massnahmeLabel).toBe("i.v.-Zugang");         /* Schnappschuss aus dem Katalog */
+  expect(r.e.stufe).toBe("durchgefuehrt");
+  expect(r.e.setting).toBe("mensch");
+  expect(r.e.tags).toEqual([]);
+  expect(r.kaputt.massnahmeLabel).toBe("Alte Bezeichnung"); /* unbekannte ID → Schnappschuss bleibt */
+  expect(r.kaputt.stufe).toBe("durchgefuehrt");
+  expect(r.kaputt.zeit).toBe("");
+  expect(r.kaputt.tags).toEqual(["A", "B"]);              /* Groß/klein-Duplikate fliegen raus */
+});
+
+test("Filter: Zeitraum, Stufe, Tag (unabhängig von Groß/Klein) und Suche", async ({ page }) => {
+  const r = await core(page, (Core) => {
+    const liste = [
+      Core.normalisieren({ massnahmeId: "iv-zugang", datum: "2026-03-10",
+        stufe: "durchgefuehrt", tags: ["PJ Chirurgie"], notiz: "schwierige Vene" }),
+      Core.normalisieren({ massnahmeId: "intubation", datum: "2026-03-20",
+        stufe: "assistiert", tags: ["Skills Lab"] }),
+      Core.normalisieren({ massnahmeId: "reanimation", datum: "2026-04-02",
+        stufe: "beobachtet", tags: [] })
+    ];
     return {
-      weit:        C.status(bau("2027-06-15"), heute),
-      knappDrueber: C.status(bau("2026-09-14"), heute),  // 91 Tage: noch keine Erinnerung
-      genauGrenze: C.status(bau("2026-09-13"), heute),   // 90 Tage = größte aktive Erinnerung
-      knappDrin:   C.status(bau("2026-09-12"), heute),
-      morgen:      C.status(bau("2026-06-16"), heute),
-      heuteNoch:   C.status(bau("2026-06-15"), heute),   // heute ist noch nicht abgelaufen
-      gestern:     C.status(bau("2026-06-14"), heute),
-      archiv:      C.status(bau("2026-06-14", { archiviert: true }), heute),
-      ohneRem:     C.status(bau("2026-08-01", { erinnerungen: [] }), heute, 30),
-      ohneRemNah:  C.status(bau("2026-07-01", { erinnerungen: [] }), heute, 30)
+      zeitraum: Core.filtern(liste, { von: "2026-03-15", bis: "2026-03-31" }).length,
+      stufe: Core.filtern(liste, { stufe: "assistiert" }).length,
+      tag: Core.filtern(liste, { tag: "pj chirurgie" }).length,
+      suche: Core.filtern(liste, { suche: "vene" }).length,
+      sucheOrt: Core.filtern(liste, { suche: "intub" }).length,
+      alles: Core.filtern(liste, {}).length
     };
   });
-  expect(r.weit).toBe("aktiv");
-  expect(r.knappDrueber).toBe("aktiv");
-  // Genau am Tag der ersten Erinnerung gilt der Eintrag als "bald fällig" –
-  // Meldung und Status springen damit gemeinsam um.
-  expect(r.genauGrenze).toBe("bald");
-  expect(r.knappDrin).toBe("bald");
-  expect(r.morgen).toBe("bald");
-  expect(r.heuteNoch).toBe("bald");
-  expect(r.gestern).toBe("abgelaufen");
-  expect(r.archiv).toBe("archiviert");
-  expect(r.ohneRem).toBe("aktiv");         // 47 Tage > Fallback 30
-  expect(r.ohneRemNah).toBe("bald");       // 16 Tage <= Fallback 30
+  expect(r).toEqual({ zeitraum: 1, stufe: 1, tag: 1, suche: 1, sucheOrt: 1, alles: 3 });
 });
 
-test("Wiederkehrende Termine rollen erst beim Erledigen weiter", async ({ page }) => {
-  const r = await page.evaluate(() => {
-    const C = window.N2L.Core;
-    const bau = (datum, wdh) => C.normalisieren({ titel: "Nachweis", kategorie: "beruflich",
-      datumstyp: "wiederkehrend", datum, wiederholung: wdh });
+test("Sortierung: das Neueste zuerst, bei gleichem Datum nach Uhrzeit", async ({ page }) => {
+  const r = await core(page, (Core) => {
+    const liste = [
+      Core.normalisieren({ massnahmeId: "iv-zugang", datum: "2026-03-10", zeit: "08:00" }),
+      Core.normalisieren({ massnahmeId: "intubation", datum: "2026-03-12", zeit: "07:00" }),
+      Core.normalisieren({ massnahmeId: "reanimation", datum: "2026-03-10", zeit: "14:00" })
+    ];
+    return Core.sortieren(liste).map(e => e.massnahmeId);
+  });
+  expect(r).toEqual(["intubation", "reanimation", "iv-zugang"]);
+});
+
+test("Statistik zählt Stufen, Settings und Maßnahmen korrekt", async ({ page }) => {
+  const r = await core(page, (Core) => {
+    const liste = [
+      Core.normalisieren({ massnahmeId: "iv-zugang", stufe: "durchgefuehrt", setting: "mensch" }),
+      Core.normalisieren({ massnahmeId: "iv-zugang", stufe: "assistiert", setting: "mensch" }),
+      Core.normalisieren({ massnahmeId: "intubation", stufe: "beobachtet", setting: "simulator" })
+    ];
+    const s = Core.statistik(liste);
+    return { gesamt: s.gesamt, stufen: s.stufen, settings: s.settings,
+      erste: s.massnahmen[0].label, ersteZahl: s.massnahmen[0].gesamt };
+  });
+  expect(r.gesamt).toBe(3);
+  expect(r.stufen).toEqual({ beobachtet: 1, assistiert: 1, durchgefuehrt: 1 });
+  expect(r.settings).toEqual({ simulator: 1, praeparat: 0, mensch: 2 });
+  expect(r.erste).toBe("i.v.-Zugang");
+  expect(r.ersteZahl).toBe(2);
+});
+
+test("CSV: Semikolons, Anführungszeichen und Umlaute überleben", async ({ page }) => {
+  const csv = await core(page, (Core) => {
+    const liste = [
+      Core.normalisieren({ massnahmeId: "iv-zugang", datum: "2026-03-10", zeit: "08:15",
+        notiz: 'Zeile mit; Semikolon und "Zitat"', tags: ["Anästhesie-Woche"] })
+    ];
+    return Core.csv(liste);
+  });
+  const zeilen = csv.trim().split("\r\n");
+  expect(zeilen[0]).toBe("Datum;Uhrzeit;Maßnahme;Kompetenzstufe;Setting;Ort;Tags;Notiz;Erstellt am");
+  expect(zeilen[1]).toContain("2026-03-10;08:15;i.v.-Zugang;durchgeführt;Mensch");
+  expect(zeilen[1]).toContain('"Zeile mit; Semikolon und ""Zitat"""');
+  expect(zeilen[1]).toContain("Anästhesie-Woche");
+});
+
+test("Berichtsdaten: Zeitraum, Filter und Statuszeile stimmen", async ({ page }) => {
+  const r = await core(page, (Core) => {
+    const liste = [
+      Core.normalisieren({ massnahmeId: "iv-zugang", datum: "2026-03-10", tags: ["PJ"] }),
+      Core.normalisieren({ massnahmeId: "intubation", datum: "2026-05-01" })
+    ];
+    const b = Core.berichtDaten(liste, { von: "2026-03-01", bis: "2026-03-31",
+      status: "unterschrift", block: "PJ Chirurgie" }, { name: "Alex Muster", rolle: "PJ-Student:in" });
     return {
-      // Termin liegt 2 Jahre zurück: der nächste Zyklus muss in der Zukunft
-      // liegen, aber den Kalendertag behalten.
-      versaeumt: C.naechstesDatum(bau("2024-03-20", "jaehrlich"), "2026-06-15"),
-      jaehrlich: C.naechstesDatum(bau("2026-08-01", "jaehrlich"), "2026-06-15"),
-      halb:      C.naechstesDatum(bau("2026-05-31", "halbjaehrlich"), "2026-06-15"),
-      monat:     C.naechstesDatum(bau("2026-06-10", "monatlich"), "2026-06-15"),
-      einmalig:  C.naechstesDatum(C.normalisieren({ titel: "Ausweis", kategorien: ["ausweise"],
-                   datumstyp: "ablauf", datum: "2026-06-10" }), "2026-06-15"),
-      // Ein überfälliger wiederkehrender Eintrag bleibt "abgelaufen".
-      status:    C.status(bau("2026-06-01", "jaehrlich"), "2026-06-15")
+      anzahl: b.eintraege.length,
+      meta: b.meta,
+      titel: b.titel
     };
   });
-  expect(r.versaeumt).toBe("2027-03-20");
-  expect(r.jaehrlich).toBe("2027-08-01");
-  expect(r.halb).toBe("2026-11-30");
-  expect(r.monat).toBe("2026-07-10");
-  expect(r.einmalig).toBe(null);
-  expect(r.status).toBe("abgelaufen");
+  expect(r.anzahl).toBe(1);
+  expect(r.titel).toBe("Ausbildungs- und Kompetenznachweis");
+  const metaMap = Object.fromEntries(r.meta);
+  expect(metaMap["Name"]).toBe("Alex Muster");
+  expect(metaMap["Praktikum / Block"]).toBe("PJ Chirurgie");
+  expect(metaMap["Zeitraum"]).toBe("01.03.2026 bis 31.03.2026");
+  expect(metaMap["Status"]).toBe("Zur Unterschrift vorgesehen");
+  expect(metaMap["Einträge"]).toBe("1");
 });
 
-test("Erinnerungen: Standardwerte, Zeitpunkte und Meldungstexte", async ({ page }) => {
+test("PDF: Bericht ist ein echtes PDF mit Inhalt und Unterschriftsblock", async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { Core, Pdf } = window.SLM;
+    const liste = [
+      Core.normalisieren({ massnahmeId: "iv-zugang", datum: "2026-03-10", zeit: "08:15",
+        notiz: "Übungsnotiz äöüß", tags: ["PJ Chirurgie"] }),
+      Core.normalisieren({ massnahmeId: "intubation", datum: "2026-03-12", stufe: "assistiert" })
+    ];
+    const blob = Pdf.bericht(Core.berichtDaten(liste, { von: "2026-03-01", bis: "2026-03-31" },
+      { name: "Alex Muster" }));
+    const buf = new Uint8Array(await blob.arrayBuffer());
+    let text = "";
+    for (let i = 0; i < buf.length; i++) text += String.fromCharCode(buf[i]);
+    return { typ: blob.type, groesse: buf.length, kopf: text.slice(0, 8),
+      hatEof: text.indexOf("%%EOF") > 0,
+      hatSeiten: /\/Count (\d+)/.exec(text)[1],
+      hatUnterschrift: text.indexOf("Unterschrift Praxisanleitung") > 0,
+      hatZusammenfassung: text.indexOf("Zusammenfassung nach Ma") > 0 };
+  });
+  expect(r.typ).toBe("application/pdf");
+  expect(r.kopf).toContain("%PDF-1.4");
+  expect(r.groesse).toBeGreaterThan(1500);
+  expect(r.hatEof).toBe(true);
+  expect(Number(r.hatSeiten)).toBeGreaterThan(0);
+  expect(r.hatUnterschrift).toBe(true);
+  expect(r.hatZusammenfassung).toBe(true);
+});
+
+test("Katalog: Umbenennen frischt die Schnappschüsse der Einträge auf", async ({ page }) => {
   const r = await page.evaluate(() => {
-    const C = window.N2L.Core;
-    const e = C.normalisieren({ titel: "Personalausweis", kategorien: ["ausweise"], datum: "2026-06-15" });
-    // "Jetzt" liegt weit vor allen Erinnerungen, damit alle als künftig gelten.
-    const t = C.termine(e, new Date(2026, 0, 1, 12, 0, 0));
-    const aus = C.termine(C.normalisieren({ titel: "X", kategorien: ["ausweise"],
-      datum: "2026-06-15", erinnerungenAn: false }), new Date(2026, 0, 1));
-    return {
-      standard: e.erinnerungen.map(x => x.tage),
-      anzahl: t.length,
-      kuenftig: t.every(x => x.kuenftig),
-      // 1 Tag vorher = 14.06.2026, 09:00 Ortszeit
-      letzter: t[t.length - 1].at.getFullYear() + "-" + (t[t.length - 1].at.getMonth() + 1)
-        + "-" + t[t.length - 1].at.getDate() + " " + t[t.length - 1].at.getHours(),
-      ausgeschaltet: aus.length,
-      meldung7: C.meldung(e, 7),
-      meldung1: C.meldung(e, 1),
-      meldung0: C.meldung(e, 0),
-      faellig: C.meldung(C.normalisieren({ titel: "TÜV", kategorie: "fahrzeug",
-        datumstyp: "faellig", datum: "2026-06-15" }), 7),
-      label90: C.erinnerungLabel(90),
-      label7: C.erinnerungLabel(7),
-      label5: C.erinnerungLabel(5),
-      // Gleiche Eingabe muss immer dieselbe Kennung ergeben (Neuplanen!)
-      idStabil: C.notifId("abc", 7) === C.notifId("abc", 7),
-      idVerschieden: C.notifId("abc", 7) !== C.notifId("abc", 1),
-      idPositiv: C.notifId("abc", 7) > 0 && C.notifId("abc", 7) < 2147483647
-    };
+    const { Core, Daten, Katalog } = window.SLM;
+    const e = Daten.upsert({ massnahmeId: "iv-zugang", datum: "2026-03-10" });
+    Katalog.umbenennen("iv-zugang", "i.v.-Zugang gelegt");
+    return { label: Core.mLabel(Daten.get(e.id)), schnappschuss: Daten.get(e.id).massnahmeLabel };
   });
-  expect(r.standard).toEqual([90, 7, 1]);
-  expect(r.anzahl).toBe(3);
-  expect(r.kuenftig).toBe(true);
-  expect(r.letzter).toBe("2026-6-14 9");
-  expect(r.ausgeschaltet).toBe(0);
-  expect(r.meldung7.titel).toBe("Personalausweis läuft in 7 Tagen ab");
-  expect(r.meldung1.titel).toBe("Personalausweis läuft morgen ab");
-  expect(r.meldung0.titel).toBe("Personalausweis läuft heute ab");
-  expect(r.meldung7.text).toBe("Ausweise · Gültig bis 15.06.2026");
-  expect(r.faellig.titel).toBe("TÜV ist in 7 Tagen fällig");
-  expect(r.label90).toBe("3 Monate vorher");
-  expect(r.label7).toBe("1 Woche vorher");
-  expect(r.label5).toBe("5 Tage vorher");
-  expect(r.idStabil).toBe(true);
-  expect(r.idVerschieden).toBe(true);
-  expect(r.idPositiv).toBe(true);
+  expect(r.label).toBe("i.v.-Zugang gelegt");
+  expect(r.schnappschuss).toBe("i.v.-Zugang gelegt");
 });
 
-test("Vergangene Erinnerungen werden nicht mehr eingeplant", async ({ page }) => {
-  const kuenftig = await page.evaluate(() => {
-    const C = window.N2L.Core;
-    const e = C.normalisieren({ titel: "X", kategorien: ["ausweise"], datum: "2026-06-15" });
-    // "Jetzt" liegt zwischen der 3-Monats- und der 1-Wochen-Erinnerung.
-    return C.termine(e, new Date(2026, 5, 1, 12, 0, 0)).map(t => t.kuenftig);
-  });
-  expect(kuenftig).toEqual([false, true, true]);
-});
-
-test("Sortierung stellt das Dringendste nach vorn", async ({ page }) => {
-  const titel = await page.evaluate(() => {
-    const C = window.N2L.Core;
-    const heute = "2026-06-15";
-    const roh = [
-      { titel: "Weit weg", kategorien: ["ausweise"], datum: "2028-01-01" },
-      { titel: "Lange abgelaufen", kategorien: ["ausweise"], datum: "2025-01-01" },
-      { titel: "Gerade abgelaufen", kategorien: ["ausweise"], datum: "2026-06-10" },
-      { titel: "Bald", kategorien: ["ausweise"], datum: "2026-07-01" },
-      { titel: "Archiviert", kategorien: ["ausweise"], datum: "2026-06-01", archiviert: true }
-    ].map(x => C.normalisieren(x));
-    return C.sortieren(roh, heute, 30).map(e => e.titel);
-  });
-  expect(titel).toEqual(["Gerade abgelaufen", "Lange abgelaufen", "Bald", "Weit weg", "Archiviert"]);
-});
-
-test("Normalisieren härtet fehlerhafte Daten ab", async ({ page }) => {
+test("Orte: Löschen lässt Einträge über den Schnappschuss lesbar", async ({ page }) => {
   const r = await page.evaluate(() => {
-    const C = window.N2L.Core;
-    const a = C.normalisieren({ titel: "  Test  ", kategorie: "gibtsnicht", datumstyp: "quatsch",
-      datum: "kein datum", wiederholung: "taeglich",
-      erinnerungen: [{ tage: 7, an: true }, { tage: 7, an: false }, { tage: "abc" }, { tage: -5, an: true }] });
-    // Wiederkehrend ohne Zyklus bekommt automatisch "jährlich" ...
-    const b = C.normalisieren({ titel: "W", kategorie: "beruflich", datumstyp: "wiederkehrend",
-      datum: "2026-01-01", wiederholung: "keine" });
-    // ... und ein einmaliger Eintrag verliert einen versehentlichen Zyklus.
-    const c = C.normalisieren({ titel: "E", kategorie: "beruflich", datumstyp: "ablauf",
-      datum: "2026-01-01", wiederholung: "jaehrlich" });
-    return {
-      titel: a.titel, kategorien: a.kategorien, typ: a.datumstyp,
-      datumIstHeute: a.datum === C.heute(),
-      remTage: a.erinnerungen.map(r => r.tage),
-      idVorhanden: typeof a.id === "string" && a.id.length > 3,
-      wdhB: b.wiederholung, wdhC: c.wiederholung
-    };
+    const { Core, Daten, Orte } = window.SLM;
+    const e = Daten.upsert({ massnahmeId: "iv-zugang", datum: "2026-03-10", ortId: "notaufnahme" });
+    Orte.entfernen("notaufnahme");
+    return Core.oLabel(Daten.get(e.id));
   });
-  expect(r.titel).toBe("Test");
-  expect(r.kategorien).toEqual(["sonstiges"]);
-  expect(r.typ).toBe("ablauf");
-  expect(r.datumIstHeute).toBe(true);
-  expect(r.remTage).toEqual([7, 0]);        // Duplikat raus, "abc" raus, -5 auf 0 begrenzt
-  expect(r.idVorhanden).toBe(true);
-  expect(r.wdhB).toBe("jaehrlich");
-  expect(r.wdhC).toBe("keine");
+  expect(r).toBe("Notaufnahme");
 });
 
-test("Kategorien: Mehrfachzuordnung, Migration und Abhärtung", async ({ page }) => {
+test("Tags: Umbenennen schreibt alle Einträge um", async ({ page }) => {
   const r = await page.evaluate(() => {
-    const C = window.N2L.Core;
-    const bau = x => C.normalisieren(Object.assign({ titel: "X", datum: "2026-06-15" }, x));
-    return {
-      // Schema 2: mehrere Kategorien
-      mehrere: bau({ kategorien: ["ausweise", "reisen"] }).kategorien,
-      // Schema 1: das alte Einzelfeld wird übernommen
-      migriert: bau({ kategorie: "fahrzeug" }).kategorien,
-      // Doppelte und unbekannte fliegen raus
-      bereinigt: bau({ kategorien: ["karten", "karten", "gibtsnicht"] }).kategorien,
-      // Ohne brauchbare Angabe bleibt "Sonstiges"
-      leer: bau({ kategorien: [] }).kategorien,
-      nurMuell: bau({ kategorien: ["gibtsnicht"] }).kategorien,
-      // Anzeige: Reihenfolge folgt der Gesamtliste, nicht der Eingabe
-      labels: C.katLabels(bau({ kategorien: ["reisen", "ausweise"] })),
-      objekte: C.kategorienVon(bau({ kategorien: ["reisen", "ausweise"] })).map(k => k.id),
-      // Meldungstext nennt alle Kategorien
-      meldung: C.meldung(bau({ titel: "Reisepass", kategorien: ["ausweise", "reisen"] }), 7).text
-    };
+    const { Daten, TagDaten } = window.SLM;
+    const e1 = Daten.upsert({ massnahmeId: "iv-zugang", datum: "2026-03-10", tags: ["PJ"] });
+    const e2 = Daten.upsert({ massnahmeId: "intubation", datum: "2026-03-11", tags: ["pj"] });
+    const n = TagDaten.umbenennen("PJ", "PJ Innere");
+    return { n, t1: Daten.get(e1.id).tags, t2: Daten.get(e2.id).tags };
   });
-  expect(r.mehrere).toEqual(["ausweise", "reisen"]);
-  expect(r.migriert).toEqual(["fahrzeug"]);
-  expect(r.bereinigt).toEqual(["karten"]);
-  expect(r.leer).toEqual(["sonstiges"]);
-  expect(r.nurMuell).toEqual(["sonstiges"]);
-  expect(r.labels).toBe("Ausweise, Reisen");
-  expect(r.objekte).toEqual(["ausweise", "reisen"]);
-  expect(r.meldung).toBe("Ausweise, Reisen · Gültig bis 15.06.2026");
+  expect(r.n).toBe(2);
+  expect(r.t1).toEqual(["PJ Innere"]);
+  expect(r.t2).toEqual(["PJ Innere"]);
 });
 
-test("Eigene Kategorien: anlegen, prüfen, umbenennen, löschen", async ({ page }) => {
+test("Sicherung: Export und Import erhalten eigene Stammdaten", async ({ page }) => {
   const r = await page.evaluate(() => {
-    const { Core, Kategorien, Daten } = window.N2L;
-    const a = Kategorien.hinzufuegen("Haustier", "🐾");
-    const b = Kategorien.hinzufuegen("Wohnung", "🏠");
-
-    // Ein Eintrag mit fester und eigener Kategorie
-    const e = Daten.upsert({ titel: "Impfpass Hund", kategorien: ["gesundheit", a.id],
-      datum: "2027-01-10" });
-
-    const fehler = [];
-    try { Kategorien.hinzufuegen("haustier", "🐕"); } catch(x){ fehler.push("doppelt"); }
-    try { Kategorien.hinzufuegen("   ", "🐕"); } catch(x){ fehler.push("leer"); }
-
-    /* Zustand VOR dem Löschen festhalten – danach ist die Kategorie weg. */
-    const vorher = {
-      idPraefix: a.id.indexOf("eigen-") === 0 && b.id.indexOf("eigen-") === 0,
-      eigenMarkiert: a.eigen === true,
-      inGesamtliste: Core.kategorien().some(k => k.id === a.id),
-      nichtInFesten: Core.KATEGORIEN_FEST.some(k => k.id === a.id),
-      zugeordnet: Daten.get(e.id).kategorien.slice()
-    };
-
-    const umbenannt = Kategorien.umbenennen(a.id, "Haustiere", "🐕");
-    const vorLoeschen = Kategorien.anzahl(a.id);
-    const betroffen = Kategorien.entfernen(a.id);
-
-    return Object.assign(vorher, {
-      fehler,
-      umbenannt: umbenannt && umbenannt.label + umbenannt.emoji,
-      vorLoeschen, betroffen,
-      // Nach dem Löschen bleibt die feste Kategorie übrig
-      nachLoeschen: Daten.get(e.id).kategorien.slice(),
-      restliche: Core.eigene.map(k => k.label)
-    });
+    const { Core, Daten, Katalog, Orte } = window.SLM;
+    const m = Katalog.hinzufuegen("Lumbalpunktion");
+    const o = Orte.hinzufuegen("Notaufnahme Haus B");
+    Daten.upsert({ massnahmeId: m.id, datum: "2026-03-10", ortId: o.id, tags: ["Famulatur"] });
+    const sicherung = JSON.parse(JSON.stringify(Daten.exportObjekt()));
+    /* Alles löschen und aus der Sicherung wiederherstellen. */
+    Daten.alleLoeschen();
+    localStorage.removeItem(Katalog.KEY); localStorage.removeItem(Orte.KEY);
+    Katalog.laden(); Orte.laden();
+    const n = Daten.importObjekt(sicherung);
+    const e = Daten.alle()[0];
+    return { n, label: Core.mLabel(e), ort: Core.oLabel(e), tags: e.tags };
   });
-  expect(r.idPraefix).toBe(true);
-  expect(r.eigenMarkiert).toBe(true);
-  expect(r.inGesamtliste).toBe(true);
-  expect(r.nichtInFesten).toBe(false);
-  expect(r.zugeordnet).toHaveLength(2);
-  expect(r.fehler).toEqual(["doppelt", "leer"]);   // Name doppelt bzw. leer
-  expect(r.umbenannt).toBe("Haustiere🐕");
-  expect(r.vorLoeschen).toBe(1);
-  expect(r.betroffen).toBe(1);
-  expect(r.nachLoeschen).toEqual(["gesundheit"]);
-  expect(r.restliche).toEqual(["Wohnung"]);
+  expect(r.n).toBe(1);
+  expect(r.label).toBe("Lumbalpunktion");
+  expect(r.ort).toBe("Notaufnahme Haus B");
+  expect(r.tags).toEqual(["Famulatur"]);
 });
 
-test("Löschen der letzten Kategorie eines Eintrags ergibt „Sonstiges“", async ({ page }) => {
-  const kats = await page.evaluate(() => {
-    const { Kategorien, Daten } = window.N2L;
-    const k = Kategorien.hinzufuegen("Studium", "🎓");
-    const e = Daten.upsert({ titel: "Semesterbeitrag", kategorien: [k.id], datum: "2027-04-01" });
-    Kategorien.entfernen(k.id);
-    return Daten.get(e.id).kategorien;
+test("Import lehnt fremde Dateien mit klarer Meldung ab", async ({ page }) => {
+  const fehler = await page.evaluate(() => {
+    try { window.SLM.Daten.importObjekt({ irgendwas: true }); return null; }
+    catch(e){ return e.message; }
   });
-  expect(kats).toEqual(["sonstiges"]);
+  expect(fehler).toContain("keine SkillLog-Med-Einträge");
 });
 
-test("Emoji-Prüfung nimmt genau ein Symbol – auch zusammengesetzte", async ({ page }) => {
-  const r = await page.evaluate(() => {
-    const K = window.N2L.Kategorien;
-    return {
-      einfach: K.emojiPruefen("🐾"),
-      leer: K.emojiPruefen(""),
-      undefiniert: K.emojiPruefen(undefined),
-      // Aus einer Kette mehrerer bleibt das erste
-      mehrere: K.emojiPruefen("🐾🏠🎓"),
-      // Alles, was zu einem Symbol gehört, bleibt zusammen
-      hautfarbe: K.emojiPruefen("👋🏽"),
-      variante: K.emojiPruefen("⚠️"),
-      flagge: K.emojiPruefen("🇩🇪"),
-      zweiFlaggen: K.emojiPruefen("🇩🇪🇫🇷"),
-      familie: K.emojiPruefen("👨‍👩‍👧‍👦"),
-      regenbogen: K.emojiPruefen("🏳️‍🌈"),
-      tagFlagge: K.emojiPruefen("🏴󠁧󠁢󠁥󠁮󠁧󠁿"),
-      // Neuere Zeichen (Unicode 15/15.1/16) laufen durch dieselbe Regel
-      neu15: K.emojiPruefen("🩷"),
-      neu151: K.emojiPruefen("🫎"),
-      neu16: K.emojiPruefen("🫩"),
-      phoenix: K.emojiPruefen("🐦‍🔥"),
-      limette: K.emojiPruefen("🍋‍🟩"),
-      kopfschuetteln: K.emojiPruefen("🙂‍↔️")
-    };
-  });
-  expect(r.einfach).toBe("🐾");
-  expect(r.leer).toBe("📌");
-  expect(r.undefiniert).toBe("📌");
-  expect(r.mehrere).toBe("🐾");
-  expect(r.hautfarbe).toBe("👋🏽");
-  expect(r.variante).toBe("⚠️");
-  // Flaggen bestehen aus zwei Regional-Indikatoren und dürfen nicht
-  // nach dem ersten abgeschnitten werden.
-  expect(r.flagge).toBe("🇩🇪");
-  expect(r.zweiFlaggen).toBe("🇩🇪");
-  expect(r.familie).toBe("👨‍👩‍👧‍👦");
-  expect(r.regenbogen).toBe("🏳️‍🌈");
-  expect(r.tagFlagge).toBe("🏴󠁧󠁢󠁥󠁮󠁧󠁿");
-  expect(r.neu15).toBe("🩷");
-  expect(r.neu151).toBe("🫎");
-  expect(r.neu16).toBe("🫩");
-  expect(r.phoenix).toBe("🐦‍🔥");
-  expect(r.limette).toBe("🍋‍🟩");
-  expect(r.kopfschuetteln).toBe("🙂‍↔️");
-});
-
-test("Nicht darstellbare Emoji werden erkannt", async ({ page }) => {
-  const r = await page.evaluate(() => {
-    const P = window.N2L.EmojiPruefung;
-    return {
-      messbar: P.vorbereiten(),
-      alt: P.darstellbar("📌"),
-      neu15: P.darstellbar("🩷"),
-      verbund: P.darstellbar("🐦‍🔥"),
-      // Ein unbelegter Codepoint kann nirgends dargestellt werden
-      unbelegt: P.darstellbar("\u{10FFFD}"),
-      leer: P.darstellbar("")
-    };
-  });
-  expect(r.messbar).toBe(true);
-  expect(r.alt).toBe(true);
-  expect(r.neu15).toBe(true);
-  expect(r.verbund).toBe(true);
-  expect(r.unbelegt).toBe(false);
-  expect(r.leer).toBe(true);          // nichts zu prüfen – nicht blockieren
-});
-
-test("Kalenderdatei enthält Termin, Wiederholung und Alarme", async ({ page }) => {
-  const ics = await page.evaluate(() => {
-    const C = window.N2L.Core;
-    return window.N2L.Kalender.ics(C.normalisieren({
-      titel: "Kompetenzerhalt; Theorie", kategorien: ["beruflich"], datumstyp: "wiederkehrend",
-      datum: "2026-09-30", wiederholung: "jaehrlich", referenz: "AB-12", notiz: "Zeile1\nZeile2"
-    }));
-  });
-  expect(ics).toContain("BEGIN:VCALENDAR");
-  expect(ics).toContain("DTSTART;VALUE=DATE:20260930");
-  expect(ics).toContain("DTEND;VALUE=DATE:20261001");
-  expect(ics).toContain("RRULE:FREQ=YEARLY");
-  expect(ics).toContain("SUMMARY:Kompetenzerhalt\\; Theorie – fällig");
-  expect(ics).toContain("TRIGGER:-P90D");
-  expect(ics).toContain("TRIGGER:-P1D");
-  expect(ics).toContain("Zeile1\\nZeile2");
-  expect(ics.trim().endsWith("END:VCALENDAR")).toBe(true);
+test("Monogramm bildet lesbare Initialen", async ({ page }) => {
+  const r = await core(page, (Core) => ({
+    iv: Core.monogramm("i.v.-Zugang"),
+    rea: Core.monogramm("Reanimation"),
+    ekg: Core.monogramm("EKG geschrieben"),
+    leer: Core.monogramm("")
+  }));
+  expect(r.iv).toBe("IV");
+  expect(r.rea).toBe("RE");
+  expect(r.ekg).toBe("EG");
+  expect(r.leer).toBe("?");
 });
