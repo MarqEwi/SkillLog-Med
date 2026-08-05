@@ -266,6 +266,64 @@ test("Import lehnt fremde Dateien mit klarer Meldung ab", async ({ page }) => {
   expect(fehler).toContain("keine SkillLog-Med-Einträge");
 });
 
+test("Maßnahmen-Kategorien: anlegen, filtern, löschen fällt auf Sonstiges zurück", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Core, Daten, Katalog, MKategorien } = window.SLM;
+    /* Eigene Kategorie mit eigener Maßnahme */
+    const k = MKategorien.hinzufuegen("Pädiatrie");
+    const m = Katalog.hinzufuegen("Neugeborenen-Check", k.id);
+    Daten.upsert({ massnahmeId: m.id, datum: "2026-03-10" });
+    Daten.upsert({ massnahmeId: "iv-zugang", datum: "2026-03-11" });
+    const gefiltert = Core.filtern(Daten.alle(), { mkategorie: k.id }).length;
+    const zugaenge = Core.filtern(Daten.alle(), { mkategorie: "zugaenge" }).length;
+    /* Löschen: Maßnahme wandert nach Sonstiges */
+    const betroffen = MKategorien.entfernen(k.id);
+    const sonstigesNichtLoeschbar = MKategorien.entfernen("sonstiges");
+    return { gefiltert, zugaenge, betroffen,
+      neueKategorie: Core.massnahme(m.id).kategorie,
+      sonstigesNichtLoeschbar,
+      standard: Core.massnahme("iv-zugang").kategorie };
+  });
+  expect(r.gefiltert).toBe(1);
+  expect(r.zugaenge).toBe(1);
+  expect(r.betroffen).toBe(1);
+  expect(r.neueKategorie).toBe("sonstiges");
+  expect(r.sonstigesNichtLoeschbar).toBe(0);
+  expect(r.standard).toBe("zugaenge");
+});
+
+test("Sicherung erhält eigene Kategorien samt Zuordnung", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Core, Daten, Katalog, MKategorien } = window.SLM;
+    const k = MKategorien.hinzufuegen("Anästhesie-Rotation");
+    const m = Katalog.hinzufuegen("Spinalanästhesie assistiert", k.id);
+    Daten.upsert({ massnahmeId: m.id, datum: "2026-03-10" });
+    const sicherung = JSON.parse(JSON.stringify(Daten.exportObjekt()));
+    Daten.alleLoeschen();
+    [MKategorien.KEY, Katalog.KEY].forEach(key => localStorage.removeItem(key));
+    MKategorien.laden(); Katalog.laden();
+    Daten.importObjekt(sicherung);
+    const wieder = Core.massnahme(m.id);
+    return { label: wieder.label, katLabel: Core.mkLabel(wieder) };
+  });
+  expect(r.label).toBe("Spinalanästhesie assistiert");
+  expect(r.katLabel).toBe("Anästhesie-Rotation");
+});
+
+test("Statistik zählt auch je Kategorie", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Core } = window.SLM;
+    const liste = [
+      Core.normalisieren({ massnahmeId: "iv-zugang" }),
+      Core.normalisieren({ massnahmeId: "blutentnahme" }),
+      Core.normalisieren({ massnahmeId: "intubation" })
+    ];
+    return Core.statistik(liste).kategorien;
+  });
+  expect(r[0]).toEqual({ label: "Zugänge & Punktionen", gesamt: 2 });
+  expect(r[1]).toEqual({ label: "Atemweg & Beatmung", gesamt: 1 });
+});
+
 test("Monogramm bildet lesbare Initialen", async ({ page }) => {
   const r = await core(page, (Core) => ({
     iv: Core.monogramm("i.v.-Zugang"),

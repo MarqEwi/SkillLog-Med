@@ -20,8 +20,11 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
   Favoriten und zuletzt genutzte Maßnahmen ganz oben, „Speichern + Neu“ für
   Serien, „Nochmal erfasst“ zum Duplizieren
 - **Maßnahmenkatalog:** 20 mitgelieferte Standardmaßnahmen (i.v.-Zugang,
-  Intubation, Reanimation, EKG, Sonographie, Naht …), frei erweiterbar,
-  umbenennbar, archivierbar, mit Favoriten
+  Intubation, Reanimation, EKG, Sonographie, Naht …) mit eigenen
+  Piktogrammen, frei erweiterbar, umbenennbar, archivierbar, mit Favoriten
+- **Maßnahmen-Kategorien:** acht mitgelieferte Gruppen (Zugänge, Atemweg,
+  Notfall, Diagnostik …) plus eigene – gruppieren Formular, Verwaltung,
+  Filter und Statistik; „Sonstiges“ ist der feste Auffangwert
 - **Orte & Tags:** vordefinierte Einsatzbereiche (RTW, Notaufnahme, OP,
   Station …) plus eigene; freie Tags wie „PJ Chirurgie“ oder „Skills Lab“,
   mehrfach pro Eintrag, überall filterbar

@@ -156,6 +156,52 @@ test("Stammdaten: Favorit erscheint in der Schnellwahl, Archiviertes verschwinde
   await expect(page.locator('#f-mgrid [data-m="magensonde"]')).toHaveCount(0);
 });
 
+test("Stammdaten: eigene Kategorie direkt aus dem Maßnahmen-Dialog anlegen", async ({ page }) => {
+  await page.click("#btn-neu");
+  await page.click("#f-m-neu");
+  await page.fill("#m-name", "Kindernotfall-Check");
+  /* "Neue Kategorie …" öffnet den Kategorie-Dialog über dem Maßnahmen-Dialog. */
+  await page.selectOption("#m-kategorie", "__neu");
+  await page.fill("#k-name", "Pädiatrie");
+  await page.click("#k-ok");
+  /* Die neue Kategorie ist im Select vorausgewählt. */
+  const gewaehlt = await page.inputValue("#m-kategorie");
+  const label = await page.evaluate(id => window.SLM.Core.mkategorie(id).label, gewaehlt);
+  expect(label).toBe("Pädiatrie");
+  await page.click("#m-ok");
+  /* Die Maßnahme erscheint im Formular unter ihrer Kategorie-Gruppe. */
+  await expect(page.locator("#f-mgrid .mgruppe", { hasText: "Pädiatrie" })).toBeVisible();
+  await expect(page.locator("#f-mgrid button.active")).toContainText("Kindernotfall-Check");
+});
+
+test("Stammdaten: Kategorien-Tab verwaltet die Gruppen", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-stamm");
+  await page.click('#stamm-seg [data-v="kategorien"]');
+  await expect(page.locator("#stamm-inhalt")).toContainText("Zugänge & Punktionen");
+  await expect(page.locator("#stamm-inhalt")).toContainText("Sonstiges");
+  /* "Sonstiges" hat keinen Löschknopf. */
+  const rows = page.locator("#stamm-inhalt .stammliste li", { hasText: "Sonstiges" });
+  await expect(rows.locator(".loesch")).toHaveCount(0);
+
+  await page.click("#stamm-k-neu");
+  await page.fill("#k-name", "Geburtshilfe");
+  await page.click("#k-ok");
+  await expect(page.locator("#stamm-inhalt")).toContainText("Geburtshilfe");
+});
+
+test("Logbuch: Kategorie-Filter grenzt auf die Maßnahmen der Gruppe ein", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-beispiele");
+  await page.click('nav.tabs button[data-tab="liste"]');
+  await page.click('#filter-zeit [data-panel]');
+  await page.selectOption("#fp-mkat", "atemweg");
+  const erwartet = await page.evaluate(() =>
+    window.SLM.Core.filtern(window.SLM.Daten.alle(), { mkategorie: "atemweg" }).length);
+  await expect(page.locator("#liste-inhalt .row")).toHaveCount(erwartet);
+  expect(erwartet).toBeGreaterThan(2);
+});
+
 test("Stammdaten: eigenen Ort anlegen und im Formular wählen", async ({ page }) => {
   await page.click("#btn-neu");
   await page.selectOption("#f-ort", "__neu");
