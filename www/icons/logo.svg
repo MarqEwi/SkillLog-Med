@@ -16,8 +16,8 @@
     <!-- Klemmbrett mit Halteklammer oben -->
     <rect x="118" y="104" width="240" height="312" rx="36"/>
     <path d="M186 104v-10a30 30 0 0130-30h44a30 30 0 0130 30v10"/>
-    <!-- EKG-Linie -->
-    <path d="M152 250h44l26-58 38 104 26-46h52"/>
+    <!-- EKG-Linie: ein einzelner PQRST-Komplex, derselbe Rhythmus wie im Marken-Hintergrund -->
+    <path d="M152 250h30q13-26 26 0h10l5 10 10-88 12 112 8-34h8q16-30 32 0h45" stroke-width="24"/>
   </g>
   <!-- Haken-Plakette, überlappt die untere rechte Ecke des Klemmbretts.
        Der äußere Kreis stanzt den Brettrahmen aus und trägt deshalb die
