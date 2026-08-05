@@ -1,79 +1,62 @@
-# Play-Store-Texte – Never2Late
+# Play-Store-Texte – SkillLog Med
 
-Vierte App im MERCwerk-Konto, aber die erste außerhalb des Fitness-Themas.
-Die Texte sind deshalb komplett neu geschrieben: anderer Einstieg, andere
-Gliederung, andere Bildsprache. „Wiederholter Inhalt“ ist bei mehreren Apps
-desselben Kontos das größte Ablehnungsrisiko – hier hilft, dass Never2Late
-inhaltlich nichts mit BFT, PFT oder SGT zu tun hat. **Nichts aus den anderen
-Store-Einträgen übernehmen.**
+Fünfte App im MERCwerk-Konto und die zweite außerhalb des Fitness-Themas.
+Die Texte sind komplett neu geschrieben: anderer Einstieg, andere Gliederung,
+andere Bildsprache als bei BFT, PFT, SGT und Never2Late. „Wiederholter
+Inhalt“ ist bei mehreren Apps desselben Kontos das größte Ablehnungsrisiko.
+**Nichts aus den anderen Store-Einträgen übernehmen.**
 
 ## App-Name (max. 30 Zeichen)
 
 ```
-Never2Late – Ablaufdaten
+SkillLog Med – Skill-Logbuch
 ```
 
-(24 Zeichen. Der Launcher-Name unter dem Icon bleibt kurz „Never2Late“.)
+(28 Zeichen. Der Launcher-Name unter dem Icon bleibt kurz „SkillLog Med“.)
 
 Alternative, falls der Name schon belegt ist:
 
 ```
-Never2Late: Fristen im Blick
+SkillLog Med Kompetenzlogbuch
 ```
 
-(28 Zeichen)
+(29 Zeichen)
 
 ## Kurzbeschreibung (max. 80 Zeichen)
 
 ```
-Ausweis, Karte, TÜV, Vertrag: Ablaufdaten erfassen und rechtzeitig erinnern.
+Logbuch für Medizin-Skills: erfassen, auswerten, Bericht zur Unterschrift.
 ```
 
-(75 Zeichen)
+(74 Zeichen)
 
 ## Vollständige Beschreibung (max. 4000 Zeichen)
 
 ```
-Der Personalausweis ist seit vier Monaten abgelaufen. Die Bankkarte gilt nur noch bis nächsten Monat. Der berufliche Nachweis wäre im Frühjahr fällig gewesen. Solche Dinge fallen fast nie rechtzeitig auf – sondern genau dann, wenn man sie braucht.
+Wie viele i.v.-Zugänge waren es in der Famulatur wirklich? Wie oft hast du intubiert – am Simulator und am Menschen? Wer am Ende eines Praktikums Zahlen braucht, hat sie selten. SkillLog Med ist das Logbuch, das diese Zahlen liefert: für Medizinstudierende, PJler, Ärztinnen und Ärzte in Weiterbildung, Notfallsanitäter und Rettungssanitäter.
 
-Never2Late sammelt alles, was ein Ablauf- oder Fälligkeitsdatum hat, an einem Ort und meldet sich, bevor es knapp wird.
+EIN EINTRAG IN 20 SEKUNDEN
+Maßnahme antippen, Kompetenzstufe wählen (beobachtet, assistiert, durchgeführt), Setting dazu (Simulator, Präparat, Mensch), Ort bestätigen – gespeichert. Datum und Uhrzeit stehen schon drin, der letzte Ort ist vorausgewählt, Favoriten und zuletzt genutzte Maßnahmen ganz oben. Für Serien gibt es „Speichern + Neu“, für Wiederholungen „Nochmal erfasst“.
 
-SO FUNKTIONIERT ES
-Eintrag anlegen: Titel, Kategorie, Datum – fertig. Optional dazu eine Nummer, eine Notiz und eigene Erinnerungen. Das Dashboard zeigt danach immer zuerst, was als Nächstes zählt: abgelaufen, bald fällig, alles andere.
+DER KATALOG GEHÖRT DIR
+20 Standardmaßnahmen sind dabei – von i.v.-Zugang über Intubation, Reanimation und Thoraxdrainage bis EKG, Sonographie und Naht. Alles lässt sich umbenennen, archivieren und um eigene Maßnahmen ergänzen. Genauso bei den Orten: Rettungswache, RTW, Notaufnahme, Schockraum, OP und mehr sind vordefiniert, eigene kommen in Sekunden dazu.
 
-ACHT KATEGORIEN FÜR DEN ALLTAG – UND EIGENE DAZU
-• Ausweise – Personalausweis, Reisepass, Aufenthaltstitel
-• Karten – EC- und Kreditkarte, Gesundheitskarte, Mitgliedsausweise
-• Beruflich – Zertifikate, Lizenzen, Fortbildungen, jährliche Nachweise
-• Fahrzeug – Führerschein, Hauptuntersuchung, Zulassung
-• Gesundheit – Impfungen und medizinische Nachweise
-• Reisen – Visa und Reisedokumente
-• Verträge – Versicherungen, Garantien, Abos, Kündigungsfristen
-• Sonstiges – alles Übrige mit Frist
+TAGS FÜR PRAKTIKA UND KURSE
+Verpasse Einträgen freie Tags wie „PJ Chirurgie“, „Skills Lab“ oder „Rettungswachenpraktikum“. Damit holst du dir später mit einem Tipp genau die Einträge eines Ausbildungsblocks zurück – im Logbuch, in der Statistik und im Bericht.
 
-Fehlt etwas? Leg dir eigene Kategorien an – mit eigenem Namen und einem Symbol deiner Wahl, zum Beispiel Haustier, Wohnung oder Studium.
+ZAHLEN, DIE DU VORZEIGEN KANNST
+Die Statistik zeigt je Zeitraum, wie oft du welche Maßnahme dokumentiert hast und wie sich beobachtet, assistiert und durchgeführt verteilen. Das Dashboard hält die aktuelle Woche und den Monat im Blick.
 
-Und weil sich nicht alles in eine Schublade sortieren lässt, darf ein Eintrag zu mehreren Kategorien gehören: Der Reisepass steht unter Ausweise und unter Reisen und taucht in beiden Filtern auf.
+BERICHT MIT UNTERSCHRIFTSFELD
+Der PDF-Bericht bündelt einen frei wählbaren Zeitraum: Zusammenfassung je Maßnahme, Aufschlüsselung nach Kompetenzstufe, Detailliste aller Einträge – und ein klassisches Unterschriftsfeld für Praxisanleitung oder Ausbildungsverantwortliche. Dazu CSV-Export für Excel und eine JSON-Sicherung samt Wiederherstellung.
 
-ERINNERUNGEN, DIE NICHT NERVEN
-Jeder Eintrag bekommt automatisch drei Erinnerungen: drei Monate, eine Woche und einen Tag vorher. Genug Vorlauf für einen Behördentermin, und trotzdem noch eine letzte Erinnerung kurz davor. Du kannst die Zeitpunkte je Eintrag ändern, weitere ergänzen oder alle abschalten. Die Meldungen sind kurz und sagen genau, worum es geht – zum Beispiel „Personalausweis läuft in 7 Tagen ab“.
+KEINE PATIENTENAKTE
+SkillLog Med dokumentiert deine Ausbildung, nicht deine Patienten. Die App fragt nirgends nach Patientendaten und erinnert im Notizfeld daran, keine zu erfassen.
 
-WIEDERKEHRENDE FRISTEN
-Manche Termine kommen jedes Jahr wieder: der jährliche Nachweis, die Vorsorgeuntersuchung, die Prüfung. Stell den Eintrag einmal auf monatlich, halbjährlich oder jährlich. Ein Tipp auf „Erledigt“ setzt den nächsten Termin – auf denselben Kalendertag, auch wenn ein Zyklus einmal ausgefallen ist. Bis dahin bleibt ein überfälliger Nachweis sichtbar überfällig; er verschwindet nicht einfach.
+ALLES BLEIBT AUF DEINEM GERÄT
+Kein Konto, keine Anmeldung, kein Server, keine Cloud, keine Werbung, keine Käufe. Alle Daten liegen ausschließlich lokal; Sicherung und Export erzeugst du selbst als Datei. Funktioniert komplett offline, hell und dunkel.
 
-ERNEUERN STATT NEU ANLEGEN
-Neuer Ausweis in der Hand? „Erneuert“ tippen, neues Datum wählen – der Eintrag läuft weiter, mit allen Erinnerungen. Was du nicht mehr brauchst, wandert ins Archiv: aus der Liste verschwunden, aber jederzeit wieder auffindbar.
-
-SCHNELL WIEDERFINDEN
-Suche nach Titel oder Nummer, Filter nach Status und Kategorie, sortiert nach Dringlichkeit. Die Liste zeigt immer zuerst, was drängt.
-
-OPTIONAL IN DEN KALENDER
-Einzelne Termine lassen sich als Kalendereintrag übergeben – inklusive Wiederholung und Erinnerungen. Die App braucht dafür keinen Zugriff auf deinen Kalender und funktioniert auch komplett ohne.
-
-DEINE DATEN BLEIBEN BEI DIR
-Kein Konto, keine Anmeldung, kein Server, keine Cloud. Alles wird ausschließlich auf deinem Gerät gespeichert. Es gibt keine Werbung, keine Käufe und keine Datenweitergabe. Über die Sicherungsfunktion legst du bei Bedarf selbst eine Datei an – du entscheidest, wo sie liegt.
-
-Hell und dunkel, ohne Registrierung, sofort nutzbar. Alle Angaben ohne Gewähr: maßgeblich bleiben die Daten auf deinen Dokumenten.
+Ob ein Bericht als offizieller Nachweis anerkannt wird, entscheidet deine Ausbildungsstätte – SkillLog Med liefert die sauber dokumentierte Grundlage.
 ```
 
 ## Grafiken
@@ -94,7 +77,7 @@ node scripts/store-grafiken.mjs
 
 ## Data Safety – die Antworten in Kurzform
 
-Never2Late erhebt **keine** Daten. Das macht das Formular kurz:
+SkillLog Med erhebt **keine** Daten. Das macht das Formular kurz:
 
 | Frage | Antwort |
 |---|---|
@@ -105,13 +88,15 @@ Never2Late erhebt **keine** Daten. Das macht das Formular kurz:
 | Enthält die App In-App-Käufe? | **Nein** |
 | Zielgruppe | Nicht speziell für Kinder |
 
-Wichtig: Die Berechtigung für **Benachrichtigungen** (POST_NOTIFICATIONS) ist
-*keine* Datenerhebung. Die Erinnerungen werden vollständig auf dem Gerät
-berechnet und geplant. In der Data-Safety-Erklärung ändert sich dadurch nichts.
+## Kategorie: bewusst NICHT „Medizin“
 
-Kategorie: **Produktivität**. Die Kategorie „Gesundheit und Fitness“ passt
-nicht und sollte auch nicht gewählt werden, obwohl es eine Kategorie
-„Gesundheit“ *innerhalb* der App gibt.
+Kategorie: **Bildung**. SkillLog Med ist ein Ausbildungs-Logbuch – es
+diagnostiziert nichts, behandelt nichts und verwaltet keine Patientendaten.
+Die Play-Kategorien **„Medizin“** und **„Gesundheit & Fitness“** lösen
+zusätzliche Prüfungen und Nachweispflichten aus (Gesundheits-Apps-Erklärung)
+und sollten deshalb **nicht** gewählt werden, obwohl das Wort „Med“ im Namen
+steckt. Tags sparsam wählen und aufs Dokumentieren/Lernen ausrichten, nicht
+auf Diagnose oder Therapie.
 
 ## Was in V1 bewusst fehlt
 

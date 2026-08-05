@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Never2Late – Logo-Quelle. Motiv: Kalenderblatt (Fristen) mit Uhr (Zeit
-     läuft). Farbwelt Petrol/Teal – bewusst weit weg von den Fitness-Apps
+<!-- SkillLog Med – Logo-Quelle. Motiv: Klemmbrett (Logbuch) mit EKG-Linie
+     (klinische Maßnahmen) und Haken (dokumentiert). Farbwelt: klinisches
+     Blau – bewusst weit weg von Petrol (Never2Late) und den Fitness-Apps
      der Familie. Aus dieser Datei werden alle Icons erzeugt
      (scripts/icons-bauen.mjs). -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0f766e"/>
-      <stop offset="1" stop-color="#14b8a6"/>
+      <stop offset="0" stop-color="#155e9e"/>
+      <stop offset="1" stop-color="#2b87cd"/>
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
   <g fill="none" stroke="#ffffff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Kalenderblatt -->
-    <rect x="94" y="140" width="286" height="256" rx="40"/>
-    <path d="M170 108v56M304 108v56"/>
-    <path d="M94 214h286"/>
+    <!-- Klemmbrett mit Halteklammer oben -->
+    <rect x="118" y="104" width="240" height="312" rx="36"/>
+    <path d="M186 104v-10a30 30 0 0130-30h44a30 30 0 0130 30v10"/>
+    <!-- EKG-Linie: ein einzelner PQRST-Komplex, derselbe Rhythmus wie im Marken-Hintergrund -->
+    <path d="M152 250h30q13-26 26 0h10l5 10 10-88 12 112 8-34h8q16-30 32 0h45" stroke-width="24"/>
   </g>
-  <!-- Uhr, überlappt die untere rechte Ecke des Kalenders. Der äußere Kreis
-       stanzt den Kalenderrahmen aus und trägt deshalb die Hintergrundfarbe;
-       beim adaptiven Android-Icon wird er auf die dortige (einfarbige)
-       Hintergrundfarbe umgestellt – siehe scripts/icons-bauen.mjs. -->
-  <circle id="uhr-stanze" cx="366" cy="368" r="94" fill="url(#bg)"/>
-  <circle cx="366" cy="368" r="80" fill="#ffffff"/>
-  <g stroke="#0f766e" stroke-width="20" stroke-linecap="round">
-    <path d="M366 368V314"/>
-    <path d="M366 368l40 26"/>
-  </g>
+  <!-- Haken-Plakette, überlappt die untere rechte Ecke des Klemmbretts.
+       Der äußere Kreis stanzt den Brettrahmen aus und trägt deshalb die
+       Hintergrundfarbe; beim adaptiven Android-Icon wird er auf die dortige
+       (einfarbige) Hintergrundfarbe umgestellt – siehe scripts/icons-bauen.mjs. -->
+  <circle id="stanze" cx="368" cy="368" r="94" fill="url(#bg)"/>
+  <circle cx="368" cy="368" r="80" fill="#ffffff"/>
+  <path d="M332 368l26 26 48-52" fill="none" stroke="#155e9e" stroke-width="22"
+    stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

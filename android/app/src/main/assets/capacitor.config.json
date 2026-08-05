@@ -1,6 +1,6 @@
 {
-	"appId": "de.mercwerk.never2late",
-	"appName": "Never2Late",
+	"appId": "de.mercwerk.skilllogmed",
+	"appName": "SkillLog Med",
 	"webDir": "www",
 	"server": {
 		"androidScheme": "https"

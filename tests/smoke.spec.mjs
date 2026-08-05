@@ -11,15 +11,15 @@ test("lädt ohne Konsolenfehler und zeigt den leeren Zustand", async ({ page }) 
   await appOeffnen(page);
 
   expect(fehler).toEqual([]);
-  await expect(page).toHaveTitle(/Never2Late/);
+  await expect(page).toHaveTitle(/SkillLog Med/);
   await expect(page.locator("#view-home")).toHaveClass(/active/);
-  await expect(page.locator("#home-inhalt")).toContainText("Noch nichts erfasst");
+  await expect(page.locator("#home-inhalt")).toContainText("Noch keine Einträge vorhanden");
   await expect(page.locator("#btn-neu")).toBeVisible();
 });
 
 test("Kurzeinführung erscheint beim ersten Start und danach nicht mehr", async ({ page }) => {
   await page.goto("/index.html");
-  await page.waitForFunction(() => !!window.N2L);
+  await page.waitForFunction(() => !!window.SLM);
   await expect(page.locator("#modal-onboarding")).toHaveClass(/open/);
 
   await page.click("#ob-next");
@@ -28,11 +28,11 @@ test("Kurzeinführung erscheint beim ersten Start und danach nicht mehr", async 
   await expect(page.locator("#modal-onboarding")).not.toHaveClass(/open/);
 
   await page.reload();
-  await page.waitForFunction(() => !!window.N2L);
+  await page.waitForFunction(() => !!window.SLM);
   await expect(page.locator("#modal-onboarding")).not.toHaveClass(/open/);
 });
 
-test("belegt nur localStorage-Schlüssel mit dem Präfix n2l_", async ({ page }) => {
+test("belegt nur localStorage-Schlüssel mit dem Präfix slm_", async ({ page }) => {
   await appOeffnen(page);
   await page.click("#btn-settings");
   await page.click("#s-beispiele");
@@ -40,33 +40,32 @@ test("belegt nur localStorage-Schlüssel mit dem Präfix n2l_", async ({ page })
 
   const keys = await page.evaluate(() => Object.keys(localStorage));
   expect(keys.length).toBeGreaterThan(0);
-  const fremd = keys.filter(k => !k.startsWith("n2l_"));
+  const fremd = keys.filter(k => !k.startsWith("slm_"));
   expect(fremd).toEqual([]);
 });
 
-test("Beispieldaten decken alle Statuswerte ab", async ({ page }) => {
+test("Beispieldaten füllen Dashboard, Logbuch und Statistik", async ({ page }) => {
   await appOeffnen(page);
   await page.click("#btn-settings");
   await page.click("#s-beispiele");
 
-  const zahlen = await page.locator(".stat b").allTextContents();
-  expect(zahlen).toHaveLength(3);
-  zahlen.forEach(z => expect(Number(z)).toBeGreaterThan(0));
-  await expect(page.locator(".hero")).toBeVisible();
+  const anzahl = await page.evaluate(() => window.SLM.Daten.alle().length);
+  expect(anzahl).toBeGreaterThan(10);
+
+  await expect(page.locator("#home-inhalt .hero")).toContainText("Einträge");
+  await expect(page.locator("#home-inhalt")).toContainText("Zuletzt dokumentiert");
+
+  await page.click('nav.tabs button[data-tab="liste"]');
+  await expect(page.locator("#liste-inhalt .row").first()).toBeVisible();
+
+  await page.click('nav.tabs button[data-tab="stats"]');
+  await page.click('#stats-zeit [data-z="alle"]');
+  await expect(page.locator("#stats-inhalt .bars").first()).toBeVisible();
 });
 
-test("Werbung und Käufe sind in V1 abgeschaltet und unsichtbar", async ({ page }) => {
+test("Datenschutz-Hinweis ist sichtbar (keine Patientenakte)", async ({ page }) => {
   await appOeffnen(page);
-  const r = await page.evaluate(() => ({
-    ads: window.N2L.Ads.ENABLED,
-    billing: window.N2L.Billing.ENABLED,
-    premium: window.N2L.Edition.isPremium(),
-    adbarSichtbar: getComputedStyle(document.getElementById("adbar")).display !== "none"
-  }));
-  expect(r.ads).toBe(false);
-  expect(r.billing).toBe(false);
-  expect(r.premium).toBe(false);
-  expect(r.adbarSichtbar).toBe(false);
-  await expect(page.locator("body")).not.toContainText("Premium");
-  await expect(page.locator("body")).not.toContainText("Werbung");
+  await expect(page.locator("#home-inhalt")).toContainText("keine Patientenakte");
+  await page.click("#btn-neu");
+  await expect(page.locator("#view-form")).toContainText("keine Patientenakte");
 });

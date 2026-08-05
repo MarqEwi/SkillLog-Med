@@ -27,25 +27,23 @@ async function schuss(name, { dunkel = false, schritte }){
     locale: "de-DE", timezoneId: "Europe/Berlin"
   });
   const page = await ctx.newPage();
-  await page.addInitScript(() => localStorage.setItem("n2l_onboarding_done", "true"));
+  await page.addInitScript(() => localStorage.setItem("slm_onboarding_done", "true"));
   await page.goto("http://127.0.0.1:8931/index.html");
-  await page.waitForFunction(() => !!window.N2L);
+  await page.waitForFunction(() => !!window.SLM);
   await page.evaluate(() => {
-    /* Zwei eigene Kategorien, damit die Screenshots die Funktion zeigen. */
-    const h = window.N2L.Kategorien.hinzufuegen("Haustier", "🐾");
-    const w = window.N2L.Kategorien.hinzufuegen("Wohnung", "🏠");
-    window.N2L.Daten.beispieleLaden();
-    window.N2L.Daten.upsert({ titel: "Impfpass Hund", kategorien: ["gesundheit", h.id],
-      datumstyp: "wiederkehrend", wiederholung: "jaehrlich",
-      datum: window.N2L.Core.addTage(window.N2L.Core.heute(), 34) });
-    window.N2L.Daten.upsert({ titel: "Mietvertrag Kündigungsfrist", kategorien: ["vertraege", w.id],
-      datumstyp: "faellig", datum: window.N2L.Core.addTage(window.N2L.Core.heute(), 96),
-      referenz: "MV-2024-118" });
+    const SLM = window.SLM;
+    /* Beispieldaten plus Profil und Favoriten, damit die Screenshots die
+       Funktionen zeigen. */
+    SLM.Daten.beispieleLaden();
+    SLM.Katalog.favorit("iv-zugang", true);
+    SLM.Katalog.favorit("intubation", true);
+    SLM.Profil.set({ name: "Alex Muster", rolle: "PJ-Student:in",
+      institution: "Uniklinik Beispielstadt" });
   });
   await page.evaluate(() => location.reload());
-  await page.waitForFunction(() => !!window.N2L);
+  await page.waitForFunction(() => !!window.SLM);
   if (schritte) await schritte(page);
-  await page.waitForTimeout(250);
+  await page.waitForTimeout(350);
   await page.screenshot({ path: `${ZIEL}/${name}.png` });
   console.log(`${ZIEL}/${name}.png`);
   await ctx.close();
@@ -53,29 +51,30 @@ async function schuss(name, { dunkel = false, schritte }){
 
 await schuss("01-dashboard", {});
 await schuss("02-dashboard-dunkel", { dunkel: true });
-await schuss("03-liste", { schritte: async p => {
+await schuss("03-logbuch", { schritte: async p => {
   await p.click('nav.tabs button[data-tab="liste"]');
 } });
-await schuss("04-detail", { schritte: async p => {
+await schuss("04-formular", { schritte: async p => {
+  await p.click("#btn-neu");
+  await p.click('#f-mgrid [data-m="intubation"]');
+  await p.click('#f-stufe [data-v="assistiert"]');
+} });
+await schuss("05-detail", { schritte: async p => {
   await p.click('nav.tabs button[data-tab="liste"]');
   await p.click("#liste-inhalt .row");
 } });
-await schuss("05-formular", { schritte: async p => {
-  await p.click("#btn-neu");
-  await p.fill("#f-titel", "Reisepass");
-  await p.click('#f-kategorie button[data-k="ausweise"]');
-  await p.click('#f-kategorie button[data-k="reisen"]');
-  await p.fill("#f-datum", "2032-04-18");
+await schuss("06-statistik", { schritte: async p => {
+  await p.click('nav.tabs button[data-tab="stats"]');
+  await p.click('#stats-zeit [data-z="alle"]');
 } });
-await schuss("07-kategorie-neu", { schritte: async p => {
-  await p.click("#btn-neu");
-  await p.click("#f-kat-neu");
-  await p.fill("#kat-name", "Haustier");
-  await p.click('#kat-emojis button[data-e="🐾"]');
+await schuss("07-export", { schritte: async p => {
+  await p.click('nav.tabs button[data-tab="export"]');
+  await p.click('#ex-quick [data-z="alle"]');
+  await p.fill("#ex-block", "PJ Chirurgie");
 } });
-await schuss("06-archiv", { dunkel: true, schritte: async p => {
+await schuss("08-filter-dunkel", { dunkel: true, schritte: async p => {
   await p.click('nav.tabs button[data-tab="liste"]');
-  await p.click('#filter-status button[data-st="abgelaufen"]');
+  await p.click("#filter-zeit [data-panel]");
 } });
 
 await browser.close();

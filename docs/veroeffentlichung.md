@@ -1,23 +1,23 @@
-# Veröffentlichung Schritt für Schritt (Never2Late)
+# Veröffentlichung Schritt für Schritt (SkillLog Med)
 
 Einfache Checkliste für alles, was außerhalb des Codes zu tun ist. Reihenfolge
 einhalten – jeder Block ist unabhängig abhakbar.
 
-**Wichtig für diese App:** Never2Late V1 hat **keine Werbung und keine Käufe**.
-Die Schritte, die es bei den Fitness-Apps für AdMob und das Kaufprodukt gab,
-entfallen hier komplett. Was du dafür später bräuchtest, steht ganz unten unter
-„Später: Monetarisierung“ – jetzt ist dort nichts zu tun.
+**Wichtig für diese App:** SkillLog Med V1 hat **keine Werbung und keine
+Käufe**. Die Schritte, die es bei den Fitness-Apps für AdMob und das
+Kaufprodukt gab, entfallen hier komplett. Was du dafür später bräuchtest,
+steht ganz unten unter „Später: Monetarisierung“ – jetzt ist dort nichts zu tun.
 
 ## 1. GitHub Pages aktivieren (Web-Version + Datenschutz-URL)
 
-1. Im Browser das Repo öffnen: `github.com/MarqEwi/never2late`
+1. Im Browser das Repo öffnen: `github.com/MarqEwi/SkillLog-Med`
 2. Oben auf **Settings** → links auf **Pages**
 3. Bei „Build and deployment“: **Deploy from a branch** wählen,
    Branch **main**, Ordner **/ (root)** → **Save**
 4. Nach 1–2 Minuten ist die App erreichbar unter
-   `https://marqewi.github.io/never2late/`
+   `https://marqewi.github.io/SkillLog-Med/`
    und die Datenschutzerklärung unter
-   `https://marqewi.github.io/never2late/datenschutz.html`
+   `https://marqewi.github.io/SkillLog-Med/datenschutz.html`
 
 Die zweite Adresse brauchst du gleich in der Play Console. Ruf sie einmal auf
 und prüf, dass die Seite wirklich erscheint – Google prüft das auch.
@@ -27,7 +27,7 @@ und prüf, dass die Seite wirklich erscheint – Google prüft das auch.
 1. [play.google.com/console](https://play.google.com/console) öffnen →
    **App erstellen**
 2. Ausfüllen:
-   - App-Name: **Never2Late – Ablaufdaten** (24 Zeichen, erlaubt sind 30)
+   - App-Name: **SkillLog Med – Skill-Logbuch** (28 Zeichen, erlaubt sind 30)
    - Standardsprache: **Deutsch (Deutschland)**
    - App oder Spiel: **App**
    - Kostenlos oder kostenpflichtig: **Kostenlos**
@@ -36,15 +36,18 @@ und prüf, dass die Seite wirklich erscheint – Google prüft das auch.
    - Kurzbeschreibung und vollständige Beschreibung von dort einfügen
    - App-Symbol: `icons/icon-512.png`
    - Feature-Grafik: `docs/store-grafiken/feature-grafik-1024x500.png`
-   - Telefon-Screenshots: die sechs Dateien aus `docs/store-grafiken/`
-     (`screenshot-1…6-1080x1920.png`)
-   - Kategorie: **Produktivität**
+   - Telefon-Screenshots: die sieben Dateien aus `docs/store-grafiken/`
+     (`screenshot-1…7-1080x1920.png`)
+   - Kategorie: **Bildung** – bewusst **nicht** „Medizin“ und **nicht**
+     „Gesundheit & Fitness“: beide lösen zusätzliche Prüfungen und
+     Nachweispflichten aus, und SkillLog Med ist ein Ausbildungs-Logbuch,
+     keine Gesundheits-App (siehe `docs/store-texte.md`)
 4. Datenschutz-URL eintragen:
-   `https://marqewi.github.io/never2late/datenschutz.html`
+   `https://marqewi.github.io/SkillLog-Med/datenschutz.html`
 
 ## 3. Die Formulare unter „Richtlinien → App-Inhalte“
 
-Hier ist Never2Late angenehm schnell abgehakt, weil die App nichts sammelt:
+Hier ist SkillLog Med angenehm schnell abgehakt, weil die App nichts sammelt:
 
 | Formular | Antwort |
 |---|---|
@@ -57,15 +60,12 @@ Hier ist Never2Late angenehm schnell abgehakt, weil die App nichts sammelt:
 | Datensicherheit | siehe unten – die wichtigste Antwort ist ein Nein |
 | Staatliche App | Nein |
 | Finanzfunktionen | Nein |
-| Gesundheits-Apps | Nein |
+| Gesundheits-Apps | **Nein** – die App verwaltet keine Gesundheitsdaten von Patienten, sondern dokumentiert die eigene Ausbildung |
 
 **Datensicherheit im Detail:** Auf die erste Frage „Erhebt oder teilt deine App
 die erforderlichen Nutzerdatentypen?“ antwortest du **Nein**. Danach ist das
-Formular fertig. Alles bleibt auf dem Gerät, es gibt keinen Server.
-
-Die Berechtigung für **Benachrichtigungen** ist dabei keine Datenerhebung – die
-Erinnerungen werden komplett auf dem Handy berechnet. An der
-Datensicherheits-Erklärung ändert sie also nichts.
+Formular fertig. Alles bleibt auf dem Gerät, es gibt keinen Server. Auch das
+Profil (Name, Rolle) wird nur lokal gespeichert und nie übertragen.
 
 **Zur Werbe-ID:** Das AdMob-Plugin zieht `play-services-ads` mit, und dieses
 Google-SDK trägt die Berechtigung `AD_ID` von sich aus ins Manifest ein – auch
@@ -86,12 +86,12 @@ Werbe-ID, und die Antwort „keine Datenerhebung" wäre nicht mehr stimmig.
 
    Beim **ersten Mal** klonen:
    ```
-   git clone https://github.com/MarqEwi/never2late.git
-   cd never2late
+   git clone https://github.com/MarqEwi/SkillLog-Med.git
+   cd SkillLog-Med
    ```
    Wenn der Ordner schon existiert, stattdessen nur aktualisieren:
    ```
-   cd never2late
+   cd SkillLog-Med
    git checkout main
    git pull
    ```
@@ -106,11 +106,16 @@ Werbe-ID, und die Antwort „keine Datenerhebung" wäre nicht mehr stimmig.
    npm run cap:sync
    ```
 
+**Wichtig:** In Android Studio **nicht** „Clone Repository“ benutzen – das
+Android-Projekt liegt im Unterordner `android/`, und ohne `npm install`
+scheitert der Gradle-Sync sofort. Immer die Reihenfolge oben einhalten und
+dann den Ordner `android` öffnen.
+
 ### 4.2 Keystore hinterlegen (einmalig pro PC)
 
-1. Die vorhandene Keystore-Datei (**derselbe Schlüssel wie bei BFT, PFT und
-   SGT – niemals einen neuen erzeugen**) in den Ordner `android/` kopieren,
-   z. B. als `android.keystore`.
+1. Die vorhandene Keystore-Datei (**derselbe Schlüssel wie bei BFT, PFT, SGT
+   und Never2Late – niemals einen neuen erzeugen**) in den Ordner `android/`
+   kopieren, z. B. als `android.keystore`.
 2. Im Ordner `android/` die Datei `keystore.properties.example` kopieren und die
    Kopie in `keystore.properties` umbenennen (die Endung `.example` entfällt).
 3. Diese Datei im Editor öffnen und die vier Werte eintragen:
@@ -152,7 +157,7 @@ Werbe-ID, und die Antwort „keine Datenerhebung" wäre nicht mehr stimmig.
    einfach bestätigen. Dein Keystore ist dann der Upload-Schlüssel.
 4. Die Datei `app-release.aab` hochladen.
 5. Unter „Versionshinweise“ z. B. eintragen:
-   `Erste Version von Never2Late.`
+   `Erste Version von SkillLog Med.`
 6. **Speichern → Release überprüfen → Freigabe starten**.
 
 Der interne Test verlangt mindestens **einen Tester**, sonst lässt sich der
@@ -161,35 +166,39 @@ Release nicht starten. Trag dich unter „Tester“ selbst ein.
 ### 4.5 Bei jedem weiteren Upload
 
 In `android/app/build.gradle` den `versionCode` um 1 erhöhen (steht aktuell auf
-`2`), bei sichtbaren Änderungen zusätzlich den `versionName` anpassen. Danach
-wieder `npm run cap:sync` und neu bauen. Sind mehrere Änderungen noch nicht
-hochgeladen, gehen sie in einem Build raus – dann steigt der `versionCode` nur
-einmal.
+`1`), bei sichtbaren Änderungen zusätzlich den `versionName` anpassen. Danach
+wieder `npm run cap:sync` und neu bauen. **Der `versionCode` muss bei jedem
+Upload steigen** – auch zwischen zwei Uploads in denselben internen Test. Sind
+mehrere Änderungen noch nicht hochgeladen, gehen sie in einem Build raus –
+dann steigt der `versionCode` nur einmal.
 
 ## 5. Auf dem Handy testen
 
 Im internen Test den **Einladungslink** öffnen (Reiter „Tester“), auf dem Handy
 mit demselben Google-Konto annehmen und die App installieren. Dann durchgehen:
 
-- App startet ohne Absturz
-- Einführung erscheint, danach fragt die App nach der Erlaubnis für
-  **Benachrichtigungen** → **Zulassen** tippen
-- Einen Testeintrag anlegen mit einem Datum in **2 Tagen** und einer Erinnerung
-  **1 Tag vorher** – am nächsten Morgen um 9 Uhr muss die Benachrichtigung
-  kommen
-- Bei einem Eintrag **„In Kalender“** antippen: das Teilen-Menü öffnet sich und
-  die Kalender-App übernimmt den Termin
-- **Einstellungen → Daten sichern**: das Teilen-Menü öffnet sich, Datei z. B. in
-  Google Drive ablegen; danach **Daten wiederherstellen** mit derselben Datei
+- App startet ohne Absturz, die Einführung erscheint
+- Einen Eintrag anlegen: Maßnahme antippen, Stufe und Setting wählen,
+  speichern – der Eintrag erscheint auf dem Dashboard und im Logbuch
+- „Speichern + Neu“ ausprobieren: Ort und Tags bleiben stehen
+- **Export → PDF-Bericht erstellen / teilen**: das Teilen-Menü öffnet sich,
+  die PDF z. B. an Google Drive oder einen Drucker geben und prüfen, dass
+  Zusammenfassung, Detailliste und Unterschriftsfeld drin sind
+- **Export → CSV-Export**: Datei teilen und z. B. in Google Sheets öffnen –
+  Umlaute müssen richtig aussehen
+- **Export → Daten sichern**: JSON-Datei ablegen; danach **Daten
+  wiederherstellen** mit derselben Datei – alle Einträge und eigenen
+  Maßnahmen/Orte/Tags sind wieder da
+- Im Katalog eine eigene Maßnahme anlegen, als Favorit markieren und prüfen,
+  dass sie im Formular oben in der Schnellwahl steht
 - Zurück-Taste: schließt erst offene Fenster, geht dann eine Ebene zurück und
   verlangt auf der Startseite zweimaliges Drücken zum Verlassen
-- Handy neu starten und prüfen, dass die Erinnerung trotzdem noch kommt (das
-  Plugin stellt geplante Erinnerungen nach einem Neustart wieder her)
+- Dunkles Design in den Einstellungen umschalten
 
 **Wenn etwas nicht geht:** In den Einstellungen **5× auf die Versionsnummer
-tippen**. Darunter erscheinen dann Statuszeilen für Erinnerungen, Export,
-Werbung und Käufe. Schick mir den Text dieser Zeilen – daraus lässt sich meist
-sofort erkennen, woran es liegt.
+tippen**. Darunter erscheinen dann Statuszeilen für Export, Werbung und Käufe.
+Schick mir den Text dieser Zeilen – daraus lässt sich meist sofort erkennen,
+woran es liegt.
 
 ## 6. In die Produktion veröffentlichen
 
@@ -216,7 +225,7 @@ bereit und ist über je einen Schalter abgeschaltet. Wenn du das später
 aktivieren willst, sind das die Schritte – **erst dann**, nicht jetzt:
 
 1. **AdMob:** auf [admob.google.com](https://admob.google.com) im selben Konto
-   eine neue App **Never2Late** anlegen. Die App-ID (`ca-app-pub-…~…`) ersetzt
+   eine neue App **SkillLog Med** anlegen. Die App-ID (`ca-app-pub-…~…`) ersetzt
    im `android/app/src/main/AndroidManifest.xml` die dort eingetragene
    Google-Test-App-ID. **Dieser Eintrag darf nie leer sein – fehlt er, stürzt
    die App beim Start ab.** Dann einen Banner-Block anlegen und dessen ID
