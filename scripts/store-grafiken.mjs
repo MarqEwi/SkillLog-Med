@@ -13,7 +13,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 const ZIEL = "docs/store-grafiken";
 mkdirSync(ZIEL, { recursive: true });
 const bild = p => "data:image/png;base64," + readFileSync(p).toString("base64");
-const LOGO = readFileSync("icons/logo.svg", "utf8");
+const LOGO = bild("icons/icon-512.png");
 const BG_QUER = bild(`${ZIEL}/quellen/hintergrund-quer.png`);
 const BG_HOCH = bild(`${ZIEL}/quellen/hintergrund-hoch.png`);
 
@@ -77,13 +77,13 @@ await page.setContent(`<style>
   #b::before{content:"";position:absolute;inset:0;
      background:linear-gradient(100deg, rgba(7,22,40,.5) 0%, rgba(7,22,40,.12) 55%, rgba(21,70,120,.18) 100%)}
   #s{position:relative;width:196px;height:196px;flex:none}
-  #s svg{width:100%;height:100%;display:block;
+  #s img{width:100%;height:100%;display:block;border-radius:22%;
     filter:drop-shadow(0 14px 30px rgba(2,12,24,.5))}
   #t{position:relative;flex:1;min-width:0}
   h1{color:#fff;font-size:74px;font-weight:700;letter-spacing:-.03em;margin:0;
      text-shadow:0 2px 16px rgba(4,16,30,.45)}
   p{color:#d5e9fa;font-size:34px;margin:12px 0 0;font-weight:500}
-</style><div id="b"><div id="s">${LOGO}</div>
+</style><div id="b"><div id="s"><img src="${LOGO}"></div>
   <div id="t"><h1>SkillLog Med</h1><p>Dein Logbuch für klinische Skills</p></div></div>`);
 writeFileSync(`${ZIEL}/feature-grafik-1024x500.png`, await page.locator("#b").screenshot());
 console.log(`${ZIEL}/feature-grafik-1024x500.png`);
