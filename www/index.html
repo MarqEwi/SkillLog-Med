@@ -302,6 +302,14 @@
   .bars .fill.f-beo{background:linear-gradient(90deg,var(--beo),color-mix(in srgb,var(--beo) 75%,#fff))}
   .bars .fill.f-ass{background:linear-gradient(90deg,var(--ass),var(--accent2))}
   .bars .fill.f-dur{background:linear-gradient(90deg,var(--dur),color-mix(in srgb,var(--dur) 70%,#d0f0dd))}
+  /* Anklickbare Balken (Trainingsblöcke): ganze Zeile als Schaltfläche */
+  .bars .barbtn{display:block;width:100%;background:none;border:none;padding:2px 0;
+    font:inherit;color:inherit;cursor:pointer;text-align:left;border-radius:9px;
+    transition:opacity .13s}
+  .bars .barbtn:hover{opacity:.75}
+  .bars .barbtn:active{transform:translateY(1px)}
+  .bars li.unter{padding-left:14px}
+  .bars li.unter .z b{font-weight:540;color:var(--text2)}
   /* Gestapelter Stufenbalken */
   .stapel{display:flex;height:14px;border-radius:999px;overflow:hidden;background:var(--bg3);
     margin:12px 0 10px;box-shadow:inset 0 1px 2px rgba(13,32,52,.07)}
@@ -345,6 +353,10 @@
   label.field{display:block;margin:17px 0 6px;font-size:.8rem;color:var(--text2);
     font-weight:670;letter-spacing:.012em}
   label.field .req{color:var(--bad)}
+  /* "optional" als leiser Zusatz am Feldtitel */
+  label.field .opt{font-weight:520;text-transform:none;letter-spacing:0;opacity:.75;
+    font-size:.76rem;margin-left:4px}
+  label.field .opt::before{content:"· "}
   input[type=text],input[type=number],input[type=date],input[type=time],input[type=search],select,textarea{
     width:100%;background:var(--bg2);color:var(--text);border:1px solid var(--line-stark);
     border-radius:var(--radius-s);padding:12px 14px;font:inherit;font-size:1rem;
@@ -391,12 +403,55 @@
   .mgrid button.neu{border-style:dashed;color:var(--accent);border-color:var(--accent-rand);
     box-shadow:none}
   .mgrid button.neu:hover{background:var(--accent-soft)}
+  /* Rollenliste im Profil */
+  .rollenliste{list-style:none;margin:0;padding:0;border:1px solid var(--line);
+    border-radius:var(--radius-s);overflow:hidden}
+  .rollenliste li{display:flex;align-items:center;gap:10px;padding:10px 12px;
+    border-bottom:1px solid var(--line);background:var(--bg2)}
+  .rollenliste li:last-child{border-bottom:none}
+  .rollenliste .lbl{flex:1;font-size:.9rem;min-width:0;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .rollenliste .del{background:none;border:none;color:var(--text2);cursor:pointer;padding:6px;
+    line-height:0;border-radius:8px;flex:none;transition:color .13s, background .13s}
+  .rollenliste .del:hover{color:var(--bad);background:var(--bad-soft)}
+  .rolleadd{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+  .rolleadd select{flex:1;min-width:150px}
+  .rolleadd input{flex:1;min-width:150px}
   /* Tag-Auswahl */
   .tagwahl{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
   .tagadd{display:flex;gap:8px;margin-top:10px}
   .tagadd input{flex:1}
   .zeitzeile{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center}
+  /* Mehrfach-Erfassung: Anzahl mit Schrittknöpfen, Liste der Einzelzeiten */
+  .anzahlzeile{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;
+    max-width:230px}
+  .anzahlzeile input{text-align:center;font-variant-numeric:tabular-nums;font-weight:640}
+  .anzahlzeile button{min-width:44px;font-size:1.1rem;line-height:1;padding:10px 0}
+  .zeitliste{list-style:none;margin:10px 0 0;padding:0;border:1px solid var(--line);
+    border-radius:var(--radius-s);overflow:hidden}
+  .zeitliste li{display:flex;align-items:center;gap:11px;padding:9px 12px;
+    border-bottom:1px solid var(--line);background:var(--bg2)}
+  .zeitliste li:last-child{border-bottom:none}
+  .zeitliste .nr{font-size:.8rem;color:var(--text2);font-weight:640;min-width:2.2em;
+    font-variant-numeric:tabular-nums}
+  .zeitliste input{flex:1}
+  /* Schalterzeile: Beschriftung links, Schiebeschalter rechts. Titel und
+     Untertitel brauchen display:block, sonst laufen sie als Inline-Elemente
+     nebeneinander aus der Zeile heraus. */
   .switchrow{display:flex;align-items:center;gap:12px;padding:12px 0}
+  .switchrow .txt{flex:1;min-width:0}
+  .switchrow .txt b{display:block;font-size:.94rem;font-weight:660;letter-spacing:-.011em}
+  .switchrow .txt span{display:block;font-size:.795rem;color:var(--text2);line-height:1.45}
+  .switch{position:relative;width:50px;height:29px;flex:none}
+  .switch input{opacity:0;width:0;height:0;position:absolute}
+  .switch .track{position:absolute;inset:0;background:var(--bg3);border:1px solid var(--line-stark);
+    border-radius:999px;cursor:pointer;transition:background .18s, border-color .18s}
+  .switch .track::after{content:"";position:absolute;top:2px;left:2px;width:23px;height:23px;
+    border-radius:50%;background:var(--bg2);box-shadow:0 1px 3px rgba(13,32,52,.3);
+    transition:transform .18s cubic-bezier(.3,1.4,.6,1)}
+  .switch input:checked + .track{background:var(--accent);border-color:var(--accent)}
+  .switch input:checked + .track::after{transform:translateX(21px)}
+  .switch input:focus-visible + .track{outline:2px solid var(--accent);outline-offset:2px}
   /* ---------- Detailansicht ---------- */
   .detail-head{display:flex;gap:14px;align-items:flex-start;margin:6px 0 4px}
   .detail-head .mono{width:54px;height:54px;border-radius:var(--radius-s);display:grid;
@@ -503,6 +558,8 @@
   .stammliste li{display:flex;align-items:center;gap:12px;padding:11px 2px;
     border-top:1px solid var(--line)}
   .stammliste li:first-child{border-top:none}
+  .stammliste li.unter{padding-left:16px;background:var(--bg3)}
+  .stammliste li.unter .lbl{font-weight:450;color:var(--text2)}
   .stammliste .n{flex:1;font-size:.935rem;min-width:0}
   .stammliste .n .lbl{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
     font-weight:560}
@@ -621,6 +678,8 @@
       <select id="fp-setting"></select>
       <label class="field" for="fp-ort">Ort / Einsatzbereich</label>
       <select id="fp-ort"></select>
+      <label class="field" for="fp-block">Trainingsblock</label>
+      <select id="fp-block"></select>
       <label class="field" for="fp-tag">Tag</label>
       <select id="fp-tag"></select>
       <div class="btn-row">
@@ -664,17 +723,44 @@
       </div>
       <p class="err" id="f-datum-err">Bitte gib ein gültiges Datum ein.</p>
 
+      <!-- Mehrfach an einem Tag: dieselbe Maßnahme mehrmals erfasst. -->
+      <div class="switchrow" id="f-mehr-zeile">
+        <div class="txt"><b>Mehrfach an diesem Tag</b>
+          <span>Dieselbe Maßnahme mehrmals dokumentieren</span></div>
+        <label class="switch"><input type="checkbox" id="f-mehr-an"><span class="track"></span></label>
+      </div>
+      <div id="f-mehr-block" style="display:none">
+        <label class="field" for="f-anzahl" style="margin-top:2px">Anzahl</label>
+        <div class="anzahlzeile">
+          <button type="button" class="btn secondary small" id="f-anzahl-minus" aria-label="Weniger">−</button>
+          <input type="number" id="f-anzahl" min="2" max="30" value="2" inputmode="numeric" aria-label="Anzahl">
+          <button type="button" class="btn secondary small" id="f-anzahl-plus" aria-label="Mehr">+</button>
+        </div>
+        <div class="switchrow">
+          <div class="txt"><b>Uhrzeiten einzeln erfassen</b>
+            <span id="f-zeiten-sub">Ohne Häkchen werden die Einträge nur mit Datum gespeichert</span></div>
+          <label class="switch"><input type="checkbox" id="f-zeiten-an"><span class="track"></span></label>
+        </div>
+        <ul class="zeitliste" id="f-zeitliste" style="display:none"></ul>
+      </div>
+
       <label class="field" for="f-ort">Ort / Einsatzbereich</label>
       <select id="f-ort"></select>
+
+      <label class="field" for="f-block">Trainingsblock</label>
+      <select id="f-block"></select>
     </div>
 
     <div class="card">
-      <label class="field" style="margin-top:2px">Tags</label>
-      <div class="tagwahl" id="f-tags"></div>
+      <label class="field" style="margin-top:2px">Tags <span class="opt">optional</span></label>
+      <p class="hint" style="margin:0 0 8px">Freie Schlagworte zum Sammeln – etwa „Klinik“ für
+        alle innerklinischen Maßnahmen. Mehrere pro Eintrag möglich.</p>
       <div class="tagadd">
-        <input type="text" id="f-tag-neu" maxlength="30" placeholder="z. B. OP-Praktikum" autocomplete="off">
+        <input type="text" id="f-tag-neu" maxlength="30" placeholder="Neuer Tag" autocomplete="off">
         <button type="button" class="btn secondary small" id="f-tag-add">Hinzufügen</button>
       </div>
+      <div class="tagwahl" id="f-tags"></div>
+
       <label class="field" for="f-notiz">Notiz</label>
       <textarea id="f-notiz" maxlength="600" placeholder="Optional: Besonderheiten, Lernpunkte, Material"></textarea>
       <p class="hint">Bitte keine identifizierenden Patientendaten notieren – SkillLog Med ist ein
@@ -717,8 +803,10 @@
       <select id="ex-ort"></select>
       <label class="field" for="ex-tag">Tag</label>
       <select id="ex-tag"></select>
-      <label class="field" for="ex-block">Praktikum / Ausbildungsblock (optional)</label>
-      <input type="text" id="ex-block" maxlength="80" placeholder="z. B. PJ Chirurgie, Rettungswachenpraktikum" autocomplete="off">
+      <label class="field" for="ex-block">Trainingsblock</label>
+      <select id="ex-block"></select>
+      <label class="field" for="ex-blocktext">Zusatz zum Block (optional)</label>
+      <input type="text" id="ex-blocktext" maxlength="80" placeholder="z. B. 2. Ausbildungsjahr, Station 4B" autocomplete="off">
       <label class="field" for="ex-bemerkung">Bemerkungen / Bestätigung (optional)</label>
       <textarea id="ex-bemerkung" maxlength="500" placeholder="Erscheint im Bericht über dem Unterschriftsfeld"></textarea>
       <label class="field">Status des Berichts</label>
@@ -771,6 +859,7 @@
       <button type="button" data-v="massnahmen" class="active">Maßnahmen</button>
       <button type="button" data-v="kategorien">Kategorien</button>
       <button type="button" data-v="orte">Orte</button>
+      <button type="button" data-v="bloecke">Blöcke</button>
       <button type="button" data-v="tags">Tags</button>
     </div>
     <div id="stamm-inhalt"></div>
@@ -875,8 +964,19 @@
     <label class="field" for="p-name">Name</label>
     <input type="text" id="p-name" maxlength="60" placeholder="Vor- und Nachname" autocomplete="off">
 
-    <label class="field" for="p-rolle">Rolle / Berufsgruppe</label>
-    <select id="p-rolle"></select>
+    <label class="field">Rollen / Berufsgruppen</label>
+    <ul class="rollenliste" id="p-rollen"></ul>
+    <div class="rolleadd" id="p-rolle-add" style="display:none">
+      <select id="p-rolle-wahl"></select>
+      <input type="text" id="p-rolle-frei" maxlength="60" placeholder="Eigene Bezeichnung"
+        autocomplete="off" style="display:none">
+      <button type="button" class="btn small" id="p-rolle-ok">Übernehmen</button>
+    </div>
+    <button type="button" class="btn secondary block" id="p-rolle-neu" style="margin-top:9px">
+      ＋ <span id="p-rolle-neu-text">Weitere Rolle hinzufügen</span>
+    </button>
+    <p class="hint">Mehrere Rollen sind möglich – etwa „Physician-Assistant-Student:in“
+      <em>und</em> „Notfallsanitäter:in“. Alle erscheinen im PDF-Bericht.</p>
 
     <label class="field" for="p-institution">Ausbildungsstätte / Institution</label>
     <input type="text" id="p-institution" maxlength="80" placeholder="z. B. Uniklinik, Rettungsdienstschule" autocomplete="off">
@@ -951,6 +1051,32 @@
   </div>
 </div>
 
+<!-- ======================= Dialog: Trainingsblock ======================= -->
+<div class="modal-back" id="modal-block">
+  <div class="modal">
+    <button class="modal-x" data-close="modal-block" aria-label="Schließen">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <h3 class="mt"><svg class="ic" viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10a2 2 0 01-2 2H3z"/><path d="M3 7V5a2 2 0 012-2h4l2 2"/></svg> <span id="b-dlg-titel">Neuer Trainingsblock</span></h3>
+
+    <label class="field" for="b-name">Bezeichnung</label>
+    <input type="text" id="b-name" maxlength="60" placeholder="z. B. Rettungswachenpraktikum" autocomplete="off">
+
+    <div id="b-eltern-zeile">
+      <label class="field" for="b-eltern">Gehört zu</label>
+      <select id="b-eltern"></select>
+      <p class="hint">Als Unterblock einordnen – etwa „OP“ innerhalb von
+        „Klinikpraktikum“. Sonst „– eigenständiger Block –“ wählen.</p>
+    </div>
+    <p class="err" id="b-err"></p>
+
+    <div class="btn-row">
+      <button class="btn" id="b-ok" style="flex:1">Speichern</button>
+      <button class="btn secondary" data-close="modal-block">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
 <!-- ======================= Dialog: Tag umbenennen ======================= -->
 <div class="modal-back" id="modal-tag">
   <div class="modal">
@@ -1021,7 +1147,8 @@
      6. Oberfläche  – Screens, Rendering, Navigation.
 
    Datenmodell (alle Zeitpunkte lokal, Datum als "JJJJ-MM-TT", Zeit "HH:MM"):
-     Profil        { name, rolle, institution, standardOrt }
+     Profil        { name, rollen[], institution, standardOrt }
+     Block         { id, label, elternId }  – zweistufig: Block → Unterblock
      KatalogItem   { id, label, favorit, archiviert, eigen }
      OrtItem       { id, label, eigen }
      Tags          [ "OP-Praktikum", ... ]  – frei, je Eintrag mehrere
@@ -1127,6 +1254,45 @@ const Core = {
     "Notfallsanitäter:in", "Rettungssanitäter:in", "Physician-Assistant-Student:in",
     "Pflegefachperson", "Sonstige"
   ],
+
+  /* ---- Trainingsblöcke: Praktika, Rotationen, Ausbildungsabschnitte.
+         Zweistufig – ein Block kann Unterblöcke haben (Klinikpraktikum →
+         OP, Intensivstation). Mehr Ebenen sind bewusst nicht vorgesehen:
+         zwei reichen für Praktikum/Station und bleiben bedienbar. ---- */
+  BLOECKE_VORLAGE: [
+    { id: "rettungswache", label: "Rettungswachenpraktikum", elternId: "" },
+    { id: "klinikpraktikum", label: "Klinikpraktikum", elternId: "" },
+    { id: "klinik-op", label: "OP", elternId: "klinikpraktikum" },
+    { id: "klinik-intensiv", label: "Intensivstation", elternId: "klinikpraktikum" },
+    { id: "klinik-notaufnahme", label: "Notaufnahme", elternId: "klinikpraktikum" },
+    { id: "skills-lab", label: "Skills Lab", elternId: "" }
+  ],
+  bloecke: [],
+  block(id){ return this.bloecke.find(b => b.id === id) || null; },
+  /* Oberblöcke in Anlagereihenfolge, jeweils mit ihren Unterblöcken. */
+  blockBaum(){
+    return this.bloecke.filter(b => !b.elternId).map(b =>
+      ({ block: b, kinder: this.bloecke.filter(k => k.elternId === b.id) }));
+  },
+  /* Anzeigename mit Herkunft: "Klinikpraktikum · OP" */
+  blockPfad(id){
+    const b = this.block(id);
+    if (!b) return "";
+    const eltern = b.elternId ? this.block(b.elternId) : null;
+    return eltern ? eltern.label + " · " + b.label : b.label;
+  },
+  /* Der Block eines Eintrags samt Schnappschuss-Rückfall. */
+  bLabel(e){
+    if (!e.blockId && !e.blockLabel) return "";
+    return this.blockPfad(e.blockId) || e.blockLabel || "";
+  },
+  /* Ein Filter auf einen Oberblock schließt dessen Unterblöcke ein. */
+  blockPasst(blockId, filterId){
+    if (!filterId || filterId === "alle") return true;
+    if (blockId === filterId) return true;
+    const b = this.block(blockId);
+    return !!(b && b.elternId === filterId);
+  },
 
   /* Katalog und Orte werden von der Datenebene gefüllt – der Core bleibt
      dadurch frei von Speicherzugriffen, ist aber die einzige Stelle, an der
@@ -1263,6 +1429,11 @@ const Core = {
       ortLabel: (o && o.label)
         || String(e.ortLabel == null ? "" : e.ortLabel).trim().slice(0, 40),
       stufe, setting,
+      /* Trainingsblock mit Schnappschuss – wie bei Maßnahme und Ort bleibt
+         der Eintrag lesbar, auch wenn der Block später gelöscht wird. */
+      blockId: typeof e.blockId === "string" ? e.blockId : "",
+      blockLabel: this.blockPfad(e.blockId)
+        || String(e.blockLabel == null ? "" : e.blockLabel).trim().slice(0, 80),
       notiz: String(e.notiz == null ? "" : e.notiz).trim().slice(0, 600),
       tags: this.tagsSaeubern(e.tags),
       erstelltAm: typeof e.erstelltAm === "string" ? e.erstelltAm : jetzt,
@@ -1293,13 +1464,15 @@ const Core = {
         const m = this.massnahme(e.massnahmeId);
         if ((m && this.mkategorie(m.kategorie) ? m.kategorie : "sonstiges") !== f.mkategorie) return false;
       }
+      /* Ein Oberblock schließt seine Unterblöcke ein. */
+      if (f.block && f.block !== "alle" && !this.blockPasst(e.blockId, f.block)) return false;
       if (f.stufe && f.stufe !== "alle" && e.stufe !== f.stufe) return false;
       if (f.setting && f.setting !== "alle" && e.setting !== f.setting) return false;
       if (f.ort && f.ort !== "alle" && e.ortId !== f.ort) return false;
       if (f.tag && f.tag !== "alle"
         && !e.tags.some(t => t.toLowerCase() === f.tag.toLowerCase())) return false;
       if (q){
-        const heu = [this.mLabel(e), this.oLabel(e), e.notiz, e.tags.join(" ")]
+        const heu = [this.mLabel(e), this.oLabel(e), this.bLabel(e), e.notiz, e.tags.join(" ")]
           .join(" ").toLowerCase();
         if (heu.indexOf(q) < 0) return false;
       }
@@ -1312,7 +1485,7 @@ const Core = {
     const stufen = {}, settings = {};
     this.STUFEN_REIHE.forEach(s => stufen[s] = 0);
     this.SETTINGS_REIHE.forEach(s => settings[s] = 0);
-    const proM = new Map(), proO = new Map(), proK = new Map();
+    const proM = new Map(), proO = new Map(), proK = new Map(), proB = new Map();
     liste.forEach(e => {
       stufen[e.stufe] = (stufen[e.stufe] || 0) + 1;
       settings[e.setting] = (settings[e.setting] || 0) + 1;
@@ -1327,6 +1500,23 @@ const Core = {
       proK.set(kL, (proK.get(kL) || 0) + 1);
       const oL = this.oLabel(e);
       if (oL) proO.set(oL, (proO.get(oL) || 0) + 1);
+      /* Blöcke: Der Unterblock zählt zusätzlich auf seinen Oberblock, damit
+         "Klinikpraktikum" die Summe aus OP und Intensivstation zeigt. */
+      const b = this.block(e.blockId);
+      const bKey = b ? b.id : (e.blockLabel ? "label:" + e.blockLabel : "");
+      if (bKey){
+        const eltern = b && b.elternId ? this.block(b.elternId) : null;
+        const zaehle = (id, label, unter) => {
+          if (!proB.has(id)) proB.set(id, { id, label, gesamt: 0, unter: !!unter });
+          proB.get(id).gesamt++;
+        };
+        if (eltern){
+          zaehle(eltern.id, eltern.label, false);
+          zaehle(b.id, b.label, true);
+        } else {
+          zaehle(bKey, b ? b.label : e.blockLabel, false);
+        }
+      }
     });
     const massnahmen = Array.from(proM.values())
       .sort((a, b) => b.gesamt - a.gesamt || a.label.localeCompare(b.label, "de"));
@@ -1334,7 +1524,17 @@ const Core = {
       .sort((a, b) => b.gesamt - a.gesamt || a.label.localeCompare(b.label, "de"));
     const kategorien = Array.from(proK.entries()).map(([label, gesamt]) => ({ label, gesamt }))
       .sort((a, b) => b.gesamt - a.gesamt || a.label.localeCompare(b.label, "de"));
-    return { gesamt: liste.length, stufen, settings, massnahmen, kategorien, orte };
+    /* Blöcke in Baumreihenfolge: Oberblock, direkt gefolgt von seinen
+       Unterblöcken – so liest sich die Auswertung wie die Verwaltung. */
+    const bloecke = [];
+    this.blockBaum().forEach(({ block, kinder }) => {
+      const ober = proB.get(block.id);
+      if (!ober) return;
+      bloecke.push(ober);
+      kinder.forEach(k => { const u = proB.get(k.id); if (u) bloecke.push(u); });
+    });
+    proB.forEach(v => { if (!bloecke.some(x => x.id === v.id)) bloecke.push(v); });
+    return { gesamt: liste.length, stufen, settings, massnahmen, kategorien, orte, bloecke };
   },
 
   /* Alle Tags über die Einträge hinweg, mit Häufigkeit, alphabetisch. */
@@ -1357,12 +1557,12 @@ const Core = {
       return /[";\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
     };
     const kopf = ["Datum", "Uhrzeit", "Maßnahme", "Kompetenzstufe", "Setting",
-      "Ort", "Tags", "Notiz", "Erstellt am"];
+      "Ort", "Trainingsblock", "Tags", "Notiz", "Erstellt am"];
     const zeilen = this.sortieren(liste).map(e => [
       e.datum, e.zeit, this.mLabel(e),
       (this.stufe(e.stufe) || {}).label || e.stufe,
       (this.setting(e.setting) || {}).label || e.setting,
-      this.oLabel(e), e.tags.join(", "), e.notiz, e.erstelltAm
+      this.oLabel(e), this.bLabel(e), e.tags.join(", "), e.notiz, e.erstelltAm
     ].map(esc).join(";"));
     return [kopf.join(";")].concat(zeilen).join("\r\n") + "\r\n";
   },
@@ -1375,7 +1575,7 @@ const Core = {
     const k = konfig || {};
     const gefiltert = this.filtern(liste, {
       von: k.von, bis: k.bis, massnahme: k.massnahme, mkategorie: k.mkategorie,
-      ort: k.ort, tag: k.tag
+      ort: k.ort, block: k.block, tag: k.tag
     });
     /* Im Bericht chronologisch aufsteigend – wie ein geführtes Logbuch. */
     const eintraege = this.sortieren(gefiltert).reverse();
@@ -1397,12 +1597,25 @@ const Core = {
       filterTeile.push("Ort: " + ((o && o.label) || k.ort));
     }
     if (k.tag && k.tag !== "alle") filterTeile.push("Tag: " + k.tag);
+
     const p = profil || {};
     const meta = [];
     if (p.name) meta.push(["Name", p.name]);
-    if (p.rolle) meta.push(["Rolle / Berufsgruppe", p.rolle]);
+    /* Mehrere Rollen sind möglich; das Feld heißt dann im Plural. Der alte
+       Einzelwert wird weiterhin gelesen, damit Berichte aus Sicherungen
+       älterer Stände unverändert funktionieren. */
+    const rollen = Array.isArray(p.rollen) ? p.rollen.filter(Boolean)
+      : (p.rolle ? [p.rolle] : []);
+    if (rollen.length){
+      meta.push([rollen.length > 1 ? "Rollen / Berufsgruppen" : "Rolle / Berufsgruppe",
+        rollen.join(" · ")]);
+    }
     if (p.institution) meta.push(["Ausbildungsstätte", p.institution]);
-    if (k.block) meta.push(["Praktikum / Block", k.block]);
+    /* Der gewählte Trainingsblock steht im Kopf des Berichts – genau das
+       verlangt eine Praktikumsbescheinigung. Ein Freitext-Zusatz bleibt
+       daneben möglich. */
+    if (k.block && k.block !== "alle") meta.push(["Trainingsblock", this.blockPfad(k.block)]);
+    if (k.blockText) meta.push(["Praktikum / Block", k.blockText]);
     meta.push(["Zeitraum", zeitraumText]);
     if (filterTeile.length) meta.push(["Eingrenzung", filterTeile.join(" · ")]);
     meta.push(["Einträge", String(stat.gesamt)]);
@@ -1592,14 +1805,14 @@ const Pdf = {
       const spalten = [
         { titel: "Datum", breite: 56 }, { titel: "Zeit", breite: 34 },
         { titel: "Maßnahme", breite: 120 }, { titel: "Stufe", breite: 62 },
-        { titel: "Setting", breite: 56 }, { titel: "Ort", breite: 78 },
-        { titel: "Tags", breite: INNEN - 406 }
+        { titel: "Setting", breite: 56 }, { titel: "Ort", breite: 72 },
+        { titel: "Block", breite: 84 }, { titel: "Tags", breite: INNEN - 496 }
       ];
       const zeilen = b.eintraege.map(e => [
         Core.fmtDatum(e.datum), e.zeit || "–", Core.mLabel(e),
         (Core.stufe(e.stufe) || {}).label || e.stufe,
         (Core.setting(e.setting) || {}).label || e.setting,
-        Core.oLabel(e) || "–", e.tags.join(", ") || "–"
+        Core.oLabel(e) || "–", Core.bLabel(e) || "–", e.tags.join(", ") || "–"
       ]);
       tabelle(spalten, zeilen, zi => b.eintraege[zi].notiz ? "Notiz: " + b.eintraege[zi].notiz : null);
     } else {
@@ -1982,6 +2195,107 @@ const Orte = {
   anzahl(id){ return Daten.alle().filter(e => e.ortId === id).length; }
 };
 
+/* ---------- Trainingsblöcke ----------------------------------------------
+   Praktika, Rotationen, Ausbildungsabschnitte – zweistufig: Ein Block kann
+   Unterblöcke haben (Klinikpraktikum → OP, Intensivstation). Beim Löschen
+   eines Oberblocks verschwinden dessen Unterblöcke mit; die Einträge
+   behalten ihren Schnappschuss und bleiben lesbar.                        */
+const Bloecke = {
+  KEY: "slm_bloecke",
+  MAX: 60,
+
+  laden(){
+    const roh = load(this.KEY, null);
+    if (Array.isArray(roh)){
+      Core.bloecke = roh.map(b => this.normalisieren(b)).filter(Boolean).slice(0, this.MAX);
+      /* Verwaiste Unterblöcke (Elternteil weg) werden zu Oberblöcken. */
+      Core.bloecke.forEach(b => {
+        if (b.elternId && !Core.bloecke.some(x => x.id === b.elternId && !x.elternId)) b.elternId = "";
+      });
+    } else {
+      Core.bloecke = Core.BLOECKE_VORLAGE.map(b =>
+        ({ id: b.id, label: b.label, elternId: b.elternId, eigen: false }));
+      this.speichern();
+    }
+    return Core.bloecke;
+  },
+  speichern(){ store(this.KEY, Core.bloecke); },
+
+  normalisieren(b){
+    if (!b || typeof b !== "object") return null;
+    const id = String(b.id || "");
+    const label = String(b.label == null ? "" : b.label).trim().slice(0, 60);
+    if (!/^[a-z0-9-]+$/.test(id) || !label) return null;
+    return { id, label,
+      elternId: typeof b.elternId === "string" ? b.elternId : "",
+      eigen: b.eigen === true || id.indexOf("eigen-") === 0 };
+  },
+
+  neueId(label){
+    const basis = "eigen-" + (label.toLowerCase()
+      .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "block");
+    let id = basis, n = 1;
+    while (Core.block(id)) id = basis + "-" + (++n);
+    return id;
+  },
+
+  /* elternId leer = eigenständiger Block, sonst Unterblock. Ein Unterblock
+     eines Unterblocks ist nicht vorgesehen und wird auf dessen Eltern
+     umgehängt. */
+  hinzufuegen(label, elternId){
+    const name = String(label == null ? "" : label).trim().slice(0, 60);
+    if (!name) throw new Error("Bitte eine Bezeichnung eingeben.");
+    const eltern = elternId ? Core.block(elternId) : null;
+    const echterEltern = eltern ? (eltern.elternId || eltern.id) : "";
+    if (Core.bloecke.some(b => b.elternId === echterEltern
+      && b.label.toLowerCase() === name.toLowerCase()))
+      throw new Error("Diesen Block gibt es an dieser Stelle schon.");
+    if (Core.bloecke.length >= this.MAX)
+      throw new Error("Mehr als " + this.MAX + " Blöcke sind nicht vorgesehen.");
+    const b = { id: this.neueId(name), label: name, elternId: echterEltern, eigen: true };
+    Core.bloecke.push(b);
+    this.speichern();
+    return b;
+  },
+
+  umbenennen(id, label){
+    const b = Core.block(id);
+    if (!b) return null;
+    const name = String(label == null ? "" : label).trim().slice(0, 60);
+    if (!name) throw new Error("Bitte eine Bezeichnung eingeben.");
+    if (Core.bloecke.some(x => x.id !== id && x.elternId === b.elternId
+      && x.label.toLowerCase() === name.toLowerCase()))
+      throw new Error("Diesen Block gibt es an dieser Stelle schon.");
+    b.label = name;
+    this.speichern();
+    /* Schnappschüsse der Einträge auffrischen – auch die der Unterblöcke,
+       weil deren Pfad den Oberblock enthält. */
+    const betroffen = [b.id].concat(Core.bloecke.filter(x => x.elternId === b.id).map(x => x.id));
+    Daten.alle().forEach(e => {
+      if (betroffen.indexOf(e.blockId) >= 0) e.blockLabel = Core.blockPfad(e.blockId);
+    });
+    Daten.speichern();
+    return b;
+  },
+
+  /* Löscht den Block und – bei einem Oberblock – seine Unterblöcke. */
+  entfernen(id){
+    const b = Core.block(id);
+    if (!b) return 0;
+    const weg = [id].concat(b.elternId ? [] : Core.bloecke.filter(x => x.elternId === id).map(x => x.id));
+    Core.bloecke = Core.bloecke.filter(x => weg.indexOf(x.id) < 0);
+    this.speichern();
+    let betroffen = 0;
+    Daten.alle().forEach(e => { if (weg.indexOf(e.blockId) >= 0){ e.blockId = ""; betroffen++; } });
+    if (betroffen) Daten.speichern();
+    return betroffen;
+  },
+
+  /* Einträge dieses Blocks – beim Oberblock inklusive seiner Unterblöcke. */
+  anzahl(id){ return Daten.alle().filter(e => Core.blockPasst(e.blockId, id)).length; }
+};
+
 /* ---------- Tags ---------------------------------------------------------
    Tags leben in den Einträgen selbst; hier wird nur die Liste der bekannten
    Tags gepflegt, damit sie im Formular antippbar sind – auch dann, wenn
@@ -2055,23 +2369,43 @@ const TagDaten = {
   }
 };
 
-/* ---------- Profil ------------------------------------------------------- */
+/* ---------- Profil -------------------------------------------------------
+   Rollen sind eine Liste: Wer zugleich PA-Student:in und Notfallsanitäter:in
+   ist, trägt beides ein. Neben den Vorschlägen sind eigene Bezeichnungen
+   erlaubt, deshalb wird hier nicht gegen Core.ROLLEN geprüft, sondern nur
+   bereinigt.                                                              */
 const Profil = {
   KEY: "slm_profil",
-  werte: { name: "", rolle: "", institution: "", standardOrt: "" },
+  MAX_ROLLEN: 5,
+  werte: { name: "", rollen: [], institution: "", standardOrt: "" },
   laden(){
     const v = load(this.KEY, null);
     if (v && typeof v === "object"){
       this.werte.name = String(v.name == null ? "" : v.name).trim().slice(0, 60);
-      this.werte.rolle = Core.ROLLEN.indexOf(v.rolle) >= 0 ? v.rolle : "";
+      /* Schema 1 kannte genau eine Rolle im Feld `rolle`; ältere Profile und
+         Sicherungen werden hier auf die Liste gehoben. */
+      const roh = Array.isArray(v.rollen) ? v.rollen
+        : (typeof v.rolle === "string" && v.rolle ? [v.rolle] : []);
+      this.werte.rollen = this.rollenSaeubern(roh);
       this.werte.institution = String(v.institution == null ? "" : v.institution).trim().slice(0, 80);
       this.werte.standardOrt = typeof v.standardOrt === "string" ? v.standardOrt : "";
     }
     return this.werte;
   },
+  rollenSaeubern(arr){
+    const out = [];
+    (Array.isArray(arr) ? arr : []).forEach(r => {
+      const s = String(r == null ? "" : r).replace(/\s+/g, " ").trim().slice(0, 60);
+      if (s && !out.some(x => x.toLowerCase() === s.toLowerCase())) out.push(s);
+    });
+    return out.slice(0, this.MAX_ROLLEN);
+  },
+  /* Für Anzeige und Bericht: "PA-Student:in · Notfallsanitäter:in" */
+  rollenText(){ return this.werte.rollen.join(" · "); },
   speichern(){ store(this.KEY, this.werte); },
   set(teil){
     Object.assign(this.werte, teil || {});
+    if (teil && teil.rollen) this.werte.rollen = this.rollenSaeubern(teil.rollen);
     this.speichern();
   }
 };
@@ -2127,6 +2461,11 @@ const Daten = {
     const neuester = Core.sortieren(this.liste)[0];
     return neuester && neuester.ortId && Core.ort(neuester.ortId) ? neuester.ortId : "";
   },
+  /* Der Block des jüngsten Eintrags – im Praktikum bleibt er lange gleich. */
+  letzterBlock(){
+    const neuester = Core.sortieren(this.liste)[0];
+    return neuester && neuester.blockId && Core.block(neuester.blockId) ? neuester.blockId : "";
+  },
   letzteWahl(){
     const neuester = Core.sortieren(this.liste)[0];
     return neuester ? { stufe: neuester.stufe, setting: neuester.setting } : null;
@@ -2138,7 +2477,8 @@ const Daten = {
   exportObjekt(){
     return { app: "SkillLog Med", v: this.SCHEMA, exportiertAm: new Date().toISOString(),
              profil: Profil.werte, mkategorien: Core.mkategorien, katalog: Core.katalog,
-             orte: Core.orte, tags: TagDaten.liste, eintraege: this.liste };
+             orte: Core.orte, bloecke: Core.bloecke, tags: TagDaten.liste,
+             eintraege: this.liste };
   },
   importObjekt(obj){
     const arr = obj && Array.isArray(obj.eintraege) ? obj.eintraege : null;
@@ -2162,6 +2502,11 @@ const Daten = {
       Core.orte = obj.orte.map(o => Orte.normalisieren(o))
         .filter(Boolean).slice(0, Orte.MAX);
       Orte.speichern();
+    }
+    if (Array.isArray(obj.bloecke)){
+      Core.bloecke = obj.bloecke.map(b => Bloecke.normalisieren(b))
+        .filter(Boolean).slice(0, Bloecke.MAX);
+      Bloecke.speichern();
     }
     if (Array.isArray(obj.tags)){
       TagDaten.liste = obj.tags.map(t => Core.tagSaeubern(t)).filter(Boolean).slice(0, TagDaten.MAX);
@@ -2535,7 +2880,7 @@ function miniIconHtml(massnahmeId){
 function zeileHtml(e){
   const label = Core.mLabel(e);
   const teile = [Core.oLabel(e), (Core.setting(e.setting) || {}).label,
-    e.tags.map(t => "#" + t).join(" ")].filter(Boolean);
+    Core.bLabel(e), e.tags.map(t => "#" + t).join(" ")].filter(Boolean);
   /* Die Stufenklasse trägt die schmale Farbleiste am linken Zeilenrand. */
   return '<li><button class="row st-' + e.stufe + '" data-detail="' + e.id + '">'
     + kachelHtml(e.massnahmeId, label)
@@ -2654,13 +2999,14 @@ function renderHome(){
 
 /* ---------- Logbuch: Filterzustand ---------- */
 const filter = { schnell: "alle", von: "", bis: "", massnahme: "alle", mkategorie: "alle",
-  stufe: "alle", setting: "alle", ort: "alle", tag: "alle", suche: "" };
+  stufe: "alle", setting: "alle", ort: "alle", block: "alle", tag: "alle", suche: "" };
 let filterPanelOffen = false;
 
 function filterReset(){
   filter.schnell = "alle"; filter.von = ""; filter.bis = "";
   filter.massnahme = "alle"; filter.mkategorie = "alle"; filter.stufe = "alle";
-  filter.setting = "alle"; filter.ort = "alle"; filter.tag = "alle"; filter.suche = "";
+  filter.setting = "alle"; filter.ort = "alle"; filter.block = "alle";
+  filter.tag = "alle"; filter.suche = "";
   $("such-feld").value = ""; $("such-clear").style.display = "none";
 }
 function filterAktivAnzahl(){
@@ -2670,6 +3016,7 @@ function filterAktivAnzahl(){
   if (filter.stufe !== "alle") n++;
   if (filter.setting !== "alle") n++;
   if (filter.ort !== "alle") n++;
+  if (filter.block !== "alle") n++;
   if (filter.tag !== "alle") n++;
   if (filter.schnell === "eigen" && (filter.von || filter.bis)) n++;
   return n;
@@ -2729,6 +3076,7 @@ function renderFilterPanel(){
   selectFuellen($("fp-ort"),
     [{ v: "alle", l: "Alle Orte" }].concat(Orte.alle().map(o => ({ v: o.id, l: o.label }))),
     filter.ort);
+  blockSelectFuellen($("fp-block"), filter.block, { alle: true });
   selectFuellen($("fp-tag"),
     [{ v: "alle", l: "Alle Tags" }].concat(TagDaten.alle().map(t => ({ v: t, l: t }))),
     filter.tag);
@@ -2742,6 +3090,7 @@ $("fp-massnahme").addEventListener("change", e => { filter.massnahme = e.target.
 $("fp-stufe").addEventListener("change", e => { filter.stufe = e.target.value; render(); });
 $("fp-setting").addEventListener("change", e => { filter.setting = e.target.value; render(); });
 $("fp-ort").addEventListener("change", e => { filter.ort = e.target.value; render(); });
+$("fp-block").addEventListener("change", e => { filter.block = e.target.value; render(); });
 $("fp-tag").addEventListener("change", e => { filter.tag = e.target.value; render(); });
 $("fp-reset").addEventListener("click", () => { filterReset(); render(); });
 
@@ -2806,6 +3155,7 @@ function renderDetail(){
   html += '<div class="card"><dl class="dl">';
   html += "<dt>Setting</dt><dd>" + esc((Core.setting(e.setting) || {}).label || e.setting) + "</dd>";
   html += "<dt>Ort</dt><dd>" + (Core.oLabel(e) ? esc(Core.oLabel(e)) : '<span class="muted">kein Ort</span>') + "</dd>";
+  html += "<dt>Block</dt><dd>" + (Core.bLabel(e) ? esc(Core.bLabel(e)) : '<span class="muted">kein Block</span>') + "</dd>";
   html += "<dt>Tags</dt><dd>" + (e.tags.length
     ? '<span class="tagchips">' + e.tags.map(t => '<span class="tagchip">#' + esc(t) + "</span>").join("") + "</span>"
     : '<span class="muted">keine</span>') + "</dd>";
@@ -2825,7 +3175,7 @@ function renderDetail(){
      Datum und Uhrzeit von jetzt – der typische Wiederholungsfall. */
   $("d-duplizieren").addEventListener("click", () => formOeffnen(null, {
     massnahmeId: e.massnahmeId, stufe: e.stufe, setting: e.setting,
-    ortId: e.ortId, tags: e.tags.slice(), notiz: ""
+    ortId: e.ortId, blockId: e.blockId, tags: e.tags.slice(), notiz: ""
   }));
   $("d-loeschen").addEventListener("click", () => {
     if (!confirm("Diesen Eintrag endgültig löschen?")) return;
@@ -2911,6 +3261,22 @@ function renderMGrid(){
 }
 $("f-msuche").addEventListener("input", renderMGrid);
 
+/* Blockauswahl: Oberblöcke, ihre Unterblöcke eingerückt darunter.
+   `mitNeu` hängt den Eintrag zum Anlegen an, `alle` stellt die Filterzeile
+   voran (Filterlisten haben kein "kein Block"). */
+function blockSelectFuellen(sel, wert, opts){
+  const o = opts || {};
+  const optionen = o.alle
+    ? [{ v: "alle", l: "Alle Blöcke" }]
+    : [{ v: "", l: "– kein Block –" }];
+  Core.blockBaum().forEach(({ block, kinder }) => {
+    optionen.push({ v: block.id, l: block.label });
+    kinder.forEach(k => optionen.push({ v: k.id, l: "   ↳ " + k.label }));
+  });
+  if (o.mitNeu) optionen.push({ v: "__neu", l: "＋ Neuer Block …" });
+  selectFuellen(sel, optionen, wert || (o.alle ? "alle" : ""));
+}
+
 function ortSelectFuellen(sel, wert, mitNeu){
   const optionen = [{ v: "", l: "– kein Ort –" }]
     .concat(Orte.alle().map(o => ({ v: o.id, l: o.label })));
@@ -2923,6 +3289,11 @@ $("f-ort").addEventListener("change", e => {
   e.target.value = "";
   ortDialog(null, o => { ortSelectFuellen($("f-ort"), o.id, true); });
 });
+$("f-block").addEventListener("change", e => {
+  if (e.target.value !== "__neu") return;
+  e.target.value = "";
+  blockDialog(null, null, b => { blockSelectFuellen($("f-block"), b.id, { mitNeu: true }); });
+});
 
 function renderFormTags(){
   const bekannte = TagDaten.alle();
@@ -2931,13 +3302,15 @@ function renderFormTags(){
     if (!alle.some(x => x.toLowerCase() === t.toLowerCase())) alle.push(t);
   });
   alle.sort((a, b) => a.localeCompare(b, "de"));
+  /* Bekannte Tags zum Antippen; gewählte sind hervorgehoben. Mehrfachwahl
+     ist ausdrücklich vorgesehen – jeder Tipp schaltet einen Tag um. */
   $("f-tags").innerHTML = alle.length
     ? alle.map(t => {
         const an = formTags.some(x => x.toLowerCase() === t.toLowerCase());
         return '<button type="button" class="chip' + (an ? " active" : "") + '" data-t="' + esc(t) + '">'
-          + esc(t) + "</button>";
+          + (an ? "✓ " : "") + esc(t) + "</button>";
       }).join("")
-    : '<span class="muted" style="font-size:.8rem">Noch keine Tags – leg unten den ersten an.</span>';
+    : '<span class="muted" style="font-size:.8rem">Noch keine Tags – leg oben den ersten an.</span>';
   $("f-tags").querySelectorAll("[data-t]").forEach(b => b.addEventListener("click", () => {
     const t = b.dataset.t;
     const i = formTags.findIndex(x => x.toLowerCase() === t.toLowerCase());
@@ -2973,11 +3346,22 @@ function formOeffnen(id, vorlage){
   $("f-zeit").value = e ? e.zeit : Core.jetztZeit();
   const ortWert = v ? (v.ortId || "") : (Daten.letzterOrt() || Profil.werte.standardOrt || "");
   ortSelectFuellen($("f-ort"), ortWert, true);
+  /* Wie beim Ort: Der Block des letzten Eintrags ist vorausgewählt – im
+     Praktikum bleibt er über viele Einträge derselbe. */
+  const blockWert = v ? (v.blockId || "") : Daten.letzterBlock();
+  blockSelectFuellen($("f-block"), blockWert, { mitNeu: true });
   $("f-notiz").value = v && v.notiz ? v.notiz : "";
   $("f-tag-neu").value = "";
   $("f-m-err").classList.remove("show");
   $("f-datum-err").classList.remove("show");
   $("f-loeschen-row").style.display = e ? "" : "none";
+  /* Mehrfach-Erfassung immer zurückgesetzt öffnen und beim Bearbeiten
+     ganz ausblenden – ein bestehender Eintrag wird nicht vervielfacht. */
+  $("f-mehr-an").checked = false;
+  $("f-zeiten-an").checked = false;
+  $("f-anzahl").value = "2";
+  $("f-mehr-zeile").style.display = e ? "none" : "";
+  renderMehrfach();
   segFuellen($("f-stufe"), Core.STUFEN_REIHE, Core.STUFEN, formStufe, v2 => formStufe = v2);
   segFuellen($("f-setting"), Core.SETTINGS_REIHE, Core.SETTINGS, formSetting, v2 => formSetting = v2);
   renderSchnellwahl(); renderMGrid(); renderFormTags();
@@ -2987,6 +3371,57 @@ function formOeffnen(id, vorlage){
 $("f-jetzt").addEventListener("click", () => {
   $("f-datum").value = Core.heute();
   $("f-zeit").value = Core.jetztZeit();
+});
+
+/* ---------- Mehrfach an einem Tag -------------------------------------
+   Wer im Dienst fünf Zugänge gelegt hat, soll nicht fünfmal dasselbe
+   Formular ausfüllen. Ohne Einzelzeiten entstehen die Einträge bewusst
+   ohne Uhrzeit – eine erfundene Uhrzeit wäre schlechter als keine.     */
+function formAnzahl(){
+  const n = Math.round(Number($("f-anzahl").value));
+  return Number.isFinite(n) ? Math.max(2, Math.min(30, n)) : 2;
+}
+function renderZeitliste(){
+  const einzeln = $("f-zeiten-an").checked;
+  $("f-zeitliste").style.display = einzeln ? "" : "none";
+  $("f-zeiten-sub").textContent = einzeln
+    ? "Für jede Maßnahme eine eigene Uhrzeit"
+    : "Ohne Häkchen werden die Einträge nur mit Datum gespeichert";
+  if (!einzeln) return;
+  const n = formAnzahl();
+  /* Bereits eingetragene Zeiten beim Ändern der Anzahl erhalten. */
+  const alt = Array.from($("f-zeitliste").querySelectorAll("input")).map(i => i.value);
+  const start = Core.istZeit($("f-zeit").value) ? $("f-zeit").value : Core.jetztZeit();
+  let html = "";
+  for (let i = 0; i < n; i++){
+    html += '<li><span class="nr">' + (i + 1) + ".</span>"
+      + '<input type="time" data-zeit="' + i + '" value="' + esc(alt[i] || (i === 0 ? start : ""))
+      + '" aria-label="Uhrzeit ' + (i + 1) + '"></li>';
+  }
+  $("f-zeitliste").innerHTML = html;
+}
+function renderMehrfach(){
+  const an = $("f-mehr-an").checked;
+  $("f-mehr-block").style.display = an ? "" : "none";
+  /* Bei Mehrfach-Erfassung übernimmt die Liste die Uhrzeit – das einzelne
+     Feld oben wäre dann doppelt und würde nur verwirren. */
+  $("f-zeit").disabled = an;
+  $("f-zeit").style.opacity = an ? ".45" : "";
+  if (an) renderZeitliste();
+}
+$("f-mehr-an").addEventListener("change", renderMehrfach);
+$("f-zeiten-an").addEventListener("change", renderZeitliste);
+$("f-anzahl").addEventListener("change", () => {
+  $("f-anzahl").value = String(formAnzahl());
+  renderZeitliste();
+});
+$("f-anzahl-minus").addEventListener("click", () => {
+  $("f-anzahl").value = String(Math.max(2, formAnzahl() - 1));
+  renderZeitliste();
+});
+$("f-anzahl-plus").addEventListener("click", () => {
+  $("f-anzahl").value = String(Math.min(30, formAnzahl() + 1));
+  renderZeitliste();
 });
 
 function formSpeichern(){
@@ -3000,38 +3435,67 @@ function formSpeichern(){
   if (!ok) return null;
   const alt = formId ? Daten.get(formId) : null;
   const ort = Core.ort($("f-ort").value);
-  return Daten.upsert({
-    id: formId || undefined,
+  const block = Core.block($("f-block").value);
+  const basis = {
     massnahmeId: formMassnahme,
     massnahmeLabel: Core.massnahme(formMassnahme).label,
     datum,
-    zeit: Core.istZeit($("f-zeit").value) ? $("f-zeit").value : "",
     ortId: ort ? ort.id : "",
     ortLabel: ort ? ort.label : "",
+    blockId: block ? block.id : "",
+    blockLabel: block ? Core.blockPfad(block.id) : "",
     stufe: formStufe, setting: formSetting,
     notiz: $("f-notiz").value,
-    tags: formTags,
+    tags: formTags
+  };
+  /* Mehrfach nur beim Anlegen – beim Bearbeiten bleibt es ein Eintrag. */
+  if (!formId && $("f-mehr-an").checked){
+    const n = formAnzahl();
+    const einzeln = $("f-zeiten-an").checked;
+    const zeiten = einzeln
+      ? Array.from($("f-zeitliste").querySelectorAll("input")).map(i => i.value)
+      : [];
+    let letzter = null;
+    for (let i = 0; i < n; i++){
+      const zeit = einzeln && Core.istZeit(zeiten[i]) ? zeiten[i] : "";
+      letzter = Daten.upsert(Object.assign({}, basis, { zeit }));
+    }
+    letzter.__anzahl = n;      /* nur für die Rückmeldung an die Oberfläche */
+    return letzter;
+  }
+  return Daten.upsert(Object.assign({}, basis, {
+    id: formId || undefined,
+    zeit: Core.istZeit($("f-zeit").value) ? $("f-zeit").value : "",
     erstelltAm: alt ? alt.erstelltAm : undefined
-  });
+  }));
+}
+function gespeichertText(e, bearbeitet){
+  if (bearbeitet) return "Änderungen gespeichert";
+  return e.__anzahl ? e.__anzahl + " Einträge gespeichert" : "Eintrag gespeichert";
 }
 $("f-speichern").addEventListener("click", () => {
+  const bearbeitet = !!formId;
   const e = formSpeichern();
   if (!e) return;
   detailId = e.id;
-  /* Nach dem Speichern landet man auf der Detailansicht des Eintrags. */
+  /* Nach dem Speichern landet man auf der Detailansicht des Eintrags –
+     bei einer Serie auf der des zuletzt angelegten. */
   viewStack = viewStack.filter(v => v !== "form");
   if (aktuelleView() !== "detail") viewStack.push("detail");
   zeige("detail", true);
-  toast(formId ? "Änderungen gespeichert" : "Eintrag gespeichert");
+  toast(gespeichertText(e, bearbeitet));
   render();
 });
-/* "Speichern + Neu": für Serien – gleicher Ort, gleiche Tags, nächster Skill. */
+/* "Speichern + Neu": für Serien – gleicher Ort, gleicher Block, gleiche
+   Tags, nächster Skill. */
 $("f-speichern-neu").addEventListener("click", () => {
+  const bearbeitet = !!formId;
   const e = formSpeichern();
   if (!e) return;
-  toast("Gespeichert – nächster Eintrag");
+  toast(gespeichertText(e, bearbeitet) + " – nächster Eintrag");
   const tags = formTags.slice();
-  formOeffnen(null, { ortId: e.ortId, tags, stufe: e.stufe, setting: e.setting });
+  formOeffnen(null, { ortId: e.ortId, blockId: e.blockId, tags,
+    stufe: e.stufe, setting: e.setting });
   zeige("form", true);
 });
 $("f-abbrechen").addEventListener("click", () => { zurueck(); render(); });
@@ -3121,6 +3585,22 @@ function renderStats(){
       + '<div class="track"><div class="fill" style="width:' + Math.round(stat.settings[s] / stat.gesamt * 100) + '%"></div></div></li>').join("")
     + "</ul></div>";
 
+  /* Trainingsblöcke: anklickbar – ein Tipp öffnet das Logbuch mit genau
+     diesem Block (beim Oberblock inklusive seiner Unterblöcke). */
+  if (stat.bloecke.length){
+    const maxB = Math.max.apply(null, stat.bloecke.map(b => b.gesamt));
+    html += "<h3>Trainingsblöcke</h3><div class=\"card\"><ul class=\"bars\">"
+      + stat.bloecke.map(b =>
+        '<li' + (b.unter ? ' class="unter"' : "") + '><button class="barbtn" data-block="'
+        + esc(b.id) + '"><div class="z"><b>' + (b.unter ? "↳ " : "") + esc(b.label)
+        + "</b><span>" + b.gesamt + "</span></div>"
+        + '<div class="track"><div class="fill" style="width:'
+        + Math.round(b.gesamt / maxB * 100) + '%"></div></div></button></li>').join("")
+      + "</ul>"
+      + '<p class="hint">Tippe einen Block an, um seine Einträge im Logbuch zu sehen.</p>'
+      + "</div>";
+  }
+
   if (stat.orte.length){
     const maxO = stat.orte[0].gesamt;
     html += "<h3>Orte</h3><div class=\"card\"><ul class=\"bars\">"
@@ -3131,24 +3611,31 @@ function renderStats(){
   }
 
   el.innerHTML = html;
-  el.querySelectorAll("[data-stufe]").forEach(b => b.addEventListener("click", () => {
+  /* Beide Auswertungen führen mit demselben Zeitraum ins Logbuch. */
+  const insLogbuch = teil => {
     filterReset();
-    filter.stufe = b.dataset.stufe;
+    Object.assign(filter, teil);
     filter.schnell = statsFilter.schnell === "alle" ? "alle" : "eigen";
     filter.von = z.von; filter.bis = z.bis;
     viewStack = ["home", "liste"];
+    filterPanelOffen = true;
     zeige("liste", true); render();
-  }));
+  };
+  el.querySelectorAll("[data-stufe]").forEach(b =>
+    b.addEventListener("click", () => insLogbuch({ stufe: b.dataset.stufe })));
+  el.querySelectorAll("[data-block]").forEach(b =>
+    b.addEventListener("click", () => insLogbuch({ block: b.dataset.block })));
 }
 
 /* ---------- Export & Bericht ---------- */
 const exKonfig = { von: "", bis: "", massnahme: "alle", mkategorie: "alle", ort: "alle",
-  tag: "alle", block: "", bemerkung: "", status: "entwurf" };
+  block: "alle", tag: "alle", blockText: "", bemerkung: "", status: "entwurf" };
 
 function exGefiltert(){
   return Core.filtern(Daten.alle(), {
     von: exKonfig.von, bis: exKonfig.bis, massnahme: exKonfig.massnahme,
-    mkategorie: exKonfig.mkategorie, ort: exKonfig.ort, tag: exKonfig.tag
+    mkategorie: exKonfig.mkategorie, ort: exKonfig.ort, block: exKonfig.block,
+    tag: exKonfig.tag
   });
 }
 function renderExport(){
@@ -3169,7 +3656,8 @@ function renderExport(){
   selectFuellen($("ex-tag"),
     [{ v: "alle", l: "Alle Tags" }].concat(TagDaten.alle().map(t => ({ v: t, l: t }))),
     exKonfig.tag);
-  $("ex-block").value = exKonfig.block;
+  blockSelectFuellen($("ex-block"), exKonfig.block, { alle: true });
+  $("ex-blocktext").value = exKonfig.blockText;
   $("ex-bemerkung").value = exKonfig.bemerkung;
   $("ex-status").querySelectorAll("button").forEach(b =>
     b.classList.toggle("active", b.dataset.v === exKonfig.status));
@@ -3200,7 +3688,8 @@ $("ex-mkat").addEventListener("change", e => { exKonfig.mkategorie = e.target.va
 $("ex-massnahme").addEventListener("change", e => { exKonfig.massnahme = e.target.value; renderExport(); });
 $("ex-ort").addEventListener("change", e => { exKonfig.ort = e.target.value; renderExport(); });
 $("ex-tag").addEventListener("change", e => { exKonfig.tag = e.target.value; renderExport(); });
-$("ex-block").addEventListener("input", e => { exKonfig.block = e.target.value; });
+$("ex-block").addEventListener("change", e => { exKonfig.block = e.target.value; renderExport(); });
+$("ex-blocktext").addEventListener("input", e => { exKonfig.blockText = e.target.value; });
 $("ex-bemerkung").addEventListener("input", e => { exKonfig.bemerkung = e.target.value; });
 $("ex-status").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
   exKonfig.status = b.dataset.v;
@@ -3249,12 +3738,13 @@ const Report = {
         + Core.STUFEN_REIHE.map(s => "<td><b>" + (b.stat.stufen[s] || 0) + "</b></td>").join("") + "</tr>"
         + "</tbody></table>";
       h += "<h2>Einzelne Einträge</h2><table><thead><tr><th>Datum</th><th>Zeit</th><th>Maßnahme</th>"
-        + "<th>Stufe</th><th>Setting</th><th>Ort</th><th>Tags</th></tr></thead><tbody>"
+        + "<th>Stufe</th><th>Setting</th><th>Ort</th><th>Block</th><th>Tags</th></tr></thead><tbody>"
         + b.eintraege.map(e => "<tr><td>" + Core.fmtDatum(e.datum) + "</td><td>" + esc(e.zeit || "–")
           + "</td><td>" + esc(Core.mLabel(e)) + "</td><td>" + esc((Core.stufe(e.stufe) || {}).label || "")
           + "</td><td>" + esc((Core.setting(e.setting) || {}).label || "") + "</td><td>"
-          + esc(Core.oLabel(e) || "–") + "</td><td>" + esc(e.tags.join(", ") || "–") + "</td></tr>"
-          + (e.notiz ? '<tr><td></td><td colspan="6" class="p-notiz">Notiz: ' + esc(e.notiz) + "</td></tr>" : ""))
+          + esc(Core.oLabel(e) || "–") + "</td><td>" + esc(Core.bLabel(e) || "–")
+          + "</td><td>" + esc(e.tags.join(", ") || "–") + "</td></tr>"
+          + (e.notiz ? '<tr><td></td><td colspan="7" class="p-notiz">Notiz: ' + esc(e.notiz) + "</td></tr>" : ""))
           .join("")
         + "</tbody></table>";
     } else {
@@ -3425,6 +3915,52 @@ function renderStamm(){
     }));
     $("stamm-o-neu").addEventListener("click", () => ortDialog(null));
 
+  } else if (stammTab === "bloecke"){
+    const zeile = (b, unter) => {
+      const n = Bloecke.anzahl(b.id);
+      return '<li' + (unter ? ' class="unter"' : "") + '>'
+        + '<span class="n"><span class="lbl">' + (unter ? "↳ " : "") + esc(b.label)
+        + '</span><span class="anz">' + (n === 1 ? "1 Eintrag" : n + " Einträge")
+        + (b.eigen ? " · eigener" : "") + "</span></span>"
+        + (unter ? "" : '<button data-sub="' + b.id + '" aria-label="Unterblock hinzufügen">'
+          + '<svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>')
+        + '<button data-edit="' + b.id + '" aria-label="Umbenennen">' + IC_STIFT + "</button>"
+        + '<button class="loesch" data-del="' + b.id + '" aria-label="Löschen">' + IC_MUELL + "</button>"
+        + "</li>";
+    };
+    const baum = Core.blockBaum();
+    el.innerHTML = '<div class="card"><h3 style="margin-top:.2rem">Trainingsblöcke</h3>'
+      + '<p class="muted" style="margin-top:0">Praktika, Rotationen und Ausbildungsabschnitte. '
+      + "Ein Block kann Unterblöcke haben – etwa „Klinikpraktikum“ mit „OP“ und "
+      + "„Intensivstation“. In der Statistik zählt der Oberblock seine Unterblöcke mit.</p>"
+      + (baum.length
+        ? '<ul class="stammliste">' + baum.map(({ block, kinder }) =>
+            zeile(block, false) + kinder.map(k => zeile(k, true)).join("")).join("") + "</ul>"
+        : '<p class="muted">Noch keine Blöcke. Leg den ersten an – z. B. „Rettungswachenpraktikum“.</p>')
+      + '<div class="btn-row"><button class="btn secondary block" id="stamm-b-neu">Block hinzufügen</button></div>'
+      + "</div>";
+    el.querySelectorAll("[data-sub]").forEach(b => b.addEventListener("click", () =>
+      blockDialog(null, b.dataset.sub)));
+    el.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () =>
+      blockDialog(b.dataset.edit)));
+    el.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => {
+      const blk = Core.block(b.dataset.del);
+      const n = Bloecke.anzahl(blk.id);
+      const kinder = Core.bloecke.filter(x => x.elternId === blk.id).length;
+      const zusatz = [];
+      if (kinder) zusatz.push((kinder === 1 ? "1 Unterblock wird" : kinder + " Unterblöcke werden")
+        + " mitgelöscht.");
+      if (n) zusatz.push((n === 1 ? "1 Eintrag behält" : n + " Einträge behalten")
+        + " die Bezeichnung als Schnappschuss.");
+      if (!confirm("„" + blk.label + "“ löschen?" + (zusatz.length ? "\n\n" + zusatz.join(" ") : ""))) return;
+      Bloecke.entfernen(blk.id);
+      if (filter.block === blk.id) filter.block = "alle";
+      if (exKonfig.block === blk.id) exKonfig.block = "alle";
+      toast("Block gelöscht");
+      renderStamm(); render();
+    }));
+    $("stamm-b-neu").addEventListener("click", () => blockDialog(null));
+
   } else {
     const tags = TagDaten.alle();
     el.innerHTML = '<div class="card"><h3 style="margin-top:.2rem">Tags</h3>'
@@ -3553,6 +4089,47 @@ $("o-ok").addEventListener("click", () => {
   }
 });
 
+/* ---------- Dialog: Trainingsblock anlegen/umbenennen ----------
+   `elternVorgabe` kommt vom "+"-Knopf einer Blockzeile: Dann entsteht
+   direkt ein Unterblock dieses Blocks. */
+let blkBearbeitet = null, blkFertig = null;
+function blockDialog(id, elternVorgabe, fertig){
+  blkBearbeitet = id ? Core.block(id) : null;
+  blkFertig = fertig || null;
+  $("b-dlg-titel").textContent = blkBearbeitet ? "Block bearbeiten"
+    : (elternVorgabe ? "Neuer Unterblock" : "Neuer Trainingsblock");
+  $("b-name").value = blkBearbeitet ? blkBearbeitet.label : "";
+  $("b-err").classList.remove("show");
+  /* Beim Bearbeiten bleibt die Einordnung, wie sie ist – Umhängen wäre ein
+     eigener Vorgang und würde die Schnappschüsse verwirren. */
+  if (blkBearbeitet){
+    $("b-eltern-zeile").style.display = "none";
+  } else {
+    $("b-eltern-zeile").style.display = "";
+    selectFuellen($("b-eltern"),
+      [{ v: "", l: "– eigenständiger Block –" }].concat(
+        Core.blockBaum().map(({ block }) => ({ v: block.id, l: "Unterblock von " + block.label }))),
+      elternVorgabe || "");
+  }
+  openModal("modal-block");
+  setTimeout(() => $("b-name").focus(), 60);
+}
+$("b-ok").addEventListener("click", () => {
+  const fehler = $("b-err");
+  try {
+    const b = blkBearbeitet
+      ? Bloecke.umbenennen(blkBearbeitet.id, $("b-name").value)
+      : Bloecke.hinzufuegen($("b-name").value, $("b-eltern").value);
+    closeModal("modal-block");
+    if (blkFertig) blkFertig(b);
+    renderStamm(); render();
+    toast(blkBearbeitet ? "Block geändert" : "Block „" + b.label + "“ angelegt");
+  } catch(err){
+    fehler.textContent = err && err.message ? err.message : String(err);
+    fehler.classList.add("show");
+  }
+});
+
 /* ---------- Dialog: Tag anlegen/umbenennen ---------- */
 let tBearbeitet = null;
 function tagDialog(name){
@@ -3584,12 +4161,78 @@ $("t-ok").addEventListener("click", () => {
   }
 });
 
-/* ---------- Dialog: Profil ---------- */
+/* ---------- Dialog: Profil ----------------------------------------------
+   Mehrere Rollen: Die gewählten stehen als Liste, "Weitere Rolle
+   hinzufügen" blendet eine Auswahlzeile ein. Neben den Vorschlägen ist
+   eine eigene Bezeichnung möglich.                                       */
+let profilRollen = [];
+
+function renderProfilRollen(){
+  const ul = $("p-rollen");
+  ul.innerHTML = profilRollen.length
+    ? profilRollen.map((r, i) =>
+        '<li><span class="lbl">' + esc(r) + "</span>"
+        + '<button type="button" class="del" data-weg="' + i + '" aria-label="Rolle entfernen">'
+        + '<svg class="ic" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></li>').join("")
+    : '<li class="leer"><span class="lbl muted">Noch keine Rolle gewählt.</span></li>';
+  ul.querySelectorAll("[data-weg]").forEach(b => b.addEventListener("click", () => {
+    profilRollen.splice(Number(b.dataset.weg), 1);
+    renderProfilRollen();
+  }));
+  $("p-rolle-neu-text").textContent = profilRollen.length
+    ? "Weitere Rolle hinzufügen" : "Rolle hinzufügen";
+  /* Ist das Höchstmaß erreicht, verschwindet der Knopf statt zu scheitern. */
+  const voll = profilRollen.length >= Profil.MAX_ROLLEN;
+  $("p-rolle-neu").style.display = voll ? "none" : "";
+  if (voll) rolleAuswahlSchliessen();
+}
+
+function rolleAuswahlSchliessen(){
+  $("p-rolle-add").style.display = "none";
+  $("p-rolle-frei").style.display = "none";
+  $("p-rolle-frei").value = "";
+}
+function rolleAuswahlOeffnen(){
+  /* Nur anbieten, was noch nicht in der Liste steht. */
+  const offen = Core.ROLLEN.filter(r =>
+    !profilRollen.some(x => x.toLowerCase() === r.toLowerCase()));
+  selectFuellen($("p-rolle-wahl"),
+    offen.map(r => ({ v: r, l: r })).concat([{ v: "__frei", l: "Eigene Bezeichnung …" }]),
+    offen.length ? offen[0] : "__frei");
+  $("p-rolle-add").style.display = "";
+  $("p-rolle-frei").style.display = $("p-rolle-wahl").value === "__frei" ? "" : "none";
+  $("p-rolle-neu").style.display = "none";
+  setTimeout(() => {
+    if ($("p-rolle-wahl").value === "__frei") $("p-rolle-frei").focus();
+  }, 60);
+}
+$("p-rolle-neu").addEventListener("click", rolleAuswahlOeffnen);
+$("p-rolle-wahl").addEventListener("change", e => {
+  const frei = e.target.value === "__frei";
+  $("p-rolle-frei").style.display = frei ? "" : "none";
+  if (frei) $("p-rolle-frei").focus();
+});
+$("p-rolle-ok").addEventListener("click", () => {
+  const wahl = $("p-rolle-wahl").value;
+  const wert = wahl === "__frei" ? $("p-rolle-frei").value : wahl;
+  const sauber = Profil.rollenSaeubern(profilRollen.concat([wert]));
+  if (sauber.length === profilRollen.length){
+    toast(String(wert).trim() ? "Diese Rolle steht schon in der Liste" : "Bitte eine Rolle wählen");
+    return;
+  }
+  profilRollen = sauber;
+  rolleAuswahlSchliessen();
+  renderProfilRollen();
+});
+$("p-rolle-frei").addEventListener("keydown", e => {
+  if (e.key === "Enter"){ e.preventDefault(); $("p-rolle-ok").click(); }
+});
+
 function profilDialog(){
   $("p-name").value = Profil.werte.name;
-  selectFuellen($("p-rolle"),
-    [{ v: "", l: "– keine Angabe –" }].concat(Core.ROLLEN.map(r => ({ v: r, l: r }))),
-    Profil.werte.rolle);
+  profilRollen = Profil.werte.rollen.slice();
+  rolleAuswahlSchliessen();
+  renderProfilRollen();
   $("p-institution").value = Profil.werte.institution;
   ortSelectFuellen($("p-standardort"), Profil.werte.standardOrt, false);
   closeModal("modal-settings");
@@ -3598,7 +4241,7 @@ function profilDialog(){
 $("p-ok").addEventListener("click", () => {
   Profil.set({
     name: String($("p-name").value).trim().slice(0, 60),
-    rolle: $("p-rolle").value,
+    rollen: profilRollen,
     institution: String($("p-institution").value).trim().slice(0, 80),
     standardOrt: Core.ort($("p-standardort").value) ? $("p-standardort").value : ""
   });
@@ -3621,9 +4264,14 @@ $("s-theme").querySelectorAll("button").forEach(b => b.addEventListener("click",
 function renderSettings(){
   $("s-version").textContent = "v" + APP_VERSION;
   const p = Profil.werte;
+  /* Bei mehreren Rollen nur die erste ausschreiben – sonst wird die Zeile
+     zu lang; die Zahl dahinter zeigt, dass weitere hinterlegt sind. */
+  const rollenKurz = p.rollen.length
+    ? p.rollen[0] + (p.rollen.length > 1 ? " +" + (p.rollen.length - 1) : "")
+    : "";
   $("s-profil-sub").textContent = p.name
-    ? p.name + (p.rolle ? " · " + p.rolle : "")
-    : "Name, Rolle und Standard-Ort";
+    ? p.name + (rollenKurz ? " · " + rollenKurz : "")
+    : "Name, Rollen und Standard-Ort";
   applyTheme();
 }
 $("btn-settings").addEventListener("click", () => {
@@ -3645,11 +4293,11 @@ $("s-reset").addEventListener("click", () => {
   if (!confirm("Wirklich alle Einträge, Stammdaten und das Profil löschen? "
     + "Das lässt sich nicht rückgängig machen.")) return;
   Daten.alleLoeschen();
-  [MKategorien.KEY, Katalog.KEY, Orte.KEY, TagDaten.KEY, Profil.KEY].forEach(k => {
+  [MKategorien.KEY, Katalog.KEY, Orte.KEY, Bloecke.KEY, TagDaten.KEY, Profil.KEY].forEach(k => {
     try { localStorage.removeItem(k); } catch(e){}
   });
-  MKategorien.laden(); Katalog.laden(); Orte.laden(); TagDaten.laden();
-  Profil.werte = { name: "", rolle: "", institution: "", standardOrt: "" };
+  MKategorien.laden(); Katalog.laden(); Orte.laden(); Bloecke.laden(); TagDaten.laden();
+  Profil.werte = { name: "", rollen: [], institution: "", standardOrt: "" };
   filterReset();
   closeModal("modal-settings"); render();
   toast("Alle Daten gelöscht");
@@ -3771,6 +4419,7 @@ Einst.laden();
 MKategorien.laden();
 Katalog.laden();
 Orte.laden();
+Bloecke.laden();
 TagDaten.laden();
 Profil.laden();
 Daten.laden();
@@ -3798,8 +4447,8 @@ if (!load(OB_KEY, false)){ obShow(0); openModal("modal-onboarding"); }
 
 /* Für die automatisierten Tests: die Fachlogik ist bewusst DOM-frei und
    wird hier zum Prüfen freigelegt. Die Oberfläche greift nicht darauf zu. */
-window.SLM = { Core, Pdf, Daten, MKategorien, Katalog, Orte, TagDaten, Profil, Einst,
-               Bridge, Edition, Ads, Billing, APP_VERSION };
+window.SLM = { Core, Pdf, Daten, MKategorien, Katalog, Orte, Bloecke, TagDaten, Profil,
+               Einst, Bridge, Edition, Ads, Billing, APP_VERSION };
 </script>
 </body>
 </html>

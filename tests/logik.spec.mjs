@@ -145,7 +145,7 @@ test("CSV: Semikolons, Anführungszeichen und Umlaute überleben", async ({ page
     return Core.csv(liste);
   });
   const zeilen = csv.trim().split("\r\n");
-  expect(zeilen[0]).toBe("Datum;Uhrzeit;Maßnahme;Kompetenzstufe;Setting;Ort;Tags;Notiz;Erstellt am");
+  expect(zeilen[0]).toBe("Datum;Uhrzeit;Maßnahme;Kompetenzstufe;Setting;Ort;Trainingsblock;Tags;Notiz;Erstellt am");
   expect(zeilen[1]).toContain("2026-03-10;08:15;i.v.-Zugang;durchgeführt;Mensch");
   expect(zeilen[1]).toContain('"Zeile mit; Semikolon und ""Zitat"""');
   expect(zeilen[1]).toContain("Anästhesie-Woche");
@@ -158,7 +158,8 @@ test("Berichtsdaten: Zeitraum, Filter und Statuszeile stimmen", async ({ page })
       Core.normalisieren({ massnahmeId: "intubation", datum: "2026-05-01" })
     ];
     const b = Core.berichtDaten(liste, { von: "2026-03-01", bis: "2026-03-31",
-      status: "unterschrift", block: "PJ Chirurgie" }, { name: "Alex Muster", rolle: "PJ-Student:in" });
+      status: "unterschrift", blockText: "PJ Chirurgie" },
+      { name: "Alex Muster", rollen: ["PJ-Student:in"] });
     return {
       anzahl: b.eintraege.length,
       meta: b.meta,
@@ -322,6 +323,104 @@ test("Statistik zählt auch je Kategorie", async ({ page }) => {
   });
   expect(r[0]).toEqual({ label: "Zugänge & Punktionen", gesamt: 2 });
   expect(r[1]).toEqual({ label: "Atemweg & Beatmung", gesamt: 1 });
+});
+
+test("Profil: alter Einzelwert wird auf die Rollenliste gehoben", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Profil } = window.SLM;
+    /* Speicherstand aus Schema 1: genau eine Rolle im Feld `rolle` */
+    localStorage.setItem(Profil.KEY, JSON.stringify({
+      name: "Alt Nutzer", rolle: "Notfallsanitäter:in", institution: "", standardOrt: "" }));
+    Profil.laden();
+    return Profil.werte.rollen;
+  });
+  expect(r).toEqual(["Notfallsanitäter:in"]);
+});
+
+test("Profil: Rollen werden entdoppelt und begrenzt", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Profil } = window.SLM;
+    return {
+      doppelt: Profil.rollenSaeubern(["PJ-Student:in", "pj-student:in", "  Notfallsanitäter:in  "]),
+      grenze: Profil.rollenSaeubern(["a", "b", "c", "d", "e", "f", "g"]).length
+    };
+  });
+  expect(r.doppelt).toEqual(["PJ-Student:in", "Notfallsanitäter:in"]);
+  expect(r.grenze).toBe(5);
+});
+
+test("Blöcke: Unterblock zählt auf seinen Oberblock, Filter schließt ihn ein", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Core, Daten } = window.SLM;
+    Daten.upsert({ massnahmeId: "iv-zugang", datum: "2026-03-10", blockId: "klinik-op" });
+    Daten.upsert({ massnahmeId: "intubation", datum: "2026-03-11", blockId: "klinik-intensiv" });
+    Daten.upsert({ massnahmeId: "blutentnahme", datum: "2026-03-12", blockId: "rettungswache" });
+    const stat = Core.statistik(Daten.alle());
+    return {
+      /* Der Oberblock-Filter holt OP und Intensivstation zusammen. */
+      ober: Core.filtern(Daten.alle(), { block: "klinikpraktikum" }).length,
+      unter: Core.filtern(Daten.alle(), { block: "klinik-op" }).length,
+      andere: Core.filtern(Daten.alle(), { block: "rettungswache" }).length,
+      bloecke: stat.bloecke.map(b => [b.label, b.gesamt, !!b.unter]),
+      pfad: Core.blockPfad("klinik-op")
+    };
+  });
+  expect(r.ober).toBe(2);
+  expect(r.unter).toBe(1);
+  expect(r.andere).toBe(1);
+  expect(r.pfad).toBe("Klinikpraktikum · OP");
+  /* Oberblock mit Summe, direkt gefolgt von seinen Unterblöcken. */
+  expect(r.bloecke).toEqual([
+    ["Rettungswachenpraktikum", 1, false],
+    ["Klinikpraktikum", 2, false],
+    ["OP", 1, true],
+    ["Intensivstation", 1, true]
+  ]);
+});
+
+test("Blöcke: eigener Unterblock, Umbenennen frischt Schnappschüsse auf", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Core, Daten, Bloecke } = window.SLM;
+    const unter = Bloecke.hinzufuegen("Anästhesie", "klinikpraktikum");
+    const e = Daten.upsert({ massnahmeId: "intubation", datum: "2026-03-10", blockId: unter.id });
+    Bloecke.umbenennen("klinikpraktikum", "Klinikrotation");
+    return { pfad: Core.bLabel(Daten.get(e.id)), schnapp: Daten.get(e.id).blockLabel };
+  });
+  expect(r.pfad).toBe("Klinikrotation · Anästhesie");
+  expect(r.schnapp).toBe("Klinikrotation · Anästhesie");
+});
+
+test("Blöcke: Löschen nimmt Unterblöcke mit, Einträge bleiben lesbar", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Core, Daten, Bloecke } = window.SLM;
+    const e = Daten.upsert({ massnahmeId: "iv-zugang", datum: "2026-03-10", blockId: "klinik-op" });
+    const betroffen = Bloecke.entfernen("klinikpraktikum");
+    return {
+      betroffen,
+      weg: Core.bloecke.filter(b => b.id === "klinik-op" || b.id === "klinik-intensiv").length,
+      label: Core.bLabel(Daten.get(e.id))
+    };
+  });
+  expect(r.betroffen).toBe(1);
+  expect(r.weg).toBe(0);
+  /* Der Schnappschuss trägt den Eintrag weiter. */
+  expect(r.label).toBe("Klinikpraktikum · OP");
+});
+
+test("Sicherung erhält Blöcke samt Zuordnung", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Core, Daten, Bloecke } = window.SLM;
+    const b = Bloecke.hinzufuegen("Auslandsfamulatur");
+    const u = Bloecke.hinzufuegen("Ambulanz", b.id);
+    const e = Daten.upsert({ massnahmeId: "iv-zugang", datum: "2026-03-10", blockId: u.id });
+    const sicherung = JSON.parse(JSON.stringify(Daten.exportObjekt()));
+    Daten.alleLoeschen();
+    localStorage.removeItem(Bloecke.KEY);
+    Bloecke.laden();
+    Daten.importObjekt(sicherung);
+    return Core.bLabel(Daten.alle()[0]);
+  });
+  expect(r).toBe("Auslandsfamulatur · Ambulanz");
 });
 
 test("Monogramm bildet lesbare Initialen", async ({ page }) => {

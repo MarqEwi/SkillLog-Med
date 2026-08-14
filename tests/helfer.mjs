@@ -30,6 +30,12 @@ export async function eintragAnlegen(page, opts = {}){
   await page.waitForSelector("#view-detail.active");
 }
 
+/* Schiebeschalter umlegen: Das Kontrollkästchen selbst ist visuell versteckt
+   (opacity:0), geklickt wird – wie von Hand – die Schiene daneben. */
+export async function schalter(page, id){
+  await page.click('.switch:has(#' + id + ') .track');
+}
+
 /* ISO-Datum n Tage relativ zu heute (lokale Zeit, wie die App rechnet). */
 export function inTagen(n){
   const d = new Date(Date.now() + n * 86400000);

@@ -16,9 +16,16 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
 
 - **Schneller Eintrag:** Maßnahme, Kompetenzstufe (beobachtet / assistiert /
   durchgeführt), Setting (Simulator / Präparat / Mensch), Datum/Uhrzeit
-  (vorbelegt mit „jetzt“), Ort und Tags – ein Eintrag steht in 10–20 Sekunden.
-  Favoriten und zuletzt genutzte Maßnahmen ganz oben, „Speichern + Neu“ für
-  Serien, „Nochmal erfasst“ zum Duplizieren
+  (vorbelegt mit „jetzt“), Ort, Trainingsblock und Tags – ein Eintrag steht in
+  10–20 Sekunden. Favoriten und zuletzt genutzte Maßnahmen ganz oben,
+  „Speichern + Neu“ für Serien, „Nochmal erfasst“ zum Duplizieren
+- **Mehrfach an einem Tag:** dieselbe Maßnahme mit einer Anzahl auf einmal
+  erfassen. Ohne Häkchen entstehen die Einträge bewusst ohne Uhrzeit; wer sie
+  braucht, schaltet „Uhrzeiten einzeln erfassen“ ein und trägt je Eintrag eine
+  Zeit ein
+- **Trainingsblöcke:** Praktika und Rotationen, zweistufig – „Klinikpraktikum“
+  mit Unterblöcken wie „OP“ oder „Intensivstation“. Überall filterbar; in der
+  Statistik zählt der Oberblock seine Unterblöcke mit und ist antippbar
 - **Maßnahmenkatalog:** 20 mitgelieferte Standardmaßnahmen (i.v.-Zugang,
   Intubation, Reanimation, EKG, Sonographie, Naht …) mit eigenen
   Piktogrammen, frei erweiterbar, umbenennbar, archivierbar, mit Favoriten
@@ -26,8 +33,9 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
   Notfall, Diagnostik …) plus eigene – gruppieren Formular, Verwaltung,
   Filter und Statistik; „Sonstiges“ ist der feste Auffangwert
 - **Orte & Tags:** vordefinierte Einsatzbereiche (RTW, Notaufnahme, OP,
-  Station …) plus eigene; freie Tags wie „PJ Chirurgie“ oder „Skills Lab“,
-  mehrfach pro Eintrag, überall filterbar
+  Station …) plus eigene. Tags sind bewusst ein leichtes Nebenwerkzeug: freie
+  Schlagworte wie „Klinik“, mehrfach pro Eintrag, bekannte stehen zum
+  Antippen bereit
 - **Dashboard:** Gesamtzahl, Heute / 7 Tage / Monat, letzte Einträge,
   häufigste Maßnahmen
 - **Logbuch:** chronologisch nach Tagen gruppiert, Volltextsuche,
@@ -39,7 +47,9 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
   **Unterschriftsblock** für die Praxisanleitung (ohne Abhängigkeiten direkt
   in der App erzeugt), CSV-Export für Excel/Numbers, Druckansicht im Browser
 - **Sicherung:** JSON-Backup und -Wiederherstellung inklusive aller Stammdaten
-- **Profil:** Name, Rolle, Institution und Standard-Ort – erscheint im Bericht
+- **Profil:** Name, **mehrere Rollen** (z. B. PA-Student:in *und*
+  Notfallsanitäter:in, eigene Bezeichnungen möglich), Institution und
+  Standard-Ort – erscheint im Bericht
 - Helles Design mit Dark Mode, responsiv, Ersteinrichtungs-Dialog
 
 ## Technik
