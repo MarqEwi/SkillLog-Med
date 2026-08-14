@@ -1,7 +1,7 @@
 // Bedienung: die wichtigsten Abläufe über die echte Oberfläche –
 // Eintrag anlegen, filtern, bearbeiten, Stammdaten, Statistik, Export.
 import { test, expect } from "@playwright/test";
-import { appOeffnen, eintragAnlegen, inTagen } from "./helfer.mjs";
+import { appOeffnen, eintragAnlegen, inTagen, schalter } from "./helfer.mjs";
 
 test.beforeEach(async ({ page }) => { await appOeffnen(page); });
 
@@ -202,6 +202,130 @@ test("Logbuch: Kategorie-Filter grenzt auf die Maßnahmen der Gruppe ein", async
   expect(erwartet).toBeGreaterThan(2);
 });
 
+test("Mehrfach an einem Tag: fünf Einträge ohne Uhrzeit", async ({ page }) => {
+  await page.click("#btn-neu");
+  await page.click('#f-mgrid [data-m="blutentnahme"]');
+  await page.fill("#f-datum", "2026-03-10");
+  await schalter(page, "f-mehr-an");
+  await page.fill("#f-anzahl", "5");
+  await page.click("#f-speichern");
+
+  const r = await page.evaluate(() => {
+    const liste = window.SLM.Daten.alle();
+    return { anzahl: liste.length, zeiten: liste.map(e => e.zeit),
+      daten: Array.from(new Set(liste.map(e => e.datum))) };
+  });
+  expect(r.anzahl).toBe(5);
+  /* Ohne Einzelzeiten bleibt die Uhrzeit bewusst leer. */
+  expect(r.zeiten).toEqual(["", "", "", "", ""]);
+  expect(r.daten).toEqual(["2026-03-10"]);
+});
+
+test("Mehrfach mit einzelnen Uhrzeiten", async ({ page }) => {
+  await page.click("#btn-neu");
+  await page.click('#f-mgrid [data-m="iv-zugang"]');
+  await page.fill("#f-datum", "2026-03-10");
+  await schalter(page, "f-mehr-an");
+  await page.fill("#f-anzahl", "3");
+  await schalter(page, "f-zeiten-an");
+  await expect(page.locator("#f-zeitliste input")).toHaveCount(3);
+  await page.fill('#f-zeitliste [data-zeit="0"]', "08:00");
+  await page.fill('#f-zeitliste [data-zeit="1"]', "11:30");
+  await page.fill('#f-zeitliste [data-zeit="2"]', "17:45");
+  await page.click("#f-speichern");
+
+  const zeiten = await page.evaluate(() =>
+    window.SLM.Core.sortieren(window.SLM.Daten.alle()).map(e => e.zeit));
+  expect(zeiten).toEqual(["17:45", "11:30", "08:00"]);
+});
+
+test("Beim Bearbeiten gibt es keine Mehrfach-Erfassung", async ({ page }) => {
+  await eintragAnlegen(page, { massnahme: "reanimation" });
+  await page.click("#d-bearbeiten");
+  await expect(page.locator("#f-mehr-zeile")).toBeHidden();
+});
+
+test("Trainingsblock: im Formular wählen, Detail und Logbuch-Filter", async ({ page }) => {
+  await page.click("#btn-neu");
+  await page.click('#f-mgrid [data-m="intubation"]');
+  await page.selectOption("#f-block", "klinik-op");
+  await page.click("#f-speichern");
+  await expect(page.locator("#detail-inhalt")).toContainText("Klinikpraktikum · OP");
+
+  /* Der Oberblock-Filter findet den Unterblock-Eintrag. */
+  await page.click('nav.tabs button[data-tab="liste"]');
+  await page.click('#filter-zeit [data-panel]');
+  await page.selectOption("#fp-block", "klinikpraktikum");
+  await expect(page.locator("#liste-inhalt .row")).toHaveCount(1);
+  await page.selectOption("#fp-block", "rettungswache");
+  await expect(page.locator("#liste-inhalt")).toContainText("Keine Einträge gefunden");
+});
+
+test("Statistik: Blöcke sind anklickbar und führen ins gefilterte Logbuch", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-beispiele");
+  /* Beispieldaten mit Blöcken versehen, damit die Auswertung etwas zeigt. */
+  await page.evaluate(() => {
+    const { Daten } = window.SLM;
+    Daten.alle().slice(0, 4).forEach(e => Daten.upsert(Object.assign({}, e, { blockId: "klinik-op" })));
+    Daten.alle().slice(4, 6).forEach(e => Daten.upsert(Object.assign({}, e, { blockId: "rettungswache" })));
+  });
+  await page.click('nav.tabs button[data-tab="stats"]');
+  await page.click('#stats-zeit [data-z="alle"]');
+  await expect(page.locator("#stats-inhalt")).toContainText("Trainingsblöcke");
+
+  await page.click('#stats-inhalt [data-block="klinikpraktikum"]');
+  await expect(page.locator("#view-liste")).toHaveClass(/active/);
+  await expect(page.locator("#liste-inhalt .row")).toHaveCount(4);
+});
+
+test("Stammdaten: Unterblock anlegen und wieder löschen", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-stamm");
+  await page.click('#stamm-seg [data-v="bloecke"]');
+  await expect(page.locator("#stamm-inhalt")).toContainText("Klinikpraktikum");
+
+  /* "+" an der Zeile legt einen Unterblock an. */
+  await page.click('[data-sub="klinikpraktikum"]');
+  await page.fill("#b-name", "Kreißsaal");
+  await page.click("#b-ok");
+  await expect(page.locator("#stamm-inhalt .stammliste li.unter", { hasText: "Kreißsaal" })).toBeVisible();
+
+  const drin = await page.evaluate(() =>
+    window.SLM.Core.bloecke.some(b => b.label === "Kreißsaal" && b.elternId === "klinikpraktikum"));
+  expect(drin).toBe(true);
+
+  page.on("dialog", d => d.accept());
+  const id = await page.evaluate(() =>
+    window.SLM.Core.bloecke.find(b => b.label === "Kreißsaal").id);
+  await page.click('[data-del="' + id + '"]');
+  await expect(page.locator("#stamm-inhalt")).not.toContainText("Kreißsaal");
+});
+
+test("Tags: mehrere setzen, bekannte darunter antippbar", async ({ page }) => {
+  await page.click("#btn-neu");
+  await page.click('#f-mgrid [data-m="wundversorgung"]');
+  await page.fill("#f-tag-neu", "Klinik");
+  await page.click("#f-tag-add");
+  await page.fill("#f-tag-neu", "Nachtdienst");
+  await page.click("#f-tag-add");
+  /* Beide gewählt – Mehrfachwahl ist ausdrücklich möglich. */
+  await expect(page.locator("#f-tags .chip.active")).toHaveCount(2);
+  await page.click("#f-speichern");
+  const tags = await page.evaluate(() => window.SLM.Daten.alle()[0].tags);
+  expect(tags).toEqual(["Klinik", "Nachtdienst"]);
+
+  /* Im nächsten Eintrag stehen sie als Vorschlag bereit und lassen sich
+     mit einem Tipp übernehmen. */
+  await page.click('nav.tabs button[data-tab="home"]');
+  await page.click("#btn-neu");
+  await page.click('#f-mgrid [data-m="blutentnahme"]');
+  await expect(page.locator("#f-tags .chip")).toHaveCount(2);
+  await page.click('#f-tags [data-t="Klinik"]');
+  await page.click("#f-speichern");
+  await expect(page.locator("#detail-inhalt")).toContainText("#Klinik");
+});
+
 test("Stammdaten: eigenen Ort anlegen und im Formular wählen", async ({ page }) => {
   await page.click("#btn-neu");
   await page.selectOption("#f-ort", "__neu");
@@ -231,7 +355,9 @@ test("Profil: gespeicherte Angaben landen im Bericht", async ({ page }) => {
   await page.click("#btn-settings");
   await page.click("#s-profil");
   await page.fill("#p-name", "Alex Muster");
-  await page.selectOption("#p-rolle", "PJ-Student:in");
+  await page.click("#p-rolle-neu");
+  await page.selectOption("#p-rolle-wahl", "PJ-Student:in");
+  await page.click("#p-rolle-ok");
   await page.fill("#p-institution", "Uniklinik Beispielstadt");
   await page.click("#p-ok");
 
@@ -242,6 +368,47 @@ test("Profil: gespeicherte Angaben landen im Bericht", async ({ page }) => {
   expect(meta["Name"]).toBe("Alex Muster");
   expect(meta["Rolle / Berufsgruppe"]).toBe("PJ-Student:in");
   expect(meta["Ausbildungsstätte"]).toBe("Uniklinik Beispielstadt");
+});
+
+test("Profil: mehrere Rollen anlegen, eigene ergänzen, eine entfernen", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-profil");
+
+  /* Erste Rolle aus der Vorschlagsliste */
+  await page.click("#p-rolle-neu");
+  await page.selectOption("#p-rolle-wahl", "Physician-Assistant-Student:in");
+  await page.click("#p-rolle-ok");
+  /* Zweite Rolle – der Knopf heißt jetzt "Weitere Rolle hinzufügen" */
+  await expect(page.locator("#p-rolle-neu-text")).toHaveText("Weitere Rolle hinzufügen");
+  await page.click("#p-rolle-neu");
+  await page.selectOption("#p-rolle-wahl", "Notfallsanitäter:in");
+  await page.click("#p-rolle-ok");
+  /* Dritte Rolle als eigene Bezeichnung */
+  await page.click("#p-rolle-neu");
+  await page.selectOption("#p-rolle-wahl", "__frei");
+  await page.fill("#p-rolle-frei", "Praxisanleiter:in i. A.");
+  await page.click("#p-rolle-ok");
+
+  await expect(page.locator("#p-rollen li")).toHaveCount(3);
+  await page.click("#p-ok");
+
+  const r = await page.evaluate(() => {
+    const b = window.SLM.Core.berichtDaten([], {}, window.SLM.Profil.werte);
+    return { rollen: window.SLM.Profil.werte.rollen, meta: Object.fromEntries(b.meta) };
+  });
+  expect(r.rollen).toEqual(["Physician-Assistant-Student:in", "Notfallsanitäter:in",
+    "Praxisanleiter:in i. A."]);
+  /* Bei mehreren Rollen steht das Feld im Plural. */
+  expect(r.meta["Rollen / Berufsgruppen"])
+    .toBe("Physician-Assistant-Student:in · Notfallsanitäter:in · Praxisanleiter:in i. A.");
+
+  /* Entfernen wirkt erst nach dem Speichern. */
+  await page.click("#btn-settings");
+  await page.click("#s-profil");
+  await page.click('#p-rollen [data-weg="1"]');
+  await page.click("#p-ok");
+  const nachher = await page.evaluate(() => window.SLM.Profil.werte.rollen);
+  expect(nachher).toEqual(["Physician-Assistant-Student:in", "Praxisanleiter:in i. A."]);
 });
 
 test("Zurück-Taste im Browser: schließt erst Dialoge, dann Ansichten", async ({ page }) => {
