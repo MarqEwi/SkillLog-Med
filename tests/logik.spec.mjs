@@ -215,6 +215,22 @@ test("Katalog: Umbenennen frischt die Schnappschüsse der Einträge auf", async 
   expect(r.schnappschuss).toBe("i.v.-Zugang gelegt");
 });
 
+test("Katalog: Symbol überlebt Speichern und Neuladen", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Katalog } = window.SLM;
+    const a = Katalog.hinzufuegen("Auskultation", "diagnostik", "stethoskop");
+    const b = Katalog.hinzufuegen("Impfung", "sonstiges", "💉");
+    Katalog.laden();                       /* wie ein App-Neustart */
+    const Core = window.SLM.Core;
+    return {
+      icons: [Core.massnahme(a.id).icon, Core.massnahme(b.id).icon],
+      ohne: Core.massnahme("iv-zugang").icon
+    };
+  });
+  expect(r.icons).toEqual(["stethoskop", "💉"]);
+  expect(r.ohne).toBeUndefined();
+});
+
 test("Orte: Löschen lässt Einträge über den Schnappschuss lesbar", async ({ page }) => {
   const r = await page.evaluate(() => {
     const { Core, Daten, Orte } = window.SLM;

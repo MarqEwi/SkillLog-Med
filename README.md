@@ -18,19 +18,24 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
   durchgeführt), Setting (Simulator / Präparat / Mensch), Datum/Uhrzeit
   (vorbelegt mit „jetzt“), Ort, Trainingsblock und Tags – ein Eintrag steht in
   10–20 Sekunden. Favoriten und zuletzt genutzte Maßnahmen ganz oben,
-  „Speichern + Neu“ für Serien, „Nochmal erfasst“ zum Duplizieren
+  „Speichern + Neu“ für Serien, „Nochmal erfasst“ zum Duplizieren.
+  **Mehrere Maßnahmen** sind gemeinsam wählbar (z. B. „EKG geschrieben“ und
+  „EKG interpretiert“) – beim Speichern entsteht je Maßnahme ein Eintrag
 - **Mehrfach an einem Tag:** dieselbe Maßnahme mit einer Anzahl auf einmal
   erfassen. Ohne Häkchen entstehen die Einträge bewusst ohne Uhrzeit; wer sie
   braucht, schaltet „Uhrzeiten einzeln erfassen“ ein und trägt je Eintrag eine
   Zeit ein
 - **Trainingsblöcke:** Praktika und Rotationen, zweistufig – „Klinikpraktikum“
   mit Unterblöcken wie „OP“ oder „Intensivstation“, jeweils mit optionalem
-  Zeitraum. Im Logbuch direkt als Chips aufrufbar, in der Statistik zählt der
-  Oberblock seine Unterblöcke mit und ist antippbar; im Bericht setzt die
-  Blockwahl den Zeitraum
+  Zeitraum. In Logbuch, Statistik und Export über eine „Block“-Chip wählbar
+  (ein ruhiger Auswahl-Dialog mit Zeitraum je Block statt einer Chip-Flut);
+  im Bericht setzt die Blockwahl den Zeitraum
 - **Maßnahmenkatalog:** 18 mitgelieferte Standardmaßnahmen (i.v.-Zugang,
   Intubation, Reanimation, EKG, Sonographie, Naht …) mit eigenen
-  Piktogrammen, frei erweiterbar, umbenennbar, archivierbar, mit Favoriten
+  Piktogrammen, frei erweiterbar, umbenennbar, archivierbar, mit Favoriten.
+  Eigene Maßnahmen bekommen auf Wunsch ein **Symbol**: eines von 26
+  mitgelieferten Piktogrammen (auch allgemeine wie Stethoskop, Skalpell,
+  Infusion, Defibrillator …) oder ein frei gewähltes Emoji
 - **Maßnahmen-Kategorien:** acht mitgelieferte Gruppen (Zugänge, Atemweg,
   Notfall, Diagnostik …) plus eigene – gruppieren Formular, Verwaltung,
   Filter und Statistik; „Sonstiges“ ist der feste Auffangwert
@@ -41,14 +46,16 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
 - **Dashboard:** Gesamtzahl, Heute / 7 Tage / Monat, letzte Einträge,
   häufigste Maßnahmen. Beim allerersten Start steht dort ein Beispiel-Eintrag
   („EKG geschrieben“) statt einer leeren Fläche – mit einem Tipp entfernt
-- **Logbuch:** chronologisch nach Tagen gruppiert, Volltextsuche,
-  Schnellfilter (Heute, 7 Tage, 30 Tage) und Detailfilter nach Zeitraum,
-  Maßnahme, Stufe, Setting, Ort und Tag
+- **Logbuch:** chronologisch nach Tagen gruppiert, Volltextsuche, eine
+  aufgeräumte Filterzeile (Heute, 7 Tage, 30 Tage, Block, Filter) und
+  Detailfilter nach Zeitraum, Maßnahme, Stufe, Setting, Ort und Tag
 - **Statistik:** Stufenverteilung, Maßnahmen-, Setting- und Orts-Häufigkeit
-  je Zeitraum
-- **Export:** PDF-Bericht mit Zusammenfassung, Detailliste und
-  **Unterschriftsblock** für die Praxisanleitung (ohne Abhängigkeiten direkt
-  in der App erzeugt), CSV-Export für Excel/Numbers, Druckansicht im Browser
+  je Zeitraum – zusätzlich gezielt je Trainingsblock auswertbar
+- **Export:** PDF-Bericht im Markendesign (blauer Kopf mit EKG-Linie,
+  dezente Tabellenköpfe – bewusst tonersparend) mit Zusammenfassung,
+  Detailliste und **Unterschriftsblock** für die Praxisanleitung (ohne
+  Abhängigkeiten direkt in der App erzeugt), CSV-Export für Excel/Numbers,
+  Druckansicht im Browser im selben Design
 - **Sicherung:** JSON-Backup und -Wiederherstellung inklusive aller Stammdaten
 - **Profil:** Name, **mehrere Rollen** (z. B. PA-Student:in *und*
   Notfallsanitäter:in, eigene Bezeichnungen möglich), Institution und
