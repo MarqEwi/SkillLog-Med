@@ -237,7 +237,7 @@ test("Favoriten-Maßnahmen: im Profil wählbar, Formular klappt den Rest ein", a
   await expect(page.locator('#f-mgrid [data-m="reanimation"]')).toBeVisible();
   await expect(page.locator('#f-mgrid [data-m="iv-zugang"]')).toBeVisible();
   await expect(page.locator('#f-mgrid [data-m="intubation"]')).toHaveCount(0);
-  await expect(page.locator("#f-m-weitere")).toContainText("Weitere Maßnahmen (16)");
+  await expect(page.locator("#f-m-weitere")).toContainText("Weitere Maßnahmen (25)");
   /* Ausklappen zeigt alles, gruppiert nach Kategorien. */
   await page.click("#f-m-weitere");
   await expect(page.locator('#f-mgrid [data-m="intubation"]')).toBeVisible();
@@ -727,6 +727,6 @@ test("Alle Daten löschen setzt App und Stammdaten zurück", async ({ page }) =>
   }));
   expect(r.eintraege).toBe(0);
   expect(r.eigene).toBe(0);
-  expect(r.standard).toBe(18);
+  expect(r.standard).toBe(27);
   await expect(page.locator("#home-inhalt")).toContainText("Noch keine Einträge vorhanden");
 });

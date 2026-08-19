@@ -33,10 +33,11 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
   Zeitraum. In Logbuch, Statistik und Export über eine „Block“-Chip wählbar
   (ein ruhiger Auswahl-Dialog mit Zeitraum je Block statt einer Chip-Flut);
   im Bericht setzt die Blockwahl den Zeitraum
-- **Maßnahmenkatalog:** 18 mitgelieferte Standardmaßnahmen (Intravenöser Zugang,
-  Endotracheale Intubation, Reanimation, EKG, Sonographie, Naht …) mit eigenen
+- **Maßnahmenkatalog:** 27 mitgelieferte Standardmaßnahmen (Intravenöser Zugang,
+  Endotracheale Intubation, Guedel-/Wendl-Tubus, Absaugung, Defibrillation,
+  Reanimation, EKG, Sonographie, Naht …) mit eigenen
   Piktogrammen, frei erweiterbar, umbenennbar, archivierbar, mit Favoriten.
-  Eigene Maßnahmen bekommen auf Wunsch ein **Symbol**: eines von 26
+  Eigene Maßnahmen bekommen auf Wunsch ein **Symbol**: eines von 33
   mitgelieferten Piktogrammen (auch allgemeine wie Stethoskop, Skalpell,
   Infusion, Defibrillator …) oder ein frei gewähltes Emoji
 - **Maßnahmen-Kategorien:** acht mitgelieferte Gruppen (Zugänge, Atemweg,

@@ -531,7 +531,11 @@ test("Katalog-Migration führt alte Stände zusammen", async ({ page }) => {
     return { ids: Core.katalog.map(m => m.id), favorit: s.favorit, archiviert: s.archiviert,
       label: s.label };
   });
-  expect(r.ids).toEqual(["iv-zugang", "sonographie"]);
+  /* Zusammengelegt – und die fehlenden Standardmaßnahmen sind nachgezogen. */
+  expect(r.ids).toContain("sonographie");
+  expect(r.ids).not.toContain("sono-assistiert");
+  expect(r.ids).toContain("wendl-tubus");
+  expect(r.ids.length).toBe(27);
   expect(r.label).toBe("Sonographie");
   /* Favorit gewinnt, archiviert nur wenn beide archiviert waren. */
   expect(r.favorit).toBe(true);
