@@ -70,7 +70,7 @@ await schuss("06-statistik", { schritte: async p => {
 await schuss("07-export", { schritte: async p => {
   await p.click('nav.tabs button[data-tab="export"]');
   await p.click('#ex-quick [data-z="alle"]');
-  await p.fill("#ex-block", "PJ Chirurgie");
+  await p.fill("#ex-blocktext", "PJ Chirurgie");
 } });
 await schuss("08-filter-dunkel", { dunkel: true, schritte: async p => {
   await p.click('nav.tabs button[data-tab="liste"]');

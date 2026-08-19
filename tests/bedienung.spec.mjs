@@ -141,6 +141,52 @@ test("Stammdaten: eigene Maßnahme aus dem Formular anlegen und direkt nutzen", 
   await expect(page.locator("#detail-inhalt h2")).toHaveText("Lumbalpunktion");
 });
 
+test("Stammdaten: eigene Maßnahme mit Symbol aus dem Raster", async ({ page }) => {
+  await page.click("#btn-neu");
+  await page.click("#f-m-neu");
+  await page.fill("#m-name", "Auskultation");
+  await page.click('#m-symbole [data-sym="stethoskop"]');
+  await page.click("#m-ok");
+  /* Das gewählte Piktogramm hängt am Katalogeintrag und erscheint im Raster. */
+  const icon = await page.evaluate(() =>
+    window.SLM.Core.katalog.find(m => m.label === "Auskultation").icon);
+  expect(icon).toBe("stethoskop");
+  await expect(page.locator("#f-mgrid button.active .mico")).toBeVisible();
+});
+
+test("Stammdaten: eigene Maßnahme mit Emoji als Symbol", async ({ page }) => {
+  await page.click("#btn-neu");
+  await page.click("#f-m-neu");
+  await page.fill("#m-name", "Impfung");
+  await page.fill("#m-emoji", "💉");
+  await page.click("#m-ok");
+  const icon = await page.evaluate(() =>
+    window.SLM.Core.katalog.find(m => m.label === "Impfung").icon);
+  expect(icon).toBe("💉");
+  await page.click("#f-speichern");
+  /* Die Kachel in der Detailansicht zeigt das Emoji statt des Monogramms. */
+  await expect(page.locator("#detail-inhalt .mono .memo")).toHaveText("💉");
+});
+
+test("Formular: mehrere Maßnahmen gemeinsam speichern", async ({ page }) => {
+  await page.click("#btn-neu");
+  await page.click('#f-mgrid [data-m="ekg-geschrieben"]');
+  await page.click('#f-mgrid [data-m="ekg-interpretiert"]');
+  /* Der Hinweis nennt beide gewählten Maßnahmen. */
+  await expect(page.locator("#f-m-mehr")).toContainText("2 Maßnahmen gewählt");
+  await page.click("#f-speichern");
+  await expect(page.locator("#toast")).toContainText("2 Einträge gespeichert");
+  const labels = await page.evaluate(() =>
+    window.SLM.Daten.alle().map(e => e.massnahmeId).sort());
+  expect(labels).toEqual(["ekg-geschrieben", "ekg-interpretiert"]);
+  /* Ein zweiter Tipp wählt wieder ab. */
+  await page.click("#btn-neu");
+  await page.click('#f-mgrid [data-m="reanimation"]');
+  await page.click('#f-mgrid [data-m="reanimation"]');
+  await page.click("#f-speichern");
+  await expect(page.locator("#f-m-err")).toBeVisible();
+});
+
 test("Stammdaten: Favorit erscheint in der Schnellwahl, Archiviertes verschwindet", async ({ page }) => {
   await page.click("#btn-settings");
   await page.click("#s-stamm");
@@ -252,12 +298,14 @@ test("Trainingsblock: im Formular wählen, Detail und Logbuch-Filter", async ({ 
   await page.click("#f-speichern");
   await expect(page.locator("#detail-inhalt")).toContainText("Klinikpraktikum · OP");
 
-  /* Der Oberblock-Filter findet den Unterblock-Eintrag. */
+  /* Der Oberblock-Filter findet den Unterblock-Eintrag – über die
+     Block-Chip und den Auswahl-Dialog. */
   await page.click('nav.tabs button[data-tab="liste"]');
-  await page.click('#filter-zeit [data-panel]');
-  await page.selectOption("#fp-block", "klinikpraktikum");
+  await page.click('#filter-zeit [data-blockchip]');
+  await page.click('#bw-liste [data-bw="klinikpraktikum"]');
   await expect(page.locator("#liste-inhalt .row")).toHaveCount(1);
-  await page.selectOption("#fp-block", "rettungswache");
+  await page.click('#filter-zeit [data-blockchip]');
+  await page.click('#bw-liste [data-bw="rettungswache"]');
   await expect(page.locator("#liste-inhalt")).toContainText("Keine Einträge gefunden");
 });
 
@@ -277,6 +325,22 @@ test("Statistik: Blöcke sind anklickbar und führen ins gefilterte Logbuch", as
   await page.click('#stats-inhalt [data-block="klinikpraktikum"]');
   await expect(page.locator("#view-liste")).toHaveClass(/active/);
   await expect(page.locator("#liste-inhalt .row")).toHaveCount(4);
+});
+
+test("Statistik: Block-Chip filtert die Auswertung", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-beispiele");
+  await page.evaluate(() => {
+    const { Daten } = window.SLM;
+    Daten.alle().slice(0, 4).forEach(e => Daten.upsert(Object.assign({}, e, { blockId: "klinik-op" })));
+  });
+  await page.click('nav.tabs button[data-tab="stats"]');
+  await page.click('#stats-zeit [data-z="alle"]');
+  await page.click('#stats-zeit [data-blockchip]');
+  await page.click('#bw-liste [data-bw="klinikpraktikum"]');
+  /* Die Kopfzahlen zählen nur noch die vier Einträge des Blocks. */
+  await expect(page.locator("#stats-inhalt")).toContainText("4 Einträge");
+  await expect(page.locator('#stats-zeit [data-blockchip]')).toHaveClass(/active/);
 });
 
 test("Stammdaten: Unterblock anlegen und wieder löschen", async ({ page }) => {
@@ -338,12 +402,16 @@ test("Logbuch: Trainingsblöcke sind als Chips direkt aufrufbar", async ({ page 
   });
   await page.click('nav.tabs button[data-tab="liste"]');
 
-  /* Ein Tipp auf den Oberblock zeigt seine Einträge, ohne das Filterpanel. */
-  await page.click('#filter-block [data-b="klinikpraktikum"]');
+  /* Die Block-Chip öffnet den Auswahl-Dialog; der Oberblock zählt seine
+     Unterblöcke mit. */
+  await page.click('#filter-zeit [data-blockchip]');
+  await page.click('#bw-liste [data-bw="klinikpraktikum"]');
   await expect(page.locator("#liste-inhalt .row")).toHaveCount(3);
-  await page.click('#filter-block [data-b="rettungswache"]');
+  await page.click('#filter-zeit [data-blockchip]');
+  await page.click('#bw-liste [data-bw="rettungswache"]');
   await expect(page.locator("#liste-inhalt .row")).toHaveCount(2);
-  await page.click('#filter-block [data-b="alle"]');
+  await page.click('#filter-zeit [data-blockchip]');
+  await page.click('#bw-liste [data-bw="alle"]');
   const alle = await page.evaluate(() => window.SLM.Daten.alle().length);
   await expect(page.locator("#liste-inhalt .row")).toHaveCount(alle);
 });
