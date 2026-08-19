@@ -966,6 +966,14 @@
       <span class="t"><b>Katalog verwalten</b><span>Maßnahmen, Orte und Tags bearbeiten</span></span>
     </button>
 
+    <h3>Bericht</h3>
+    <div class="switchrow" style="padding:12px 2px">
+      <div class="txt"><b>Tags im Bericht</b>
+        <span>Tags im PDF-Bericht und in der Druckansicht mit ausgeben –
+        standardmäßig bleiben sie privat</span></div>
+      <label class="switch"><input type="checkbox" id="s-tags-bericht"><span class="track"></span></label>
+    </div>
+
     <h3>Daten</h3>
     <button class="settings-row" id="s-beispiele" style="border-top:none">
       <svg class="ic" viewBox="0 0 24 24"><path d="M12 3l2.4 5.5 6 .5-4.5 4 1.4 5.8L12 15.9 6.7 18.8 8.1 13 3.6 9l6-.5z"/></svg>
@@ -1843,7 +1851,8 @@ const Pdf = {
     /* Der Marken-Rhythmus (eine PQRST-Welle) als Linienzug – derselbe Pfad
        wie im Logo, quadratische Kurven zu kubischen umgerechnet. */
     const ekg = (x0, yBase, s, staerke) => {
-      const P = (dx, dy) => (x0 + dx * s).toFixed(2) + " " + (yBase - dy * s).toFixed(2);
+      /* dy positiv = nach oben; PDF zählt die y-Achse nach oben, daher plus. */
+      const P = (dx, dy) => (x0 + dx * s).toFixed(2) + " " + (yBase + dy * s).toFixed(2);
       ops.push(ton(AKZENT, true) + (staerke || 1.2) + " w 1 J 1 j "
         + P(0, 0) + " m " + P(30, 0) + " l "
         + P(38.67, 17.33) + " " + P(47.33, 17.33) + " " + P(56, 0) + " c "
@@ -1940,18 +1949,25 @@ const Pdf = {
       platz(40);
       text(M, y, "Einzelne Einträge", 10.5, true, AKZENT);
       y -= 16;
-      const spalten = [
-        { titel: "Datum", breite: 52 }, { titel: "Zeit", breite: 30 },
-        { titel: "Maßnahme", breite: 102 }, { titel: "Stufe", breite: 56 },
-        { titel: "Setting", breite: 50 }, { titel: "Ort", breite: 64 },
-        { titel: "Block", breite: 76 }, { titel: "Tags", breite: INNEN - 430 }
-      ];
+      const spalten = b.mitTags
+        ? [
+          { titel: "Datum", breite: 52 }, { titel: "Zeit", breite: 30 },
+          { titel: "Maßnahme", breite: 102 }, { titel: "Stufe", breite: 56 },
+          { titel: "Setting", breite: 50 }, { titel: "Ort", breite: 64 },
+          { titel: "Block", breite: 76 }, { titel: "Tags", breite: INNEN - 430 }
+        ]
+        : [
+          { titel: "Datum", breite: 54 }, { titel: "Zeit", breite: 32 },
+          { titel: "Maßnahme", breite: 130 }, { titel: "Stufe", breite: 58 },
+          { titel: "Setting", breite: 52 }, { titel: "Ort", breite: 80 },
+          { titel: "Block", breite: INNEN - 406 }
+        ];
       const zeilen = b.eintraege.map(e => [
         Core.fmtDatum(e.datum), e.zeit || "–", Core.mLabel(e),
         (Core.stufe(e.stufe) || {}).label || e.stufe,
         (Core.setting(e.setting) || {}).label || e.setting,
-        Core.oLabel(e) || "–", Core.bLabel(e) || "–", e.tags.join(", ") || "–"
-      ]);
+        Core.oLabel(e) || "–", Core.bLabel(e) || "–"
+      ].concat(b.mitTags ? [e.tags.join(", ") || "–"] : []));
       tabelle(spalten, zeilen, zi => b.eintraege[zi].notiz ? "Notiz: " + b.eintraege[zi].notiz : null);
     } else {
       platz(30);
@@ -2802,11 +2818,14 @@ const Daten = {
    ========================================================================= */
 const Einst = {
   KEY: "slm_einstellungen",
-  werte: { theme: "auto" },
+  /* tagsImBericht: Tags sind ein privates Ordnungswerkzeug – im Bericht für
+     die Praxisanleitung bleiben sie deshalb standardmäßig außen vor. */
+  werte: { theme: "auto", tagsImBericht: false },
   laden(){
     const v = load(this.KEY, null);
     if (v && typeof v === "object"){
       if (["auto", "light", "dark"].indexOf(v.theme) >= 0) this.werte.theme = v.theme;
+      this.werte.tagsImBericht = v.tagsImBericht === true;
     }
     return this.werte;
   },
@@ -4029,9 +4048,13 @@ $("ex-tag").addEventListener("change", e => { exKonfig.tag = e.target.value; ren
 function exBlockSetzen(id){
   exKonfig.block = id;
   const b = Core.block(id);
-  if (b && (b.von || b.bis)){
-    exKonfig.von = b.von || exKonfig.von;
-    exKonfig.bis = b.bis || exKonfig.bis;
+  /* Ein Unterblock ohne eigenen Zeitraum erbt für den Bericht den seines
+     Oberblocks – das Praktikum liefert dann die Grenzen. */
+  const quelle = b && (b.von || b.bis) ? b
+    : (b && b.elternId ? Core.block(b.elternId) : null);
+  if (quelle && (quelle.von || quelle.bis)){
+    exKonfig.von = quelle.von || exKonfig.von;
+    exKonfig.bis = quelle.bis || exKonfig.bis;
     toast("Zeitraum des Blocks übernommen");
   }
   renderExport();
@@ -4049,7 +4072,13 @@ const Report = {
     const d = new Date();
     return d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
   },
-  daten(){ return Core.berichtDaten(Daten.alle(), exKonfig, Profil.werte); },
+  daten(){
+    const b = Core.berichtDaten(Daten.alle(), exKonfig, Profil.werte);
+    /* Tags sind privat; in den Bericht kommen sie nur, wenn es in den
+       Einstellungen ausdrücklich eingeschaltet ist. */
+    b.mitTags = Einst.werte.tagsImBericht === true;
+    return b;
+  },
 
   async pdf(){
     const b = this.daten();
@@ -4088,13 +4117,15 @@ const Report = {
         + Core.STUFEN_REIHE.map(s => "<td><b>" + (b.stat.stufen[s] || 0) + "</b></td>").join("") + "</tr>"
         + "</tbody></table>";
       h += "<h2>Einzelne Einträge</h2><table><thead><tr><th>Datum</th><th>Zeit</th><th>Maßnahme</th>"
-        + "<th>Stufe</th><th>Setting</th><th>Ort</th><th>Block</th><th>Tags</th></tr></thead><tbody>"
+        + "<th>Stufe</th><th>Setting</th><th>Ort</th><th>Block</th>"
+        + (b.mitTags ? "<th>Tags</th>" : "") + "</tr></thead><tbody>"
         + b.eintraege.map(e => "<tr><td>" + Core.fmtDatum(e.datum) + "</td><td>" + esc(e.zeit || "–")
           + "</td><td>" + esc(Core.mLabel(e)) + "</td><td>" + esc((Core.stufe(e.stufe) || {}).label || "")
           + "</td><td>" + esc((Core.setting(e.setting) || {}).label || "") + "</td><td>"
-          + esc(Core.oLabel(e) || "–") + "</td><td>" + esc(Core.bLabel(e) || "–")
-          + "</td><td>" + esc(e.tags.join(", ") || "–") + "</td></tr>"
-          + (e.notiz ? '<tr><td></td><td colspan="7" class="p-notiz">Notiz: ' + esc(e.notiz) + "</td></tr>" : ""))
+          + esc(Core.oLabel(e) || "–") + "</td><td>" + esc(Core.bLabel(e) || "–") + "</td>"
+          + (b.mitTags ? "<td>" + esc(e.tags.join(", ") || "–") + "</td>" : "") + "</tr>"
+          + (e.notiz ? '<tr><td></td><td colspan="' + (b.mitTags ? 7 : 6)
+            + '" class="p-notiz">Notiz: ' + esc(e.notiz) + "</td></tr>" : ""))
           .join("")
         + "</tbody></table>";
     } else {
@@ -4662,8 +4693,11 @@ function renderSettings(){
   $("s-profil-sub").textContent = p.name
     ? p.name + (rollenKurz ? " · " + rollenKurz : "")
     : "Name, Rollen und Standard-Ort";
+  $("s-tags-bericht").checked = Einst.werte.tagsImBericht === true;
   applyTheme();
 }
+$("s-tags-bericht").addEventListener("change", e =>
+  Einst.set("tagsImBericht", e.target.checked));
 $("btn-settings").addEventListener("click", () => {
   renderSettings();
   openModal("modal-settings");

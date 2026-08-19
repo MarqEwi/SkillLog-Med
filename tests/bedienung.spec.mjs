@@ -437,6 +437,62 @@ test("Block mit Zeitraum anlegen und im Bericht übernehmen", async ({ page }) =
   expect(await page.inputValue("#ex-bis")).toBe("2026-03-31");
 });
 
+test("Unterblock mit Zeitraum anlegen", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-stamm");
+  await page.click('#stamm-seg [data-v="bloecke"]');
+  /* "+" am Oberblock: auch der Unterblock bekommt einen Zeitraum. */
+  await page.click('[data-sub="klinikpraktikum"]');
+  await page.fill("#b-name", "Kreißsaal");
+  await page.fill("#b-von", "2026-04-01");
+  await page.fill("#b-bis", "2026-04-14");
+  await page.click("#b-ok");
+  await expect(page.locator("#stamm-inhalt .stammliste li.unter", { hasText: "Kreißsaal" }))
+    .toContainText("01.04.2026 – 14.04.2026");
+
+  /* Im Export übernimmt der Unterblock seinen eigenen Zeitraum. */
+  const id = await page.evaluate(() =>
+    window.SLM.Core.bloecke.find(b => b.label === "Kreißsaal").id);
+  await page.click('nav.tabs button[data-tab="export"]');
+  await page.selectOption("#ex-block", id);
+  expect(await page.inputValue("#ex-von")).toBe("2026-04-01");
+  expect(await page.inputValue("#ex-bis")).toBe("2026-04-14");
+});
+
+test("Unterblock ohne Zeitraum erbt im Bericht den des Oberblocks", async ({ page }) => {
+  await page.evaluate(() => {
+    window.SLM.Bloecke.umbenennen("klinikpraktikum", "Klinikpraktikum", "2026-05-01", "2026-05-31");
+  });
+  await page.click('nav.tabs button[data-tab="export"]');
+  await page.selectOption("#ex-block", "klinik-op");
+  expect(await page.inputValue("#ex-von")).toBe("2026-05-01");
+  expect(await page.inputValue("#ex-bis")).toBe("2026-05-31");
+});
+
+test("Tags erscheinen im Bericht nur mit eingeschalteter Einstellung", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-beispiele");
+  await page.click('nav.tabs button[data-tab="export"]');
+
+  /* Standard: keine Tags-Spalte in der Druckansicht. */
+  await page.click("#ex-druck");
+  await expect(page.locator("#print-bereich")).toContainText("Einzelne Einträge");
+  expect(await page.locator("#print-bereich th", { hasText: "Tags" }).count()).toBe(0);
+
+  /* Einstellung einschalten – jetzt ist die Spalte da. */
+  await page.click("#btn-settings");
+  await schalter(page, "s-tags-bericht");
+  await page.click('[data-close="modal-settings"]');
+  await page.click("#ex-druck");
+  expect(await page.locator("#print-bereich th", { hasText: "Tags" }).count()).toBe(1);
+
+  /* Die Wahl übersteht einen Neustart. */
+  await page.reload();
+  await page.waitForTimeout(300);
+  const an = await page.evaluate(() => window.SLM.Einst.werte.tagsImBericht);
+  expect(an).toBe(true);
+});
+
 test("Ende vor Beginn wird abgelehnt", async ({ page }) => {
   await page.click("#btn-settings");
   await page.click("#s-stamm");
