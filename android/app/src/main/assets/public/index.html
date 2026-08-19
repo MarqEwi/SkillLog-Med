@@ -637,7 +637,9 @@
     transition:opacity .22s, transform .22s;transform:translateY(8px);
     box-shadow:var(--schatten-l);
     backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-  #toast.show{opacity:.98;transform:none}
+  #toast.show{opacity:.98;transform:none;pointer-events:auto}
+  #toast button{background:none;border:none;color:inherit;font:inherit;font-weight:760;
+    text-decoration:underline;text-underline-offset:3px;margin-left:8px;padding:0;cursor:pointer}
   /* ---------- Druckansicht (nur Web) ----------
      Für den Browser-Druck wird der Bericht als HTML in #print-bereich
      aufgebaut; beim Drucken verschwindet die App und nur der Bericht bleibt. */
@@ -1339,8 +1341,10 @@ const Core = {
     { id: "hausarztpraxis", label: "Hausarztpraxis" },
     { id: "anaesthesie",    label: "Anästhesie" },
     { id: "chirurgie",      label: "Chirurgie" },
-    { id: "innere",         label: "Innere" },
-    { id: "praktikum",      label: "Praktikum" }
+    { id: "innere",         label: "Innere" }
+    /* "Praktikum" ist bewusst kein Ort mehr: Seit es Trainingsblöcke mit
+       Zeitraum gibt, ist das Praktikum der Block – Bestände behalten den
+       Ort, neue Nutzer bekommen ihn nicht mehr angeboten. */
   ],
   ROLLEN: [
     "Medizinstudent:in", "PJ-Student:in", "Ärztin/Arzt in Weiterbildung",
@@ -2820,12 +2824,12 @@ const Daten = {
       { massnahmeId: "intubation", datum: t(3), zeit: "08:15", ortId: "op",
         stufe: "assistiert", setting: "mensch", tags: ["Anästhesie-Woche"],
         notiz: "Videolaryngoskop, Sicht Grad I" },
-      { massnahmeId: "intubation", datum: t(9), zeit: "15:40", ortId: "praktikum",
+      { massnahmeId: "intubation", datum: t(9), zeit: "15:40", blockId: "skills-lab",
         stufe: "durchgefuehrt", setting: "simulator", tags: ["Skills Lab"] },
-      { massnahmeId: "reanimation", datum: t(9), zeit: "16:10", ortId: "praktikum",
+      { massnahmeId: "reanimation", datum: t(9), zeit: "16:10", blockId: "skills-lab",
         stufe: "durchgefuehrt", setting: "simulator", tags: ["Skills Lab"],
         notiz: "Megacode-Training, Teamleitung geübt" },
-      { massnahmeId: "intraossaerer-zugang", datum: t(9), zeit: "16:45", ortId: "praktikum",
+      { massnahmeId: "intraossaerer-zugang", datum: t(9), zeit: "16:45", blockId: "skills-lab",
         stufe: "durchgefuehrt", setting: "simulator", tags: ["Skills Lab"] },
       { massnahmeId: "wundversorgung", datum: t(12), zeit: "11:25", ortId: "rtw",
         stufe: "durchgefuehrt", setting: "mensch", tags: ["Rettungswachenpraktikum"] },
@@ -2858,13 +2862,17 @@ const Daten = {
 const Einst = {
   KEY: "slm_einstellungen",
   /* tagsImBericht: Tags sind ein privates Ordnungswerkzeug – im Bericht für
-     die Praxisanleitung bleiben sie deshalb standardmäßig außen vor. */
-  werte: { theme: "auto", tagsImBericht: false },
+     die Praxisanleitung bleiben sie deshalb standardmäßig außen vor.
+     sicherungAm/sicherungSpaeter steuern den Sicherungs-Hinweis auf dem
+     Dashboard (letzte JSON-Sicherung bzw. "Später"-Aufschub). */
+  werte: { theme: "auto", tagsImBericht: false, sicherungAm: "", sicherungSpaeter: "" },
   laden(){
     const v = load(this.KEY, null);
     if (v && typeof v === "object"){
       if (["auto", "light", "dark"].indexOf(v.theme) >= 0) this.werte.theme = v.theme;
       this.werte.tagsImBericht = v.tagsImBericht === true;
+      this.werte.sicherungAm = typeof v.sicherungAm === "string" ? v.sicherungAm : "";
+      this.werte.sicherungSpaeter = Core.istIso(v.sicherungSpaeter) ? v.sicherungSpaeter : "";
     }
     return this.werte;
   },
@@ -3072,13 +3080,24 @@ const Billing = {
 function esc(s){ const d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
 
 let toastTimer = null;
-function toast(msg, ms){
+function zeigeToast(html, ms){
   const el = $("toast");
   if (!el) return;
-  el.textContent = msg;
+  el.innerHTML = html;
   el.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove("show"), ms || 2600);
+}
+function toast(msg, ms){ zeigeToast(esc(msg), ms); }
+/* Toast mit Aktions-Knopf – z. B. "Eintrag gelöscht – Rückgängig".
+   Läuft bewusst länger (gut 5 Sekunden), damit der Tipp noch gelingt. */
+function toastAktion(msg, knopf, cb){
+  zeigeToast(esc(msg) + ' <button type="button" id="toast-aktion">' + esc(knopf) + "</button>", 5200);
+  $("toast-aktion").addEventListener("click", () => {
+    clearTimeout(toastTimer);
+    $("toast").classList.remove("show");
+    cb();
+  });
 }
 
 /* ---------- Navigation -------------------------------------------------
@@ -3235,6 +3254,24 @@ function renderHome(){
   const dsFuss = '<p class="muted" style="font-size:.765rem;text-align:center;margin:18px 8px 4px">'
     + "SkillLog Med ist ein Ausbildungs- und Kompetenzlogbuch, keine Patientenakte.</p>";
 
+  /* Sicherungs-Hinweis: Alle Daten liegen nur auf diesem Gerät. Ab zehn
+     echten Einträgen und ohne Sicherung in den letzten 30 Tagen erinnert
+     eine dezente Karte daran – "Später" schiebt sie zwei Wochen auf. */
+  let sicherungKarte = "";
+  const echte = alle.filter(e => !e.beispiel).length;
+  const am = Einst.werte.sicherungAm;
+  const sichTage = am ? Math.floor((Date.now() - Date.parse(am)) / 86400000) : null;
+  const aufgeschoben = Einst.werte.sicherungSpaeter && Einst.werte.sicherungSpaeter > heute;
+  if (echte >= 10 && (sichTage == null || sichTage >= 30) && !aufgeschoben){
+    sicherungKarte = '<div class="card" style="display:flex;gap:12px;align-items:center">'
+      + '<svg class="ic" viewBox="0 0 24 24" style="width:22px;height:22px;color:var(--accent);flex:none"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/></svg>'
+      + '<div style="flex:1;min-width:0"><b style="font-size:.94rem">Sicherung empfohlen</b>'
+      + '<div class="muted" style="font-size:.8rem">Deine Daten liegen nur auf diesem Gerät. Letzte Sicherung: '
+      + (sichTage == null ? "noch nie" : "vor " + sichTage + " Tagen") + ".</div>"
+      + '<div class="btn-row" style="margin-top:8px"><button class="btn small" id="home-sichern">Jetzt sichern</button>'
+      + '<button class="btn ghost small" id="home-sichern-spaeter">Später</button></div></div></div>';
+  }
+
   if (!alle.length){
     el.innerHTML = '<div class="card empty">'
       + '<svg class="ic" viewBox="0 0 24 24"><path d="M9 3h6a2 2 0 012 2v14a2 2 0 01-2 2H9a2 2 0 01-2-2V5a2 2 0 012-2z" transform="translate(2.5)"/><path d="M5 12h3l2-4 3 8 2-4h3" transform="translate(0 1)"/></svg>'
@@ -3283,8 +3320,15 @@ function renderHome(){
       + "</ul></div>";
   }
 
-  html += beispielKarte + profilKarte + dsFuss;
+  html += beispielKarte + sicherungKarte + profilKarte + dsFuss;
   el.innerHTML = html;
+  const hs = $("home-sichern");
+  if (hs) hs.addEventListener("click", () => backupErstellen());
+  const hss = $("home-sichern-spaeter");
+  if (hss) hss.addEventListener("click", () => {
+    Einst.set("sicherungSpaeter", Core.addTage(heute, 14));
+    render();
+  });
   el.querySelectorAll("[data-schnell]").forEach(b => b.addEventListener("click", () => {
     filterReset();
     filter.schnell = b.dataset.schnell;
@@ -3520,13 +3564,19 @@ function renderDetail(){
     ortId: e.ortId, blockId: e.blockId, tags: e.tags.slice(), notiz: ""
   }));
   $("d-loeschen").addEventListener("click", () => {
-    if (!confirm("Diesen Eintrag endgültig löschen?")) return;
+    /* Kein Bestätigungsdialog mehr – der Rückgängig-Toast ist auf dem
+       Handy fehlerverzeihender als eine Ja/Nein-Frage vorab. */
+    const kopie = Object.assign({}, e, { tags: e.tags.slice() });
     Daten.entfernen(e.id);
     viewStack = viewStack.filter(v => v !== "detail");
     if (!viewStack.length) viewStack = ["home"];
     zeige(aktuelleView(), true);
-    toast("Eintrag gelöscht");
     render();
+    toastAktion("Eintrag gelöscht", "Rückgängig", () => {
+      Daten.upsert(kopie);
+      render();
+      toast("Eintrag wiederhergestellt");
+    });
   });
 }
 
@@ -3869,13 +3919,19 @@ $("f-speichern-neu").addEventListener("click", () => {
 $("f-abbrechen").addEventListener("click", () => { zurueck(); render(); });
 $("f-loeschen").addEventListener("click", () => {
   if (!formId) return;
-  if (!confirm("Diesen Eintrag endgültig löschen?")) return;
+  const e = Daten.get(formId);
+  if (!e) return;
+  const kopie = Object.assign({}, e, { tags: e.tags.slice() });
   Daten.entfernen(formId);
   viewStack = viewStack.filter(v => v !== "form" && v !== "detail");
   if (!viewStack.length) viewStack = ["home"];
   zeige(aktuelleView(), true);
-  toast("Eintrag gelöscht");
   render();
+  toastAktion("Eintrag gelöscht", "Rückgängig", () => {
+    Daten.upsert(kopie);
+    render();
+    toast("Eintrag wiederhergestellt");
+  });
 });
 $("btn-neu").addEventListener("click", () => formOeffnen(null));
 
@@ -4184,8 +4240,12 @@ $("ex-druck").addEventListener("click", () => Report.drucken());
 /* Sichern/Wiederherstellen hängt an zwei Stellen: im Export und in den
    Einstellungen – beide nutzen dieselben Funktionen. */
 async function backupErstellen(){
-  await Bridge.saveText("skilllog-med-sicherung-" + Report.stamp() + ".json",
+  const ok = await Bridge.saveText("skilllog-med-sicherung-" + Report.stamp() + ".json",
     JSON.stringify(Daten.exportObjekt(), null, 2), "application/json", "SkillLog-Med-Sicherung");
+  if (ok){
+    Einst.set("sicherungAm", new Date().toISOString());
+    render();
+  }
 }
 $("ex-backup").addEventListener("click", backupErstellen);
 $("ex-restore").addEventListener("click", () => $("ex-restore-file").click());
@@ -4198,6 +4258,9 @@ $("ex-restore-file").addEventListener("change", e => {
   fr.onload = () => {
     try {
       const n = Daten.importObjekt(JSON.parse(String(fr.result)));
+      /* Wer wiederherstellt, hat nachweislich eine Sicherungsdatei –
+         das zählt für den Dashboard-Hinweis wie eine frische Sicherung. */
+      Einst.set("sicherungAm", new Date().toISOString());
       render();
       toast(n + (n === 1 ? " Eintrag" : " Einträge") + " wiederhergestellt");
     } catch(err){ alert("Die Datei konnte nicht gelesen werden.\n\n" + (err && err.message ? err.message : err)); }
