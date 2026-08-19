@@ -59,7 +59,11 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
   standardmäßig außen vor (privates Ordnungswerkzeug) und lassen sich in
   den Einstellungen zuschalten
 - **Sicherung:** JSON-Backup und -Wiederherstellung inklusive aller
-  Stammdaten – erreichbar im Export **und** in den Einstellungen
+  Stammdaten – erreichbar im Export **und** in den Einstellungen. Ab zehn
+  Einträgen erinnert das Dashboard dezent, wenn die letzte Sicherung über
+  30 Tage her ist („Später“ schiebt zwei Wochen auf)
+- **Fehlerverzeihend:** Gelöschte Einträge lassen sich direkt über den
+  Toast „Eintrag gelöscht – Rückgängig“ wiederholen (gut 5 Sekunden)
 - **Profil:** Name, **mehrere Rollen** (z. B. PA-Student:in *und*
   Notfallsanitäter:in, eigene Bezeichnungen möglich), Institution und
   Standard-Ort – erscheint im Bericht

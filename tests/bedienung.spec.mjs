@@ -80,10 +80,48 @@ test("Eintrag bearbeiten und löschen", async ({ page }) => {
   await page.click("#f-speichern");
   await expect(page.locator("#detail-inhalt")).toContainText("zweiter Versuch");
 
-  page.on("dialog", d => d.accept());
+  /* Löschen fragt nicht mehr vorab – der Toast bietet Rückgängig an. */
   await page.click("#d-loeschen");
   const anzahl = await page.evaluate(() => window.SLM.Daten.alle().length);
   expect(anzahl).toBe(0);
+});
+
+test("Löschen lässt sich über den Toast rückgängig machen", async ({ page }) => {
+  await eintragAnlegen(page, { massnahme: "reanimation", notiz: "wichtig" });
+  await page.click("#d-loeschen");
+  await expect(page.locator("#toast")).toContainText("Eintrag gelöscht");
+  await page.click("#toast-aktion");
+  const r = await page.evaluate(() => {
+    const alle = window.SLM.Daten.alle();
+    return { anzahl: alle.length, notiz: alle[0] && alle[0].notiz };
+  });
+  expect(r.anzahl).toBe(1);
+  expect(r.notiz).toBe("wichtig");
+});
+
+test("Sicherungs-Hinweis erscheint ab zehn Einträgen und lässt sich aufschieben", async ({ page }) => {
+  /* Unter zehn Einträgen bleibt das Dashboard frei von dem Hinweis. */
+  await expect(page.locator("#home-sichern")).toHaveCount(0);
+  await page.evaluate(() => {
+    const { Daten, Core } = window.SLM;
+    for (let i = 0; i < 10; i++)
+      Daten.upsert({ massnahmeId: "iv-zugang", datum: Core.addTage(Core.heute(), -i) });
+  });
+  await page.click('nav.tabs button[data-tab="liste"]');
+  await page.click('nav.tabs button[data-tab="home"]');
+  await expect(page.locator("#home-sichern")).toBeVisible();
+  await expect(page.locator("#home-inhalt")).toContainText("Letzte Sicherung: noch nie");
+  /* "Später" schiebt die Karte auf. */
+  await page.click("#home-sichern-spaeter");
+  await expect(page.locator("#home-sichern")).toHaveCount(0);
+  /* Eine frische Sicherung hält die Karte dauerhaft fern. */
+  await page.evaluate(() => {
+    window.SLM.Einst.set("sicherungSpaeter", "");
+    window.SLM.Einst.set("sicherungAm", new Date().toISOString());
+  });
+  await page.click('nav.tabs button[data-tab="liste"]');
+  await page.click('nav.tabs button[data-tab="home"]');
+  await expect(page.locator("#home-sichern")).toHaveCount(0);
 });
 
 test("Logbuch: Suche und Stufenfilter grenzen die Liste ein", async ({ page }) => {

@@ -248,6 +248,8 @@ test("Orte: RTW-Einsatz und NEF-Einsatz sind Standard, Bestände ziehen nach", a
   });
   expect(r.frisch).toContain("RTW-Einsatz");
   expect(r.frisch).toContain("NEF-Einsatz");
+  /* "Praktikum" ist kein Ort mehr – das übernimmt der Trainingsblock. */
+  expect(r.frisch).not.toContain("Praktikum");
   expect(r.migriert).toEqual(["NEF-Einsatz", "RTW-Einsatz"]);
   expect(r.geloescht).toBe(false);
 });
