@@ -39,10 +39,10 @@ EIN EINTRAG IN 20 SEKUNDEN
 Maßnahme antippen, Kompetenzstufe wählen (beobachtet, assistiert, durchgeführt), Setting dazu (Simulator, Präparat, Mensch), Ort bestätigen – gespeichert. Datum und Uhrzeit stehen schon drin, der letzte Ort ist vorausgewählt, Favoriten und zuletzt genutzte Maßnahmen ganz oben. Für Serien gibt es „Speichern + Neu“, für Wiederholungen „Nochmal erfasst“.
 
 DER KATALOG GEHÖRT DIR
-20 Standardmaßnahmen sind dabei – von i.v.-Zugang über Intubation, Reanimation und Thoraxdrainage bis EKG, Sonographie und Naht. Alles lässt sich umbenennen, archivieren und um eigene Maßnahmen ergänzen. Genauso bei den Orten: Rettungswache, RTW, Notaufnahme, Schockraum, OP und mehr sind vordefiniert, eigene kommen in Sekunden dazu.
+18 Standardmaßnahmen sind dabei – von i.v.-Zugang über Intubation, Reanimation und Thoraxdrainage bis EKG, Sonographie und Naht. Alles lässt sich umbenennen, archivieren und um eigene Maßnahmen ergänzen. Genauso bei den Orten: Rettungswache, RTW, Notaufnahme, Schockraum, OP und mehr sind vordefiniert, eigene kommen in Sekunden dazu.
 
-TAGS FÜR PRAKTIKA UND KURSE
-Verpasse Einträgen freie Tags wie „PJ Chirurgie“, „Skills Lab“ oder „Rettungswachenpraktikum“. Damit holst du dir später mit einem Tipp genau die Einträge eines Ausbildungsblocks zurück – im Logbuch, in der Statistik und im Bericht.
+TRAININGSBLÖCKE UND TAGS
+Ordne Einträge einem Trainingsblock zu – „Klinikpraktikum“ mit Unterblöcken wie „OP“ oder „Intensivstation“, mit Zeitraum. Dazu freie Tags wie „Klinik“ oder „Nachtdienst“. Damit holst du dir später mit einem Tipp genau die Einträge eines Ausbildungsblocks zurück – im Logbuch, in der Statistik und im Bericht.
 
 ZAHLEN, DIE DU VORZEIGEN KANNST
 Die Statistik zeigt je Zeitraum, wie oft du welche Maßnahme dokumentiert hast und wie sich beobachtet, assistiert und durchgeführt verteilen. Das Dashboard hält die aktuelle Woche und den Monat im Blick.

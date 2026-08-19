@@ -24,9 +24,11 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
   braucht, schaltet „Uhrzeiten einzeln erfassen“ ein und trägt je Eintrag eine
   Zeit ein
 - **Trainingsblöcke:** Praktika und Rotationen, zweistufig – „Klinikpraktikum“
-  mit Unterblöcken wie „OP“ oder „Intensivstation“. Überall filterbar; in der
-  Statistik zählt der Oberblock seine Unterblöcke mit und ist antippbar
-- **Maßnahmenkatalog:** 20 mitgelieferte Standardmaßnahmen (i.v.-Zugang,
+  mit Unterblöcken wie „OP“ oder „Intensivstation“, jeweils mit optionalem
+  Zeitraum. Im Logbuch direkt als Chips aufrufbar, in der Statistik zählt der
+  Oberblock seine Unterblöcke mit und ist antippbar; im Bericht setzt die
+  Blockwahl den Zeitraum
+- **Maßnahmenkatalog:** 18 mitgelieferte Standardmaßnahmen (i.v.-Zugang,
   Intubation, Reanimation, EKG, Sonographie, Naht …) mit eigenen
   Piktogrammen, frei erweiterbar, umbenennbar, archivierbar, mit Favoriten
 - **Maßnahmen-Kategorien:** acht mitgelieferte Gruppen (Zugänge, Atemweg,
@@ -37,7 +39,8 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
   Schlagworte wie „Klinik“, mehrfach pro Eintrag, bekannte stehen zum
   Antippen bereit
 - **Dashboard:** Gesamtzahl, Heute / 7 Tage / Monat, letzte Einträge,
-  häufigste Maßnahmen
+  häufigste Maßnahmen. Beim allerersten Start steht dort ein Beispiel-Eintrag
+  („EKG geschrieben“) statt einer leeren Fläche – mit einem Tipp entfernt
 - **Logbuch:** chronologisch nach Tagen gruppiert, Volltextsuche,
   Schnellfilter (Heute, 7 Tage, 30 Tage) und Detailfilter nach Zeitraum,
   Maßnahme, Stufe, Setting, Ort und Tag

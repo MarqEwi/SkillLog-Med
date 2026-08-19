@@ -326,6 +326,62 @@ test("Tags: mehrere setzen, bekannte darunter antippbar", async ({ page }) => {
   await expect(page.locator("#detail-inhalt")).toContainText("#Klinik");
 });
 
+test("Logbuch: Trainingsblöcke sind als Chips direkt aufrufbar", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-beispiele");
+  await page.evaluate(() => {
+    const { Daten } = window.SLM;
+    Daten.alle().slice(0, 3).forEach(e =>
+      Daten.upsert(Object.assign({}, e, { blockId: "klinik-op" })));
+    Daten.alle().slice(3, 5).forEach(e =>
+      Daten.upsert(Object.assign({}, e, { blockId: "rettungswache" })));
+  });
+  await page.click('nav.tabs button[data-tab="liste"]');
+
+  /* Ein Tipp auf den Oberblock zeigt seine Einträge, ohne das Filterpanel. */
+  await page.click('#filter-block [data-b="klinikpraktikum"]');
+  await expect(page.locator("#liste-inhalt .row")).toHaveCount(3);
+  await page.click('#filter-block [data-b="rettungswache"]');
+  await expect(page.locator("#liste-inhalt .row")).toHaveCount(2);
+  await page.click('#filter-block [data-b="alle"]');
+  const alle = await page.evaluate(() => window.SLM.Daten.alle().length);
+  await expect(page.locator("#liste-inhalt .row")).toHaveCount(alle);
+});
+
+test("Block mit Zeitraum anlegen und im Bericht übernehmen", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-stamm");
+  await page.click('#stamm-seg [data-v="bloecke"]');
+  await page.click("#stamm-b-neu");
+  await page.fill("#b-name", "PJ Chirurgie");
+  await page.fill("#b-von", "2026-03-01");
+  await page.fill("#b-bis", "2026-03-31");
+  await page.click("#b-ok");
+  /* Der Zeitraum steht in der Verwaltungszeile. */
+  await expect(page.locator("#stamm-inhalt")).toContainText("01.03.2026 – 31.03.2026");
+
+  /* Im Export setzt die Blockwahl den Berichtszeitraum. */
+  const id = await page.evaluate(() =>
+    window.SLM.Core.bloecke.find(b => b.label === "PJ Chirurgie").id);
+  await page.click('nav.tabs button[data-tab="export"]');
+  await page.selectOption("#ex-block", id);
+  expect(await page.inputValue("#ex-von")).toBe("2026-03-01");
+  expect(await page.inputValue("#ex-bis")).toBe("2026-03-31");
+});
+
+test("Ende vor Beginn wird abgelehnt", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-stamm");
+  await page.click('#stamm-seg [data-v="bloecke"]');
+  await page.click("#stamm-b-neu");
+  await page.fill("#b-name", "Falscher Zeitraum");
+  await page.fill("#b-von", "2026-05-10");
+  await page.fill("#b-bis", "2026-05-01");
+  await page.click("#b-ok");
+  await expect(page.locator("#b-err")).toBeVisible();
+  await expect(page.locator("#modal-block")).toHaveClass(/open/);
+});
+
 test("Stammdaten: eigenen Ort anlegen und im Formular wählen", async ({ page }) => {
   await page.click("#btn-neu");
   await page.selectOption("#f-ort", "__neu");
@@ -412,7 +468,7 @@ test("Profil: mehrere Rollen anlegen, eigene ergänzen, eine entfernen", async (
 });
 
 test("Zurück-Taste im Browser: schließt erst Dialoge, dann Ansichten", async ({ page }) => {
-  await eintragAnlegen(page, { massnahme: "sono-assistiert" });
+  await eintragAnlegen(page, { massnahme: "sonographie" });
   await page.click("#btn-settings");
   await expect(page.locator("#modal-settings")).toHaveClass(/open/);
 
@@ -440,6 +496,6 @@ test("Alle Daten löschen setzt App und Stammdaten zurück", async ({ page }) =>
   }));
   expect(r.eintraege).toBe(0);
   expect(r.eigene).toBe(0);
-  expect(r.standard).toBe(20);
+  expect(r.standard).toBe(18);
   await expect(page.locator("#home-inhalt")).toContainText("Noch keine Einträge vorhanden");
 });

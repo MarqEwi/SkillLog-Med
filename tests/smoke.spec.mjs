@@ -1,7 +1,7 @@
 // Grundprüfung: Die App lädt fehlerfrei, zeigt sinnvolle Startzustände und
 // belegt im localStorage ausschließlich eigene Schlüssel.
 import { test, expect } from "@playwright/test";
-import { appOeffnen } from "./helfer.mjs";
+import { appOeffnen, eintragAnlegen } from "./helfer.mjs";
 
 test("lädt ohne Konsolenfehler und zeigt den leeren Zustand", async ({ page }) => {
   const fehler = [];
@@ -61,6 +61,48 @@ test("Beispieldaten füllen Dashboard, Logbuch und Statistik", async ({ page }) 
   await page.click('nav.tabs button[data-tab="stats"]');
   await page.click('#stats-zeit [data-z="alle"]');
   await expect(page.locator("#stats-inhalt .bars").first()).toBeVisible();
+});
+
+test("Erster Start: ein Beispiel-Eintrag statt leerem Dashboard", async ({ page }) => {
+  const fehler = [];
+  page.on("pageerror", e => fehler.push("PAGEERROR: " + e.message));
+  await appOeffnen(page, { ersterStart: true });
+
+  expect(fehler).toEqual([]);
+  /* Genau ein Eintrag, als Beispiel gekennzeichnet. */
+  const daten = await page.evaluate(() => window.SLM.Daten.alle()
+    .map(e => ({ m: e.massnahmeId, beispiel: e.beispiel, ort: e.ortId })));
+  expect(daten).toHaveLength(1);
+  expect(daten[0]).toEqual({ m: "ekg-geschrieben", beispiel: true, ort: "notaufnahme" });
+
+  /* Das Dashboard zeigt ihn – samt Symbol und Kennzahl statt Leerlauf. */
+  await expect(page.locator("#home-inhalt .hero .big")).toContainText("1");
+  await expect(page.locator("#home-inhalt .row")).toContainText("EKG geschrieben");
+  await expect(page.locator("#home-inhalt")).not.toContainText("Noch keine Einträge vorhanden");
+  await expect(page.locator("#home-beispiel-weg")).toBeVisible();
+});
+
+test("Beispiel-Eintrag lässt sich entfernen und kommt nicht wieder", async ({ page }) => {
+  await appOeffnen(page, { ersterStart: true });
+  await page.click("#home-beispiel-weg");
+  await expect(page.locator("#home-inhalt")).toContainText("Noch keine Einträge vorhanden");
+
+  /* Nach einem Neustart bleibt das Logbuch leer – der Schau-Eintrag wird
+     nur beim allerersten Start angelegt. */
+  await page.reload();
+  await page.waitForFunction(() => !!window.SLM);
+  const anzahl = await page.evaluate(() => window.SLM.Daten.alle().length);
+  expect(anzahl).toBe(0);
+});
+
+test("Eigener Eintrag verdrängt den Beispiel-Hinweis", async ({ page }) => {
+  await appOeffnen(page, { ersterStart: true });
+  await eintragAnlegen(page, { massnahme: "iv-zugang" });
+  await page.click('nav.tabs button[data-tab="home"]');
+  /* Der Schau-Eintrag bleibt stehen, der Hinweis verschwindet. */
+  await expect(page.locator("#home-beispiel-weg")).toHaveCount(0);
+  const anzahl = await page.evaluate(() => window.SLM.Daten.alle().length);
+  expect(anzahl).toBe(2);
 });
 
 test("Datenschutz-Hinweis ist sichtbar (keine Patientenakte)", async ({ page }) => {
