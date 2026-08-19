@@ -361,8 +361,11 @@
   .chips::-webkit-scrollbar{display:none}
   /* Filterzeilen mit Block- und Filter-Chip brechen um, statt zu scrollen –
      sonst läge ausgerechnet der Filter-Knopf unsichtbar außerhalb. */
-  #filter-zeit, #stats-zeit, #ex-quick{flex-wrap:wrap;overflow-x:visible;row-gap:7px;
+  #filter-zeit, #stats-zeit, #ex-quick, #p-favoriten{flex-wrap:wrap;overflow-x:visible;row-gap:7px;
     padding-bottom:8px}
+  /* Auf-/Zuklappen der übrigen Maßnahmen im Formular */
+  .mgrid button.aufklapp{grid-column:1 / -1;border-style:dashed;color:var(--text2);
+    justify-content:center;font-weight:660}
   .chip{background:var(--bg2);border:1px solid var(--line);color:var(--text2);border-radius:999px;
     padding:7.5px 15px;font:inherit;font-size:.83rem;font-weight:620;cursor:pointer;
     white-space:nowrap;box-shadow:var(--schatten-s);
@@ -1056,6 +1059,11 @@
     <label class="field" for="p-standardort">Standard-Ort für neue Einträge</label>
     <select id="p-standardort"></select>
 
+    <label class="field">Favoriten-Maßnahmen <span class="opt">optional</span></label>
+    <div class="chips" id="p-favoriten"></div>
+    <p class="hint">Favoriten stehen beim neuen Eintrag zuoberst – alle übrigen
+      Maßnahmen klappen unter „Weitere Maßnahmen“ ein.</p>
+
     <div class="btn-row">
       <button class="btn" id="p-ok" style="flex:1">Speichern</button>
       <button class="btn secondary" data-close="modal-profil">Abbrechen</button>
@@ -1249,6 +1257,39 @@ Object.assign(UEB, {
   "Unterblock wird": { en:"sub-block will be", es:"subbloque se", fr:"sous-bloc sera", it:"sottoblocco sarà", pt:"sub-bloco será" },
   "Los geht’s": { en:"Let’s go", es:"Empezar", fr:"C’est parti", it:"Iniziamo", pt:"Começar" }
 });
+Object.assign(UEB, {
+  "Beispiel-Eintrag: So sieht eine dokumentierte Maßnahme aus. Du kannst ihn bearbeiten oder löschen.": { en:"Example entry: this is what a documented procedure looks like. You can edit or delete it.", es:"Entrada de ejemplo: así se ve un procedimiento documentado. Puedes editarla o eliminarla.", fr:"Entrée d'exemple : voilà à quoi ressemble un geste documenté. Tu peux la modifier ou la supprimer.", it:"Voce di esempio: ecco come appare una procedura documentata. Puoi modificarla o eliminarla.", pt:"Registo de exemplo: é assim que fica um procedimento documentado. Podes editá-lo ou eliminá-lo." },
+  "Schwierige Venenverhältnisse, 2. Versuch erfolgreich": { en:"Difficult veins, second attempt successful", es:"Venas difíciles, segundo intento con éxito", fr:"Veines difficiles, deuxième tentative réussie", it:"Vene difficili, secondo tentativo riuscito", pt:"Veias difíceis, segunda tentativa com sucesso" },
+  "STEMI-Kriterien mit Oberärztin durchgesprochen": { en:"Discussed STEMI criteria with the attending", es:"Criterios STEMI comentados con la adjunta", fr:"Critères STEMI discutés avec la médecin senior", it:"Criteri STEMI discussi con la strutturata", pt:"Critérios STEMI discutidos com a médica assistente" },
+  "Videolaryngoskop, Sicht Grad I": { en:"Video laryngoscope, grade I view", es:"Videolaringoscopio, visión grado I", fr:"Vidéolaryngoscope, vue grade I", it:"Videolaringoscopio, visione grado I", pt:"Videolaringoscópio, visão grau I" },
+  "Megacode-Training, Teamleitung geübt": { en:"Megacode training, practiced team leadership", es:"Entrenamiento megacode, liderazgo de equipo practicado", fr:"Entraînement megacode, leadership d'équipe travaillé", it:"Addestramento megacode, esercitata la guida del team", pt:"Treino megacode, liderança de equipa praticada" },
+  "Vakuummatratze bei V. a. Wirbelsäulentrauma": { en:"Vacuum mattress for suspected spinal injury", es:"Colchón de vacío por sospecha de trauma vertebral", fr:"Matelas coquille pour suspicion de traumatisme rachidien", it:"Materasso a depressione per sospetto trauma vertebrale", pt:"Colchão de vácuo por suspeita de trauma vertebral" },
+  "Einzelknopfnaht am Nahtpad geübt": { en:"Practiced interrupted sutures on a suture pad", es:"Sutura de puntos sueltos practicada en almohadilla", fr:"Points séparés travaillés sur pad de suture", it:"Sutura a punti staccati esercitata su pad", pt:"Sutura com pontos simples praticada em almofada de treino" },
+  "Notaufnahme-Praktikum": { en:"ED placement", es:"Prácticas de urgencias", fr:"Stage aux urgences", it:"Tirocinio in pronto soccorso", pt:"Estágio nas urgências" },
+  "Anästhesie-Woche": { en:"Anesthesia week", es:"Semana de anestesia", fr:"Semaine d'anesthésie", it:"Settimana di anestesia", pt:"Semana de anestesia" },
+  "PJ Chirurgie": { en:"Surgery placement", es:"Prácticas de cirugía", fr:"Stage de chirurgie", it:"Tirocinio di chirurgia", pt:"Estágio de cirurgia" }
+});
+Object.assign(UEB, {
+  "Intravenöser Zugang": { en:"Intravenous access", es:"Acceso intravenoso", fr:"Voie veineuse", it:"Accesso endovenoso", pt:"Acesso intravenoso" },
+  "Endotracheale Intubation": { en:"Endotracheal intubation", es:"Intubación endotraqueal", fr:"Intubation endotrachéale", it:"Intubazione endotracheale", pt:"Entubação endotraqueal" },
+  "Blasenkatheter": { en:"Urinary catheter", es:"Sonda vesical", fr:"Sonde urinaire", it:"Catetere vescicale", pt:"Cateter vesical" },
+  "Favoriten": { en:"Favorites", es:"Favoritos", fr:"Favoris", it:"Preferite", pt:"Favoritos" },
+  "Weitere Maßnahmen": { en:"More procedures", es:"Más procedimientos", fr:"Autres gestes", it:"Altre procedure", pt:"Mais procedimentos" },
+  "Favoriten-Maßnahmen": { en:"Favorite procedures", es:"Procedimientos favoritos", fr:"Gestes favoris", it:"Procedure preferite", pt:"Procedimentos favoritos" },
+  "Favoriten stehen beim neuen Eintrag zuoberst – alle übrigen Maßnahmen klappen unter „Weitere Maßnahmen“ ein.": { en:"Favorites sit at the top of a new entry – all other procedures collapse under “More procedures”.", es:"Los favoritos aparecen arriba en una nueva entrada; el resto se pliega bajo «Más procedimientos».", fr:"Les favoris sont en haut d'une nouvelle entrée – le reste se replie sous « Autres gestes ».", it:"Le preferite stanno in cima a una nuova voce; il resto si ripiega sotto “Altre procedure”.", pt:"Os favoritos ficam no topo de um novo registo – o resto recolhe em «Mais procedimentos»." }
+});
+/* Beispiel-Inhalte, die der Sprachwechsel in Bestandsdaten mitnimmt. */
+const BEISPIEL_NOTIZEN = [
+  "Beispiel-Eintrag: So sieht eine dokumentierte Maßnahme aus. Du kannst ihn bearbeiten oder löschen.",
+  "Schwierige Venenverhältnisse, 2. Versuch erfolgreich",
+  "STEMI-Kriterien mit Oberärztin durchgesprochen",
+  "Videolaryngoskop, Sicht Grad I",
+  "Megacode-Training, Teamleitung geübt",
+  "Vakuummatratze bei V. a. Wirbelsäulentrauma",
+  "Einzelknopfnaht am Nahtpad geübt"
+];
+const BEISPIEL_TAGS = ["Notaufnahme-Praktikum", "Anästhesie-Woche", "Skills Lab",
+  "Rettungswachenpraktikum", "PJ Chirurgie"];
 function t(s){
   if (SPRACHE === "de") return s;
   const u = UEB[s];
@@ -1366,9 +1407,9 @@ const Core = {
   /* ---- Mitgelieferter Maßnahmenkatalog. Wird beim ersten Start in den
          Speicher übernommen und ist danach frei editierbar. ---- */
   MASSNAHMEN_VORLAGE: [
-    { id: "iv-zugang",              label: "i.v.-Zugang",                    kategorie: "zugaenge" },
+    { id: "iv-zugang",              label: "Intravenöser Zugang",            kategorie: "zugaenge" },
     { id: "medikamentengabe",       label: "Medikamentengabe",               kategorie: "medikamente" },
-    { id: "intubation",             label: "Intubation",                     kategorie: "atemweg" },
+    { id: "intubation",             label: "Endotracheale Intubation",       kategorie: "atemweg" },
     { id: "beutel-masken-beatmung", label: "Beutel-Masken-Beatmung",         kategorie: "atemweg" },
     { id: "larynxmaske",            label: "Larynxmaske",                    kategorie: "atemweg" },
     { id: "reanimation",            label: "Reanimation",                    kategorie: "notfall" },
@@ -1381,7 +1422,7 @@ const Core = {
     { id: "ekg-geschrieben",        label: "EKG geschrieben",                kategorie: "diagnostik" },
     { id: "ekg-interpretiert",      label: "EKG interpretiert",              kategorie: "diagnostik" },
     { id: "sonographie",            label: "Sonographie",                    kategorie: "diagnostik" },
-    { id: "harnkatheter",           label: "Harnkatheter",                   kategorie: "sonden" },
+    { id: "harnkatheter",           label: "Blasenkatheter",                   kategorie: "sonden" },
     { id: "magensonde",             label: "Magensonde",                     kategorie: "sonden" },
     { id: "naht",                   label: "Naht / Klammerung",              kategorie: "wunde" }
   ],
@@ -2269,6 +2310,7 @@ const Katalog = {
     if (Array.isArray(roh)){
       Core.katalog = roh.map(m => this.normalisieren(m)).filter(Boolean).slice(0, this.MAX);
       this.zusammenlegen();
+      this.nachziehen();
     } else {
       Core.katalog = Core.MASSNAHMEN_VORLAGE.map(m =>
         ({ id: m.id, label: m.label, kategorie: m.kategorie, favorit: false,
@@ -2278,6 +2320,27 @@ const Katalog = {
     return Core.katalog;
   },
   speichern(){ store(this.KEY, Core.katalog); },
+
+  /* Einmalige Migration: "i.v.-Zugang" und "Intubation" heißen jetzt
+     ausgeschrieben "Intravenöser Zugang" bzw. "Endotracheale Intubation".
+     Umbenannt wird nur, wenn das Label noch eine bekannte (auch fremd-
+     sprachige) Fassung der alten Vorlage ist – eigene Namen bleiben. */
+  nachziehen(){
+    if (load("slm_katalog_stand", 0) >= 2) return;
+    const umzug = { "iv-zugang": ["i.v.-Zugang", "Intravenöser Zugang"],
+                    "intubation": ["Intubation", "Endotracheale Intubation"],
+                    "harnkatheter": ["Harnkatheter", "Blasenkatheter"] };
+    Object.keys(umzug).forEach(id => {
+      const m = Core.massnahme(id);
+      if (!m) return;
+      const altBekannt = [umzug[id][0]].concat(Object.values(UEB[umzug[id][0]] || {}));
+      if (altBekannt.indexOf(m.label) < 0) return;
+      const u = UEB[umzug[id][1]] || {};
+      m.label = SPRACHE === "de" ? umzug[id][1] : (u[SPRACHE] || umzug[id][1]);
+    });
+    store("slm_katalog_stand", 2);
+    this.speichern();
+  },
 
   /* Migration für Stände, die "… assistiert" und "… durchgeführt" noch als
      getrennte Maßnahmen führen: Beide weichen dem zusammengelegten Eintrag.
@@ -2837,8 +2900,7 @@ const Daten = {
       ortId: "notaufnahme",
       stufe: "durchgefuehrt",
       setting: "mensch",
-      notiz: "Beispiel-Eintrag: So sieht eine dokumentierte Maßnahme aus. "
-        + "Du kannst ihn bearbeiten oder löschen.",
+      notiz: t("Beispiel-Eintrag: So sieht eine dokumentierte Maßnahme aus. Du kannst ihn bearbeiten oder löschen."),
       beispiel: true
     });
     this.liste.push(e);
@@ -2861,46 +2923,46 @@ const Daten = {
      heutigen Tag, damit Dashboard, Filter und Statistik etwas zeigen. ---- */
   beispieleLaden(){
     const h = Core.heute();
-    const t = n => Core.addTage(h, -n);
+    const vorTagen = n => Core.addTage(h, -n);
     const b = [
-      { massnahmeId: "iv-zugang", datum: t(0), zeit: "08:40", ortId: "notaufnahme",
-        stufe: "durchgefuehrt", setting: "mensch", tags: ["Notaufnahme-Praktikum"] },
-      { massnahmeId: "blutentnahme", datum: t(0), zeit: "07:55", ortId: "station",
-        stufe: "durchgefuehrt", setting: "mensch", tags: ["Notaufnahme-Praktikum"],
-        notiz: "Schwierige Venenverhältnisse, 2. Versuch erfolgreich" },
-      { massnahmeId: "ekg-geschrieben", datum: t(1), zeit: "14:20", ortId: "notaufnahme",
-        stufe: "durchgefuehrt", setting: "mensch", tags: ["Notaufnahme-Praktikum"] },
-      { massnahmeId: "ekg-interpretiert", datum: t(1), zeit: "14:35", ortId: "notaufnahme",
-        stufe: "assistiert", setting: "mensch", tags: ["Notaufnahme-Praktikum"],
-        notiz: "STEMI-Kriterien mit Oberärztin durchgesprochen" },
-      { massnahmeId: "beutel-masken-beatmung", datum: t(2), zeit: "10:05", ortId: "op",
-        stufe: "durchgefuehrt", setting: "mensch", tags: ["Anästhesie-Woche"] },
-      { massnahmeId: "larynxmaske", datum: t(2), zeit: "10:30", ortId: "op",
-        stufe: "assistiert", setting: "mensch", tags: ["Anästhesie-Woche"] },
-      { massnahmeId: "intubation", datum: t(3), zeit: "08:15", ortId: "op",
-        stufe: "assistiert", setting: "mensch", tags: ["Anästhesie-Woche"],
-        notiz: "Videolaryngoskop, Sicht Grad I" },
-      { massnahmeId: "intubation", datum: t(9), zeit: "15:40", blockId: "skills-lab",
-        stufe: "durchgefuehrt", setting: "simulator", tags: ["Skills Lab"] },
-      { massnahmeId: "reanimation", datum: t(9), zeit: "16:10", blockId: "skills-lab",
-        stufe: "durchgefuehrt", setting: "simulator", tags: ["Skills Lab"],
-        notiz: "Megacode-Training, Teamleitung geübt" },
-      { massnahmeId: "intraossaerer-zugang", datum: t(9), zeit: "16:45", blockId: "skills-lab",
-        stufe: "durchgefuehrt", setting: "simulator", tags: ["Skills Lab"] },
-      { massnahmeId: "wundversorgung", datum: t(12), zeit: "11:25", ortId: "rtw",
-        stufe: "durchgefuehrt", setting: "mensch", tags: ["Rettungswachenpraktikum"] },
-      { massnahmeId: "immobilisation", datum: t(12), zeit: "12:00", ortId: "rtw",
-        stufe: "assistiert", setting: "mensch", tags: ["Rettungswachenpraktikum"],
-        notiz: "Vakuummatratze bei V. a. Wirbelsäulentrauma" },
-      { massnahmeId: "medikamentengabe", datum: t(13), zeit: "09:30", ortId: "rtw",
-        stufe: "beobachtet", setting: "mensch", tags: ["Rettungswachenpraktikum"] },
-      { massnahmeId: "sonographie", datum: t(20), zeit: "13:15", ortId: "innere",
+      { massnahmeId: "iv-zugang", datum: vorTagen(0), zeit: "08:40", ortId: "notaufnahme",
+        stufe: "durchgefuehrt", setting: "mensch", tags: [t("Notaufnahme-Praktikum")] },
+      { massnahmeId: "blutentnahme", datum: vorTagen(0), zeit: "07:55", ortId: "station",
+        stufe: "durchgefuehrt", setting: "mensch", tags: [t("Notaufnahme-Praktikum")],
+        notiz: t("Schwierige Venenverhältnisse, 2. Versuch erfolgreich") },
+      { massnahmeId: "ekg-geschrieben", datum: vorTagen(1), zeit: "14:20", ortId: "notaufnahme",
+        stufe: "durchgefuehrt", setting: "mensch", tags: [t("Notaufnahme-Praktikum")] },
+      { massnahmeId: "ekg-interpretiert", datum: vorTagen(1), zeit: "14:35", ortId: "notaufnahme",
+        stufe: "assistiert", setting: "mensch", tags: [t("Notaufnahme-Praktikum")],
+        notiz: t("STEMI-Kriterien mit Oberärztin durchgesprochen") },
+      { massnahmeId: "beutel-masken-beatmung", datum: vorTagen(2), zeit: "10:05", ortId: "op",
+        stufe: "durchgefuehrt", setting: "mensch", tags: [t("Anästhesie-Woche")] },
+      { massnahmeId: "larynxmaske", datum: vorTagen(2), zeit: "10:30", ortId: "op",
+        stufe: "assistiert", setting: "mensch", tags: [t("Anästhesie-Woche")] },
+      { massnahmeId: "intubation", datum: vorTagen(3), zeit: "08:15", ortId: "op",
+        stufe: "assistiert", setting: "mensch", tags: [t("Anästhesie-Woche")],
+        notiz: t("Videolaryngoskop, Sicht Grad I") },
+      { massnahmeId: "intubation", datum: vorTagen(9), zeit: "15:40", blockId: "skills-lab",
+        stufe: "durchgefuehrt", setting: "simulator", tags: [t("Skills Lab")] },
+      { massnahmeId: "reanimation", datum: vorTagen(9), zeit: "16:10", blockId: "skills-lab",
+        stufe: "durchgefuehrt", setting: "simulator", tags: [t("Skills Lab")],
+        notiz: t("Megacode-Training, Teamleitung geübt") },
+      { massnahmeId: "intraossaerer-zugang", datum: vorTagen(9), zeit: "16:45", blockId: "skills-lab",
+        stufe: "durchgefuehrt", setting: "simulator", tags: [t("Skills Lab")] },
+      { massnahmeId: "wundversorgung", datum: vorTagen(12), zeit: "11:25", ortId: "rtw",
+        stufe: "durchgefuehrt", setting: "mensch", tags: [t("Rettungswachenpraktikum")] },
+      { massnahmeId: "immobilisation", datum: vorTagen(12), zeit: "12:00", ortId: "rtw",
+        stufe: "assistiert", setting: "mensch", tags: [t("Rettungswachenpraktikum")],
+        notiz: t("Vakuummatratze bei V. a. Wirbelsäulentrauma") },
+      { massnahmeId: "medikamentengabe", datum: vorTagen(13), zeit: "09:30", ortId: "rtw",
+        stufe: "beobachtet", setting: "mensch", tags: [t("Rettungswachenpraktikum")] },
+      { massnahmeId: "sonographie", datum: vorTagen(20), zeit: "13:15", ortId: "innere",
         stufe: "assistiert", setting: "mensch", tags: [] },
-      { massnahmeId: "naht", datum: t(26), zeit: "17:50", ortId: "chirurgie",
-        stufe: "assistiert", setting: "mensch", tags: ["PJ Chirurgie"] },
-      { massnahmeId: "naht", datum: t(33), zeit: "16:05", ortId: "chirurgie",
-        stufe: "durchgefuehrt", setting: "praeparat", tags: ["PJ Chirurgie"],
-        notiz: "Einzelknopfnaht am Nahtpad geübt" }
+      { massnahmeId: "naht", datum: vorTagen(26), zeit: "17:50", ortId: "chirurgie",
+        stufe: "assistiert", setting: "mensch", tags: [t("PJ Chirurgie")] },
+      { massnahmeId: "naht", datum: vorTagen(33), zeit: "16:05", ortId: "chirurgie",
+        stufe: "durchgefuehrt", setting: "praeparat", tags: [t("PJ Chirurgie")],
+        notiz: t("Einzelknopfnaht am Nahtpad geübt") }
     ];
     b.forEach(x => {
       const e = Core.normalisieren(x);
@@ -3650,6 +3712,7 @@ let formId = null;
    geschrieben" und gleich "EKG interpretiert"): beim Speichern entsteht je
    gewählter Maßnahme ein eigener Eintrag mit denselben Angaben. */
 let formMassnahmen = [], formStufe = "durchgefuehrt", formSetting = "mensch";
+let formWeitereOffen = false;
 let formTags = [];
 
 function mWahlToggle(id){
@@ -3708,20 +3771,44 @@ function renderMGrid(){
     + miniIconHtml(m.id)
     + (m.favorit ? '<span class="fav">★</span>' : "") + esc(m.label) + "</button>";
   /* Nach Kategorien gruppiert (in der Reihenfolge der Kategorienliste);
-     bei aktiver Suche entfällt die Gruppierung – dann zählt nur der Treffer. */
+     bei aktiver Suche entfällt die Gruppierung – dann zählt nur der Treffer.
+     Sind Favoriten festgelegt (im Profil oder in der Verwaltung), stehen
+     sie zuoberst und alles Übrige klappt unter "Weitere Maßnahmen" ein. */
+  const gruppiert = menge => Core.mkategorien.map(k => {
+    const drin = menge.filter(m => m.kategorie === k.id)
+      .sort((a, b) => a.label.localeCompare(b.label, "de"));
+    if (!drin.length) return "";
+    return '<div class="mgruppe">' + esc(k.label) + "</div>" + drin.map(knopf).join("");
+  }).join("");
+  const favoriten = Katalog.aktive().filter(m => m.favorit);
   let html;
   if (q){
     html = liste.map(knopf).join("");
+  } else if (favoriten.length){
+    html = '<div class="mgruppe">' + esc(t("Favoriten")) + "</div>"
+      + favoriten.slice().sort((a, b) => a.label.localeCompare(b.label, "de")).map(knopf).join("");
+    const rest = Katalog.aktive().filter(m => !m.favorit);
+    if (!formWeitereOffen){
+      /* Gewählte Nicht-Favoriten bleiben sichtbar – die Auswahl darf nie
+         unsichtbar sein. */
+      html += rest.filter(m => formMassnahmen.indexOf(m.id) >= 0).map(knopf).join("");
+    }
+    if (rest.length){
+      html += '<button type="button" class="aufklapp" id="f-m-weitere">'
+        + esc(t("Weitere Maßnahmen")) + " (" + rest.length + ") "
+        + (formWeitereOffen ? "▴" : "▾") + "</button>";
+      if (formWeitereOffen) html += gruppiert(rest);
+    }
   } else {
-    html = Core.mkategorien.map(k => {
-      const drin = liste.filter(m => m.kategorie === k.id)
-        .sort((a, b) => a.label.localeCompare(b.label, "de"));
-      if (!drin.length) return "";
-      return '<div class="mgruppe">' + esc(k.label) + "</div>" + drin.map(knopf).join("");
-    }).join("");
+    html = gruppiert(liste);
   }
   $("f-mgrid").innerHTML = html
     + '<button type="button" class="neu" id="f-m-neu">' + esc(t("＋ Neue Maßnahme")) + "</button>";
+  const fw = $("f-m-weitere");
+  if (fw) fw.addEventListener("click", () => {
+    formWeitereOffen = !formWeitereOffen;
+    renderMGrid();
+  });
   $("f-mgrid").querySelectorAll("[data-m]").forEach(b =>
     b.addEventListener("click", () => mWahlToggle(b.dataset.m)));
   /* Eine hier angelegte Maßnahme wird gleich mit ausgewählt. */
@@ -3811,6 +3898,7 @@ function formOeffnen(id, vorlage){
   formSetting = v ? v.setting : (letzte ? letzte.setting : "mensch");
   formTags = v && Array.isArray(v.tags) ? v.tags.slice() : [];
   $("f-msuche").value = "";
+  formWeitereOffen = false;
   /* Standardwerte: jetzt – und der Ort des letzten Eintrags bzw. der
      Standard-Ort aus dem Profil. Genau das macht den Alltagseintrag schnell. */
   $("f-datum").value = e ? e.datum : Core.heute();
@@ -4763,6 +4851,19 @@ $("t-ok").addEventListener("click", () => {
    eine eigene Bezeichnung möglich.                                       */
 let profilRollen = [];
 
+function renderProfilFavoriten(){
+  const el = $("p-favoriten");
+  el.innerHTML = Katalog.aktive().slice()
+    .sort((a, b) => a.label.localeCompare(b.label, "de")).map(m =>
+      '<button type="button" class="chip' + (m.favorit ? " active" : "") + '" data-fav="' + m.id + '">'
+      + (m.favorit ? "★ " : "") + esc(m.label) + "</button>").join("");
+  el.querySelectorAll("[data-fav]").forEach(b => b.addEventListener("click", () => {
+    const m = Core.massnahme(b.dataset.fav);
+    Katalog.favorit(m.id, !m.favorit);
+    renderProfilFavoriten();
+  }));
+}
+
 function renderProfilRollen(){
   const ul = $("p-rollen");
   ul.innerHTML = profilRollen.length
@@ -4832,6 +4933,7 @@ function profilDialog(){
   $("p-institution").value = Profil.werte.institution;
   ortSelectFuellen($("p-standardort"), Profil.werte.standardOrt, false);
   closeModal("modal-settings");
+  renderProfilFavoriten();
   uebersetzeDom($("modal-profil"));
   openModal("modal-profil");
 }
@@ -4903,13 +5005,23 @@ function sprachWechsel(neu){
     return de ? ziel(de) : r;
   });
   Profil.speichern();
-  /* Schnappschüsse in den Einträgen auffrischen. */
+  /* Schnappschüsse in den Einträgen auffrischen; die Inhalte der
+     Beispiel-Einträge (Notizen, Tags) ziehen mit – Nutzertexte nie. */
+  const beispielTag = x => BEISPIEL_TAGS.find(d => bekannt(d).indexOf(x) >= 0);
   Daten.alle().forEach(e => {
     const m = Core.massnahme(e.massnahmeId); if (m) e.massnahmeLabel = m.label;
     const o = Core.ort(e.ortId); if (o) e.ortLabel = o.label;
     if (e.blockId && Core.block(e.blockId)) e.blockLabel = Core.blockPfad(e.blockId);
+    const de = BEISPIEL_NOTIZEN.find(d => bekannt(d).indexOf(e.notiz) >= 0);
+    if (de) e.notiz = ziel(de);
+    e.tags = e.tags.map(x => { const dt = beispielTag(x); return dt ? ziel(dt) : x; });
   });
   Daten.speichern();
+  /* Bekannte-Tags-Liste angleichen und entdoppeln. */
+  TagDaten.liste = TagDaten.liste.map(x => { const dt = beispielTag(x); return dt ? ziel(dt) : x; });
+  TagDaten.liste = TagDaten.liste.filter((x, i) =>
+    TagDaten.liste.findIndex(y => y.toLowerCase() === x.toLowerCase()) === i);
+  TagDaten.speichern();
   Einst.set("sprache", neu);
   location.reload();
 }

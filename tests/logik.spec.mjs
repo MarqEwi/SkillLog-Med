@@ -74,7 +74,7 @@ test("Normalisierung setzt Standardwerte und Schnappschüsse", async ({ page }) 
       zeit: "99:99", tags: ["A", "a", " B ", "A"] });
     return { e, kaputt };
   });
-  expect(r.e.massnahmeLabel).toBe("i.v.-Zugang");         /* Schnappschuss aus dem Katalog */
+  expect(r.e.massnahmeLabel).toBe("Intravenöser Zugang");         /* Schnappschuss aus dem Katalog */
   expect(r.e.stufe).toBe("durchgefuehrt");
   expect(r.e.setting).toBe("mensch");
   expect(r.e.tags).toEqual([]);
@@ -132,7 +132,7 @@ test("Statistik zählt Stufen, Settings und Maßnahmen korrekt", async ({ page }
   expect(r.gesamt).toBe(3);
   expect(r.stufen).toEqual({ beobachtet: 1, assistiert: 1, durchgefuehrt: 1 });
   expect(r.settings).toEqual({ simulator: 1, praeparat: 0, mensch: 2 });
-  expect(r.erste).toBe("i.v.-Zugang");
+  expect(r.erste).toBe("Intravenöser Zugang");
   expect(r.ersteZahl).toBe(2);
 });
 
@@ -146,7 +146,7 @@ test("CSV: Semikolons, Anführungszeichen und Umlaute überleben", async ({ page
   });
   const zeilen = csv.trim().split("\r\n");
   expect(zeilen[0]).toBe("Datum;Uhrzeit;Maßnahme;Kompetenzstufe;Setting;Ort;Trainingsblock;Tags;Notiz;Erstellt am");
-  expect(zeilen[1]).toContain("2026-03-10;08:15;i.v.-Zugang;durchgeführt;Mensch");
+  expect(zeilen[1]).toContain("2026-03-10;08:15;Intravenöser Zugang;durchgeführt;Mensch");
   expect(zeilen[1]).toContain('"Zeile mit; Semikolon und ""Zitat"""');
   expect(zeilen[1]).toContain("Anästhesie-Woche");
 });
@@ -213,6 +213,27 @@ test("Katalog: Umbenennen frischt die Schnappschüsse der Einträge auf", async 
   });
   expect(r.label).toBe("i.v.-Zugang gelegt");
   expect(r.schnappschuss).toBe("i.v.-Zugang gelegt");
+});
+
+test("Katalog: alte Kurznamen werden ausgeschrieben, eigene bleiben", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Katalog, Core } = window.SLM;
+    localStorage.setItem(Katalog.KEY, JSON.stringify([
+      { id: "iv-zugang", label: "i.v.-Zugang", kategorie: "zugaenge" },
+      { id: "intubation", label: "Meine Intubation", kategorie: "atemweg" },
+      { id: "harnkatheter", label: "Harnkatheter", kategorie: "sonden" }
+    ]));
+    localStorage.removeItem("slm_katalog_stand");
+    Katalog.laden();
+    return {
+      iv: Core.massnahme("iv-zugang").label,
+      intub: Core.massnahme("intubation").label,
+      kath: Core.massnahme("harnkatheter").label
+    };
+  });
+  expect(r.iv).toBe("Intravenöser Zugang");
+  expect(r.intub).toBe("Meine Intubation");     /* umbenannt → bleibt */
+  expect(r.kath).toBe("Blasenkatheter");
 });
 
 test("Katalog: Symbol überlebt Speichern und Neuladen", async ({ page }) => {
