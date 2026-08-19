@@ -39,7 +39,7 @@ EIN EINTRAG IN 20 SEKUNDEN
 Maßnahme antippen, Kompetenzstufe wählen (beobachtet, assistiert, durchgeführt), Setting dazu (Simulator, Präparat, Mensch), Ort bestätigen – gespeichert. Datum und Uhrzeit stehen schon drin, der letzte Ort ist vorausgewählt, Favoriten und zuletzt genutzte Maßnahmen ganz oben. Für Serien gibt es „Speichern + Neu“, für Wiederholungen „Nochmal erfasst“.
 
 DER KATALOG GEHÖRT DIR
-18 Standardmaßnahmen sind dabei – vom intravenösen Zugang über endotracheale Intubation, Reanimation und Thoraxdrainage bis EKG, Sonographie und Naht. Alles lässt sich umbenennen, archivieren und um eigene Maßnahmen ergänzen. Genauso bei den Orten: Rettungswache, RTW-Einsatz, NEF-Einsatz, Notaufnahme, Schockraum, OP und mehr sind vordefiniert, eigene kommen in Sekunden dazu.
+27 Standardmaßnahmen sind dabei – vom intravenösen Zugang über Guedel- und Wendl-Tubus, Absaugung, endotracheale Intubation, Defibrillation und Reanimation bis Blutzuckermessung, EKG, Sonographie und Naht. Alles lässt sich umbenennen, archivieren und um eigene Maßnahmen ergänzen. Genauso bei den Orten: Rettungswache, RTW-Einsatz, NEF-Einsatz, Notaufnahme, Schockraum, OP und mehr sind vordefiniert, eigene kommen in Sekunden dazu.
 
 TRAININGSBLÖCKE UND TAGS
 Ordne Einträge einem Trainingsblock zu – „Klinikpraktikum“ mit Unterblöcken wie „OP“ oder „Intensivstation“, mit Zeitraum. Dazu freie Tags wie „Klinik“ oder „Nachtdienst“. Damit holst du dir später mit einem Tipp genau die Einträge eines Ausbildungsblocks zurück – im Logbuch, in der Statistik und im Bericht.
