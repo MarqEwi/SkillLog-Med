@@ -138,8 +138,10 @@
   .ic{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:1.8;
     stroke-linecap:round;stroke-linejoin:round;vertical-align:-.2em;flex:none}
   h2{font-size:1.46rem;margin:.1rem 0 .1rem;letter-spacing:-.03em;font-weight:730;line-height:1.2}
-  h3{font-size:.705rem;margin:1.7rem 2px .6rem;text-transform:uppercase;letter-spacing:.1em;
-     color:var(--text2);font-weight:700}
+  /* Bewusst KEIN text-transform:uppercase: das macht aus "Maßnahmen"
+     unicode-bedingt "MASSNAHMEN" – das ß muss erhalten bleiben. */
+  h3{font-size:.78rem;margin:1.7rem 2px .6rem;letter-spacing:.02em;
+     color:var(--text2);font-weight:720}
   h3:first-child{margin-top:.3rem}
   p{margin:.4rem 0}
   .muted{color:var(--text2);font-size:.875rem}
@@ -204,8 +206,9 @@
     margin:8px 0 14px;box-shadow:var(--schatten-l),
       inset 0 1px 0 rgba(255,255,255,.09);
     border:1px solid rgba(255,255,255,.05)}
-  .hero .lead{font-size:.72rem;color:var(--tief-text2);margin:0;font-weight:670;
-    text-transform:uppercase;letter-spacing:.11em}
+  /* Kein uppercase – "Dokumentierte Maßnahmen" behält sein ß. */
+  .hero .lead{font-size:.8rem;color:var(--tief-text2);margin:0;font-weight:670;
+    letter-spacing:.025em}
   .hero .big{font-size:2.15rem;font-weight:760;margin:6px 0 0;letter-spacing:-.035em;line-height:1.12;
     font-variant-numeric:tabular-nums}
   .hero .big small{font-size:1rem;font-weight:590;letter-spacing:-.015em;margin-left:7px;
@@ -429,9 +432,10 @@
     html[data-theme="auto"] .mgrid button.active{color:var(--text)}
   }
   .mgrid button .fav{color:var(--warn);font-size:.72rem;margin-right:4px}
-  /* Kategorien-Zwischenköpfe in der Maßnahmen-Auswahl */
-  .mgrid .mgruppe{grid-column:1 / -1;font-size:.68rem;font-weight:700;color:var(--text2);
-    text-transform:uppercase;letter-spacing:.09em;margin:8px 2px 0}
+  /* Kategorien-Zwischenköpfe in der Maßnahmen-Auswahl – kein uppercase,
+     Kategorien wie "Gefäßzugänge" behalten ihr ß. */
+  .mgrid .mgruppe{grid-column:1 / -1;font-size:.74rem;font-weight:720;color:var(--text2);
+    letter-spacing:.02em;margin:8px 2px 0}
   .mgrid .mgruppe:first-child{margin-top:2px}
   .mgrid button.neu{border-style:dashed;color:var(--accent);border-color:var(--accent-rand);
     box-shadow:none}
@@ -657,8 +661,8 @@
       border-bottom:.7pt solid #c8d6e3;padding-bottom:2pt}
     #print-bereich table{width:100%;border-collapse:collapse;font-size:9pt}
     #print-bereich th{text-align:left;background:#eef3f8;color:#155e9e;
-      border-bottom:1.1pt solid #155e9e;padding:3.5pt 5pt;font-size:8.2pt;
-      text-transform:uppercase;letter-spacing:.04em}
+      border-bottom:1.1pt solid #155e9e;padding:3.5pt 5pt;font-size:8.6pt;
+      letter-spacing:.015em}
     #print-bereich td{border-bottom:.5pt solid #c9cdd2;padding:3.5pt 5pt;vertical-align:top}
     #print-bereich .p-meta{border-left:2pt solid #155e9e;margin-top:2pt}
     #print-bereich .p-meta td{border-bottom:none;padding:1.5pt 5pt 1.5pt 8pt}
@@ -886,12 +890,14 @@
 
     <div class="card">
       <h3 style="margin-top:.2rem">Sicherung</h3>
+      <!-- Sichern = Daten verlassen die App (Pfeil hoch),
+           Wiederherstellen = Datei kommt herein (Pfeil runter). -->
       <button class="settings-row" id="ex-backup" style="border-top:none">
-        <svg class="ic" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 21h16"/></svg>
+        <svg class="ic" viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M4 21h16"/></svg>
         <span class="t"><b>Daten sichern (JSON)</b><span>Alle Einträge und Stammdaten als Datei</span></span>
       </button>
       <button class="settings-row" id="ex-restore">
-        <svg class="ic" viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M4 21h16"/></svg>
+        <svg class="ic" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 21h16"/></svg>
         <span class="t"><b>Daten wiederherstellen</b><span>Gesicherte JSON-Datei einlesen</span></span>
       </button>
       <input type="file" id="ex-restore-file" accept="application/json,.json" style="display:none">
@@ -975,7 +981,15 @@
     </div>
 
     <h3>Daten</h3>
-    <button class="settings-row" id="s-beispiele" style="border-top:none">
+    <button class="settings-row" id="s-backup" style="border-top:none">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M4 21h16"/></svg>
+      <span class="t"><b>Daten sichern (JSON)</b><span>Alle Einträge und Stammdaten als Datei</span></span>
+    </button>
+    <button class="settings-row" id="s-restore">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 21h16"/></svg>
+      <span class="t"><b>Daten wiederherstellen</b><span>Gesicherte JSON-Datei einlesen</span></span>
+    </button>
+    <button class="settings-row" id="s-beispiele">
       <svg class="ic" viewBox="0 0 24 24"><path d="M12 3l2.4 5.5 6 .5-4.5 4 1.4 5.8L12 15.9 6.7 18.8 8.1 13 3.6 9l6-.5z"/></svg>
       <span class="t"><b>Beispieldaten laden</b><span>Zum Ausprobieren – ergänzt vorhandene Einträge</span></span>
     </button>
@@ -1314,7 +1328,9 @@ const Core = {
   ],
   ORTE_VORLAGE: [
     { id: "rettungswache",  label: "Rettungswache" },
-    { id: "rtw",            label: "RTW" },
+    /* Die ID "rtw" bleibt aus Bestandsgründen – sichtbar ist nur das Label. */
+    { id: "rtw",            label: "RTW-Einsatz" },
+    { id: "nef-einsatz",    label: "NEF-Einsatz" },
     { id: "notaufnahme",    label: "Notaufnahme" },
     { id: "schockraum",     label: "Schockraum" },
     { id: "op",             label: "OP" },
@@ -1719,8 +1735,10 @@ const Core = {
     const rollen = Array.isArray(p.rollen) ? p.rollen.filter(Boolean)
       : (p.rolle ? [p.rolle] : []);
     if (rollen.length){
+      /* Komma statt Mittelpunkt: mancher PDF-Betrachter zeigt "·" als
+         Kästchen, weil er die Standardschrift durch eine eigene ersetzt. */
       meta.push([rollen.length > 1 ? "Rollen / Berufsgruppen" : "Rolle / Berufsgruppe",
-        rollen.join(" · ")]);
+        rollen.join(", ")]);
     }
     if (p.institution) meta.push(["Ausbildungsstätte", p.institution]);
     /* Der gewählte Trainingsblock steht im Kopf des Berichts – genau das
@@ -1804,16 +1822,19 @@ const Pdf = {
   },
 
   /* String in WinAnsi-Oktette überführen und für PDF-Literale maskieren.
-     Zeichen außerhalb von WinAnsi werden zu "?" statt still zu verschwinden. */
+     Typografische Zeichen werden in sichere ASCII-Formen übersetzt: Manche
+     PDF-Betrachter (vor allem mobile) tauschen die Standard-Helvetica gegen
+     eine eigene Schrift und zeigen Bytes wie "·" oder "–" dann als Kästchen.
+     Übrige Zeichen außerhalb von WinAnsi werden zu "?" statt still zu
+     verschwinden – Umlaute und ß liegen im sicheren Latin-1-Bereich. */
   _enc(s){
-    const SONDER = { "€": 0x80, "‚": 0x82, "„": 0x84, "…": 0x85,
-      "‘": 0x91, "’": 0x92, "“": 0x93, "”": 0x94,
-      "•": 0x95, "–": 0x96, "—": 0x97 };
+    const ERSATZ = { "·": "/", "•": "-", "–": "-", "—": "-", "‚": ",",
+      "„": '"', "“": '"', "”": '"', "‘": "'", "’": "'", "…": "...", "€": "EUR" };
     let out = "";
     for (const ch of String(s == null ? "" : s)){
+      if (ERSATZ[ch] != null){ out += ERSATZ[ch]; continue; }
       let c = ch.codePointAt(0);
-      if (SONDER[ch] != null) c = SONDER[ch];
-      else if (c === 10 || c === 13){ c = 32; }
+      if (c === 10 || c === 13){ c = 32; }
       else if (c > 255) c = 63;                     /* "?" */
       if (c === 40 || c === 41 || c === 92) out += "\\";
       out += String.fromCharCode(c);
@@ -2328,6 +2349,7 @@ const Orte = {
     const roh = load(this.KEY, null);
     if (Array.isArray(roh)){
       Core.orte = roh.map(o => this.normalisieren(o)).filter(Boolean).slice(0, this.MAX);
+      this.nachziehen();
     } else {
       Core.orte = Core.ORTE_VORLAGE.map(o => ({ id: o.id, label: o.label, eigen: false }));
       this.speichern();
@@ -2335,6 +2357,23 @@ const Orte = {
     return Core.orte;
   },
   speichern(){ store(this.KEY, Core.orte); },
+
+  /* Einmalige Migration für Bestände: Das alte "RTW" wird zu "RTW-Einsatz"
+     (nur wenn es nicht umbenannt wurde), "NEF-Einsatz" kommt dazu. Die
+     Standmarke verhindert, dass ein bewusst gelöschter Ort wiederkehrt. */
+  nachziehen(){
+    if (load("slm_orte_stand", 0) >= 2) return;
+    /* Nur das Label anfassen – die Einträge sind hier noch nicht geladen.
+       Ihre Anzeige nutzt ohnehin das Live-Label des Ortes; der Schnappschuss
+       greift erst, wenn der Ort einmal gelöscht wird. */
+    const alt = Core.orte.find(o => o.id === "rtw");
+    if (alt && alt.label === "RTW") alt.label = "RTW-Einsatz";
+    if (!Core.orte.some(o => o.id === "nef-einsatz") && Core.orte.length < this.MAX
+      && !Core.orte.some(o => o.label.toLowerCase() === "nef-einsatz"))
+      Core.orte.push({ id: "nef-einsatz", label: "NEF-Einsatz", eigen: false });
+    store("slm_orte_stand", 2);
+    this.speichern();
+  },
 
   normalisieren(o){
     if (!o || typeof o !== "object") return null;
@@ -4142,11 +4181,16 @@ $("ex-pdf").addEventListener("click", () => Report.pdf());
 $("ex-csv").addEventListener("click", () => Report.csv());
 $("ex-druck").addEventListener("click", () => Report.drucken());
 
-$("ex-backup").addEventListener("click", async () => {
+/* Sichern/Wiederherstellen hängt an zwei Stellen: im Export und in den
+   Einstellungen – beide nutzen dieselben Funktionen. */
+async function backupErstellen(){
   await Bridge.saveText("skilllog-med-sicherung-" + Report.stamp() + ".json",
     JSON.stringify(Daten.exportObjekt(), null, 2), "application/json", "SkillLog-Med-Sicherung");
-});
+}
+$("ex-backup").addEventListener("click", backupErstellen);
 $("ex-restore").addEventListener("click", () => $("ex-restore-file").click());
+$("s-backup").addEventListener("click", backupErstellen);
+$("s-restore").addEventListener("click", () => $("ex-restore-file").click());
 $("ex-restore-file").addEventListener("change", e => {
   const f = e.target.files && e.target.files[0];
   if (!f) return;

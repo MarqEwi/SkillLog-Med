@@ -579,8 +579,10 @@ test("Profil: mehrere Rollen anlegen, eigene ergänzen, eine entfernen", async (
   expect(r.rollen).toEqual(["Physician-Assistant-Student:in", "Notfallsanitäter:in",
     "Praxisanleiter:in i. A."]);
   /* Bei mehreren Rollen steht das Feld im Plural. */
+  /* Komma statt "·": das Mittelpunkt-Zeichen wird von manchen PDF-Viewern
+     als Kästchen dargestellt. */
   expect(r.meta["Rollen / Berufsgruppen"])
-    .toBe("Physician-Assistant-Student:in · Notfallsanitäter:in · Praxisanleiter:in i. A.");
+    .toBe("Physician-Assistant-Student:in, Notfallsanitäter:in, Praxisanleiter:in i. A.");
 
   /* Entfernen wirkt erst nach dem Speichern. */
   await page.click("#btn-settings");

@@ -231,6 +231,33 @@ test("Katalog: Symbol überlebt Speichern und Neuladen", async ({ page }) => {
   expect(r.ohne).toBeUndefined();
 });
 
+test("Orte: RTW-Einsatz und NEF-Einsatz sind Standard, Bestände ziehen nach", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Orte, Core } = window.SLM;
+    const frisch = Orte.alle().map(o => o.label);
+    /* Alten Speicherstand nachstellen: "RTW" ohne Standmarke. */
+    localStorage.setItem("slm_orte", JSON.stringify([{ id: "rtw", label: "RTW", eigen: false }]));
+    localStorage.removeItem("slm_orte_stand");
+    Orte.laden();
+    const migriert = Core.orte.map(o => o.label).sort();
+    /* Bewusst gelöschter Ort kehrt nicht zurück (Standmarke gesetzt). */
+    Orte.entfernen("nef-einsatz");
+    Orte.laden();
+    const geloescht = Core.orte.some(o => o.id === "nef-einsatz");
+    return { frisch, migriert, geloescht };
+  });
+  expect(r.frisch).toContain("RTW-Einsatz");
+  expect(r.frisch).toContain("NEF-Einsatz");
+  expect(r.migriert).toEqual(["NEF-Einsatz", "RTW-Einsatz"]);
+  expect(r.geloescht).toBe(false);
+});
+
+test("PDF-Encoder übersetzt typografische Zeichen in sichere ASCII-Formen", async ({ page }) => {
+  const r = await page.evaluate(() =>
+    window.SLM.Pdf._enc("Klinikpraktikum · OP – heute… „gut“"));
+  expect(r).toBe('Klinikpraktikum / OP - heute... "gut"');
+});
+
 test("Orte: Löschen lässt Einträge über den Schnappschuss lesbar", async ({ page }) => {
   const r = await page.evaluate(() => {
     const { Core, Daten, Orte } = window.SLM;

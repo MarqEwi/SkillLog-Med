@@ -39,8 +39,8 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
 - **Maßnahmen-Kategorien:** acht mitgelieferte Gruppen (Zugänge, Atemweg,
   Notfall, Diagnostik …) plus eigene – gruppieren Formular, Verwaltung,
   Filter und Statistik; „Sonstiges“ ist der feste Auffangwert
-- **Orte & Tags:** vordefinierte Einsatzbereiche (RTW, Notaufnahme, OP,
-  Station …) plus eigene. Tags sind bewusst ein leichtes Nebenwerkzeug: freie
+- **Orte & Tags:** vordefinierte Einsatzbereiche (RTW-Einsatz, NEF-Einsatz,
+  Notaufnahme, OP, Station …) plus eigene. Tags sind bewusst ein leichtes Nebenwerkzeug: freie
   Schlagworte wie „Klinik“, mehrfach pro Eintrag, bekannte stehen zum
   Antippen bereit
 - **Dashboard:** Gesamtzahl, Heute / 7 Tage / Monat, letzte Einträge,
@@ -58,7 +58,8 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
   Druckansicht im Browser im selben Design. Tags bleiben im Bericht
   standardmäßig außen vor (privates Ordnungswerkzeug) und lassen sich in
   den Einstellungen zuschalten
-- **Sicherung:** JSON-Backup und -Wiederherstellung inklusive aller Stammdaten
+- **Sicherung:** JSON-Backup und -Wiederherstellung inklusive aller
+  Stammdaten – erreichbar im Export **und** in den Einstellungen
 - **Profil:** Name, **mehrere Rollen** (z. B. PA-Student:in *und*
   Notfallsanitäter:in, eigene Bezeichnungen möglich), Institution und
   Standard-Ort – erscheint im Bericht
