@@ -9,7 +9,7 @@ test("Flow: schneller Alltagseintrag mit Stufe, Setting und Ort", async ({ page 
   await eintragAnlegen(page, { massnahme: "intubation", stufe: "assistiert",
     setting: "simulator", ort: "op", notiz: "Videolaryngoskop" });
 
-  await expect(page.locator("#detail-inhalt h2")).toHaveText("Intubation");
+  await expect(page.locator("#detail-inhalt h2")).toHaveText("Endotracheale Intubation");
   await expect(page.locator("#detail-inhalt .pill")).toContainText("assistiert");
   await expect(page.locator("#detail-inhalt")).toContainText("Simulator");
   await expect(page.locator("#detail-inhalt")).toContainText("OP");
@@ -44,7 +44,7 @@ test("Maßnahmensuche filtert die Auswahl, Schnellwahl übernimmt Zuletzt-Genutz
   await expect(page.locator("#f-schnell")).toContainText("Reanimation");
   await page.fill("#f-msuche", "intub");
   await expect(page.locator("#f-mgrid [data-m]")).toHaveCount(1);
-  await expect(page.locator("#f-mgrid")).toContainText("Intubation");
+  await expect(page.locator("#f-mgrid")).toContainText("Endotracheale Intubation");
 });
 
 test("Speichern + Neu behält Ort und Tags für den nächsten Eintrag", async ({ page }) => {
@@ -223,6 +223,34 @@ test("Formular: mehrere Maßnahmen gemeinsam speichern", async ({ page }) => {
   await page.click('#f-mgrid [data-m="reanimation"]');
   await page.click("#f-speichern");
   await expect(page.locator("#f-m-err")).toBeVisible();
+});
+
+test("Favoriten-Maßnahmen: im Profil wählbar, Formular klappt den Rest ein", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-profil");
+  await page.click('#p-favoriten [data-fav="reanimation"]');
+  await page.click('#p-favoriten [data-fav="iv-zugang"]');
+  await page.click("#p-ok");
+
+  await page.click("#btn-neu");
+  /* Favoriten sichtbar, der Rest ist eingeklappt. */
+  await expect(page.locator('#f-mgrid [data-m="reanimation"]')).toBeVisible();
+  await expect(page.locator('#f-mgrid [data-m="iv-zugang"]')).toBeVisible();
+  await expect(page.locator('#f-mgrid [data-m="intubation"]')).toHaveCount(0);
+  await expect(page.locator("#f-m-weitere")).toContainText("Weitere Maßnahmen (16)");
+  /* Ausklappen zeigt alles, gruppiert nach Kategorien. */
+  await page.click("#f-m-weitere");
+  await expect(page.locator('#f-mgrid [data-m="intubation"]')).toBeVisible();
+  /* Die Suche findet auch Eingeklapptes. */
+  await page.click("#f-m-weitere");
+  await expect(page.locator('#f-mgrid [data-m="intubation"]')).toHaveCount(0);
+  await page.fill("#f-msuche", "sono");
+  await expect(page.locator('#f-mgrid [data-m="sonographie"]')).toBeVisible();
+  /* Eine gewählte Nicht-Favoritin bleibt nach dem Einklappen sichtbar. */
+  await page.click('#f-mgrid [data-m="sonographie"]');
+  await page.fill("#f-msuche", "");
+  await expect(page.locator('#f-mgrid [data-m="sonographie"]')).toBeVisible();
+  await expect(page.locator('#f-mgrid [data-m="magensonde"]')).toHaveCount(0);
 });
 
 test("Stammdaten: Favorit erscheint in der Schnellwahl, Archiviertes verschwindet", async ({ page }) => {
@@ -549,6 +577,15 @@ test("Sprache: Englisch übersetzt Oberfläche, Katalog und Bericht – Deutsch 
   expect(en.eigene).toBe("Meine Naht");
   expect(en.ort).toBe("Emergency department");
   expect(en.meta.Status).toBe("Draft");
+  /* Beispieldaten entstehen in der aktiven Sprache – Notizen und Tags. */
+  await page.click("#btn-settings");
+  await page.click("#s-beispiele");
+  const beispiel = await page.evaluate(() => {
+    const e = window.SLM.Daten.alle().find(x => x.massnahmeId === "reanimation" && x.setting === "simulator");
+    return e ? { notiz: e.notiz, tags: e.tags } : null;
+  });
+  expect(beispiel.notiz).toBe("Megacode training, practiced team leadership");
+  expect(beispiel.tags).toEqual(["Skills lab"]);
   /* Zurück auf Deutsch – Standard-Labels kehren zurück, eigene bleiben. */
   await page.click("#btn-settings");
   await page.selectOption("#s-sprache", "de");

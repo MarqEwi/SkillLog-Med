@@ -19,6 +19,9 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
   (vorbelegt mit „jetzt“), Ort, Trainingsblock und Tags – ein Eintrag steht in
   10–20 Sekunden. Favoriten und zuletzt genutzte Maßnahmen ganz oben,
   „Speichern + Neu“ für Serien, „Nochmal erfasst“ zum Duplizieren.
+  Sind **Favoriten-Maßnahmen** festgelegt (im Profil oder per Stern in der
+  Verwaltung), zeigt das Formular nur sie – alles Übrige klappt unter
+  „Weitere Maßnahmen“ ein, die Suche findet weiterhin alles.
   **Mehrere Maßnahmen** sind gemeinsam wählbar (z. B. „EKG geschrieben“ und
   „EKG interpretiert“) – beim Speichern entsteht je Maßnahme ein Eintrag
 - **Mehrfach an einem Tag:** dieselbe Maßnahme mit einer Anzahl auf einmal
@@ -30,8 +33,8 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
   Zeitraum. In Logbuch, Statistik und Export über eine „Block“-Chip wählbar
   (ein ruhiger Auswahl-Dialog mit Zeitraum je Block statt einer Chip-Flut);
   im Bericht setzt die Blockwahl den Zeitraum
-- **Maßnahmenkatalog:** 18 mitgelieferte Standardmaßnahmen (i.v.-Zugang,
-  Intubation, Reanimation, EKG, Sonographie, Naht …) mit eigenen
+- **Maßnahmenkatalog:** 18 mitgelieferte Standardmaßnahmen (Intravenöser Zugang,
+  Endotracheale Intubation, Reanimation, EKG, Sonographie, Naht …) mit eigenen
   Piktogrammen, frei erweiterbar, umbenennbar, archivierbar, mit Favoriten.
   Eigene Maßnahmen bekommen auf Wunsch ein **Symbol**: eines von 26
   mitgelieferten Piktogrammen (auch allgemeine wie Stethoskop, Skalpell,
@@ -65,15 +68,17 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
 - **Fehlerverzeihend:** Gelöschte Einträge lassen sich direkt über den
   Toast „Eintrag gelöscht – Rückgängig“ wiederholen (gut 5 Sekunden)
 - **Profil:** Name, **mehrere Rollen** (z. B. PA-Student:in *und*
-  Notfallsanitäter:in, eigene Bezeichnungen möglich), Institution und
-  Standard-Ort – erscheint im Bericht
+  Notfallsanitäter:in, eigene Bezeichnungen möglich), Institution,
+  Standard-Ort und die **Favoriten-Maßnahmen** – erscheint im Bericht
 - **Sechs Sprachen:** Deutsch, Englisch, Spanisch, Französisch, Italienisch
   und Portugiesisch – umschaltbar in den Einstellungen. Übersetzt werden
   die komplette Oberfläche, der PDF-Bericht, die Druckansicht, der
   CSV-Kopf **und** die Labels der Standard-Kataloge (nur solange sie nicht
   umbenannt wurden – eigene Begriffe und Einträge bleiben unangetastet).
   Deutsch ist die Quellsprache; alle Zielsprachen nutzen nur Zeichen, die
-  die PDF-Standardschrift sicher darstellt
+  die PDF-Standardschrift sicher darstellt. Beispieldaten (inklusive
+  Notizen und Tags) entstehen in der aktiven Sprache und ziehen beim
+  Sprachwechsel mit
 - Helles Design mit Dark Mode, responsiv, Ersteinrichtungs-Dialog
 
 ## Technik
