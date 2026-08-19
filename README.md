@@ -55,7 +55,9 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
   dezente Tabellenköpfe – bewusst tonersparend) mit Zusammenfassung,
   Detailliste und **Unterschriftsblock** für die Praxisanleitung (ohne
   Abhängigkeiten direkt in der App erzeugt), CSV-Export für Excel/Numbers,
-  Druckansicht im Browser im selben Design
+  Druckansicht im Browser im selben Design. Tags bleiben im Bericht
+  standardmäßig außen vor (privates Ordnungswerkzeug) und lassen sich in
+  den Einstellungen zuschalten
 - **Sicherung:** JSON-Backup und -Wiederherstellung inklusive aller Stammdaten
 - **Profil:** Name, **mehrere Rollen** (z. B. PA-Student:in *und*
   Notfallsanitäter:in, eigene Bezeichnungen möglich), Institution und
