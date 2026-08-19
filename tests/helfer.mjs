@@ -1,11 +1,18 @@
 // Gemeinsame Helfer für die Playwright-Tests.
 
 /* Öffnet die App mit übersprungener Kurzeinführung, damit die Tests direkt
-   auf dem Dashboard landen. */
+   auf dem Dashboard landen. Standardmäßig gilt die App als schon einmal
+   gestartet – dann legt sie keinen Schau-Eintrag an und die Tests beginnen
+   mit einem leeren Logbuch. Mit { ersterStart: true } wird der echte
+   Erststart geprüft. */
 export async function appOeffnen(page, opts = {}){
-  await page.addInitScript(() => {
+  const ersterStart = opts.ersterStart === true;
+  await page.addInitScript(ersterStart => {
     localStorage.setItem("slm_onboarding_done", "true");
-  });
+    if (!ersterStart){
+      localStorage.setItem("slm_daten", JSON.stringify({ v: 1, eintraege: [] }));
+    }
+  }, ersterStart);
   if (opts.vorher) await page.addInitScript(opts.vorher);
   await page.goto("/index.html");
   await page.waitForFunction(() => !!window.SLM);

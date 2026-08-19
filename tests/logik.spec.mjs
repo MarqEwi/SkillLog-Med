@@ -423,6 +423,85 @@ test("Sicherung erhält Blöcke samt Zuordnung", async ({ page }) => {
   expect(r).toBe("Auslandsfamulatur · Ambulanz");
 });
 
+test("Zusammengelegte Maßnahmen: alte IDs zeigen auf den neuen Eintrag", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Core, Daten } = window.SLM;
+    /* Ein Eintrag aus einem älteren Stand mit der alten Maßnahmen-ID */
+    const e = Daten.upsert({ massnahmeId: "sono-assistiert", datum: "2026-03-10",
+      stufe: "assistiert" });
+    const n = Daten.upsert({ massnahmeId: "naht-durchgefuehrt", datum: "2026-03-11",
+      stufe: "durchgefuehrt" });
+    return {
+      id: Daten.get(e.id).massnahmeId, label: Core.mLabel(Daten.get(e.id)),
+      stufe: Daten.get(e.id).stufe,
+      nahtId: Daten.get(n.id).massnahmeId, nahtLabel: Core.mLabel(Daten.get(n.id)),
+      /* Die Doppel-Einträge sind aus dem Katalog verschwunden. */
+      katalog: Core.katalog.filter(m => /sono|naht/.test(m.id)).map(m => m.id)
+    };
+  });
+  expect(r.id).toBe("sonographie");
+  expect(r.label).toBe("Sonographie");
+  /* Die Kompetenzstufe bleibt unangetastet – sie trägt jetzt die Aussage. */
+  expect(r.stufe).toBe("assistiert");
+  expect(r.nahtId).toBe("naht");
+  expect(r.nahtLabel).toBe("Naht / Klammerung");
+  expect(r.katalog.sort()).toEqual(["naht", "sonographie"]);
+});
+
+test("Katalog-Migration führt alte Stände zusammen", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Core, Katalog } = window.SLM;
+    /* Katalogstand von früher: beide Sonographie-Einträge getrennt,
+       einer davon als Favorit. */
+    localStorage.setItem(Katalog.KEY, JSON.stringify([
+      { id: "iv-zugang", label: "i.v.-Zugang", kategorie: "zugaenge" },
+      { id: "sono-assistiert", label: "Sonographie assistiert",
+        kategorie: "diagnostik", favorit: true },
+      { id: "sono-durchgefuehrt", label: "Sonographie durchgeführt",
+        kategorie: "diagnostik", archiviert: true }
+    ]));
+    Katalog.laden();
+    const s = Core.massnahme("sonographie");
+    return { ids: Core.katalog.map(m => m.id), favorit: s.favorit, archiviert: s.archiviert,
+      label: s.label };
+  });
+  expect(r.ids).toEqual(["iv-zugang", "sonographie"]);
+  expect(r.label).toBe("Sonographie");
+  /* Favorit gewinnt, archiviert nur wenn beide archiviert waren. */
+  expect(r.favorit).toBe(true);
+  expect(r.archiviert).toBe(false);
+});
+
+test("Blöcke: Zeitraum wird gespeichert und lesbar aufbereitet", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const { Core, Bloecke } = window.SLM;
+    const voll = Bloecke.hinzufuegen("Famulatur Innere", "", "2026-03-01", "2026-03-31");
+    const offen = Bloecke.hinzufuegen("Laufende Rotation", "", "2026-04-01", "");
+    const ohne = Bloecke.hinzufuegen("Ohne Datum");
+    Bloecke.umbenennen(voll.id, "Famulatur Innere", "2026-03-02", "2026-03-30");
+    return {
+      voll: Core.blockZeitraum(voll.id),
+      offen: Core.blockZeitraum(offen.id),
+      ohne: Core.blockZeitraum(ohne.id),
+      gespeichert: [Core.block(voll.id).von, Core.block(voll.id).bis]
+    };
+  });
+  expect(r.voll).toBe("02.03.2026 – 30.03.2026");
+  expect(r.offen).toBe("ab 01.04.2026");
+  expect(r.ohne).toBe("");
+  expect(r.gespeichert).toEqual(["2026-03-02", "2026-03-30"]);
+});
+
+test("Bericht nennt den Trainingsblock samt Zeitraum", async ({ page }) => {
+  const meta = await page.evaluate(() => {
+    const { Core, Bloecke } = window.SLM;
+    Bloecke.umbenennen("rettungswache", "Rettungswachenpraktikum", "2026-02-01", "2026-02-28");
+    const b = Core.berichtDaten([], { block: "rettungswache" }, {});
+    return Object.fromEntries(b.meta);
+  });
+  expect(meta["Trainingsblock"]).toBe("Rettungswachenpraktikum (01.02.2026 – 28.02.2026)");
+});
+
 test("Monogramm bildet lesbare Initialen", async ({ page }) => {
   const r = await core(page, (Core) => ({
     iv: Core.monogramm("i.v.-Zugang"),
