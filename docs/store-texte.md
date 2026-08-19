@@ -53,6 +53,9 @@ Der PDF-Bericht bündelt einen frei wählbaren Zeitraum: Zusammenfassung je Maß
 KEINE PATIENTENAKTE
 SkillLog Med dokumentiert deine Ausbildung, nicht deine Patienten. Die App fragt nirgends nach Patientendaten und erinnert im Notizfeld daran, keine zu erfassen.
 
+SECHS SPRACHEN
+Deutsch, Englisch, Spanisch, Französisch, Italienisch und Portugiesisch – in den Einstellungen umschaltbar, inklusive Bericht und Standardkatalog.
+
 ALLES BLEIBT AUF DEINEM GERÄT
 Kein Konto, keine Anmeldung, kein Server, keine Cloud, keine Werbung, keine Käufe. Alle Daten liegen ausschließlich lokal; Sicherung und Export erzeugst du selbst als Datei. Funktioniert komplett offline, hell und dunkel.
 

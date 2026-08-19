@@ -531,6 +531,36 @@ test("Tags erscheinen im Bericht nur mit eingeschalteter Einstellung", async ({ 
   expect(an).toBe(true);
 });
 
+test("Sprache: Englisch übersetzt Oberfläche, Katalog und Bericht – Deutsch kommt zurück", async ({ page }) => {
+  await page.click("#btn-settings");
+  await page.click("#s-beispiele");
+  /* Eine umbenannte Maßnahme darf der Sprachwechsel nicht anfassen. */
+  await page.evaluate(() => window.SLM.Katalog.umbenennen("naht", "Meine Naht"));
+  await page.click("#btn-settings");
+  await page.selectOption("#s-sprache", "en");
+  await expect(page.locator("#head-sub")).toHaveText("Your competency logbook");
+  const en = await page.evaluate(() => ({
+    ekg: window.SLM.Core.massnahme("ekg-geschrieben").label,
+    eigene: window.SLM.Core.massnahme("naht").label,
+    ort: window.SLM.Core.ort("notaufnahme").label,
+    meta: Object.fromEntries(window.SLM.Core.berichtDaten([], {}, { rollen: [] }).meta)
+  }));
+  expect(en.ekg).toBe("ECG recorded");
+  expect(en.eigene).toBe("Meine Naht");
+  expect(en.ort).toBe("Emergency department");
+  expect(en.meta.Status).toBe("Draft");
+  /* Zurück auf Deutsch – Standard-Labels kehren zurück, eigene bleiben. */
+  await page.click("#btn-settings");
+  await page.selectOption("#s-sprache", "de");
+  await expect(page.locator("#head-sub")).toHaveText("Dein Kompetenzlogbuch");
+  const de = await page.evaluate(() => ({
+    ekg: window.SLM.Core.massnahme("ekg-geschrieben").label,
+    eigene: window.SLM.Core.massnahme("naht").label
+  }));
+  expect(de.ekg).toBe("EKG geschrieben");
+  expect(de.eigene).toBe("Meine Naht");
+});
+
 test("Ende vor Beginn wird abgelehnt", async ({ page }) => {
   await page.click("#btn-settings");
   await page.click("#s-stamm");

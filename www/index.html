@@ -964,6 +964,9 @@
       <button type="button" data-v="dark">Dunkel</button>
     </div>
 
+    <label class="field" for="s-sprache">Sprache</label>
+    <select id="s-sprache"></select>
+
     <h3>Profil &amp; Stammdaten</h3>
     <button class="settings-row" id="s-profil" style="border-top:none">
       <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
@@ -1225,6 +1228,60 @@
 <div id="print-bereich"></div>
 <script>
 "use strict";
+
+/* =========================================================================
+   0. SPRACHEN – Übersetzung der Oberfläche
+   Deutsch ist die Quellsprache; das Wörterbuch bildet deutsche Texte auf
+   die Zielsprache ab. t() übersetzt einzelne Strings, uebersetzeDom()
+   übersetzt fertige DOM-Teile (statisches HTML und frisch gerenderte
+   Ansichten) über exakt passende Textknoten und Attribute. Die Labels der
+   Standard-Kataloge werden beim Sprachwechsel im Speicher migriert.
+   ========================================================================= */
+const SPRACHEN = {"de":"Deutsch","en":"English","es":"Español","fr":"Français","it":"Italiano","pt":"Português"};
+const WTAGE = {"de":["So","Mo","Di","Mi","Do","Fr","Sa"],"en":["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],"es":["Do","Lu","Ma","Mi","Ju","Vi","Sá"],"fr":["Di","Lu","Ma","Me","Je","Ve","Sa"],"it":["Do","Lu","Ma","Me","Gi","Ve","Sa"],"pt":["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"]};
+const LOCALES = { de: "de-DE", en: "en-GB", es: "es-ES", fr: "fr-FR", it: "it-IT", pt: "pt-PT" };
+let SPRACHE = "de";
+const UEB = {"beobachtet":{"en":"observed","es":"observado","fr":"observé","it":"osservato","pt":"observado"},"assistiert":{"en":"assisted","es":"asistido","fr":"assisté","it":"assistito","pt":"assistido"},"durchgeführt":{"en":"performed","es":"realizado","fr":"réalisé","it":"eseguito","pt":"realizado"},"Simulator":{"en":"Simulator","es":"Simulador","fr":"Simulateur","it":"Simulatore","pt":"Simulador"},"Präparat":{"en":"Specimen","es":"Preparado","fr":"Préparation","it":"Preparato","pt":"Peça anatómica"},"Mensch":{"en":"Patient","es":"Paciente","fr":"Patient","it":"Paziente","pt":"Doente"},"i.v.-Zugang":{"en":"IV access","es":"Acceso i.v.","fr":"Voie veineuse","it":"Accesso e.v.","pt":"Acesso i.v."},"Medikamentengabe":{"en":"Medication administration","es":"Administración de medicación","fr":"Administration de médicaments","it":"Somministrazione di farmaci","pt":"Administração de medicação"},"Intubation":{"en":"Intubation","es":"Intubación","fr":"Intubation","it":"Intubazione","pt":"Entubação"},"Beutel-Masken-Beatmung":{"en":"Bag-valve-mask ventilation","es":"Ventilación con bolsa-mascarilla","fr":"Ventilation au ballon-masque","it":"Ventilazione pallone-maschera","pt":"Ventilação com máscara e insuflador"},"Larynxmaske":{"en":"Laryngeal mask","es":"Mascarilla laríngea","fr":"Masque laryngé","it":"Maschera laringea","pt":"Máscara laríngea"},"Reanimation":{"en":"Resuscitation (CPR)","es":"Reanimación (RCP)","fr":"Réanimation (RCP)","it":"Rianimazione (RCP)","pt":"Reanimação (RCP)"},"Blutentnahme":{"en":"Blood draw","es":"Extracción de sangre","fr":"Prise de sang","it":"Prelievo di sangue","pt":"Colheita de sangue"},"Arterielle Punktion":{"en":"Arterial puncture","es":"Punción arterial","fr":"Ponction artérielle","it":"Puntura arteriosa","pt":"Punção arterial"},"Intraossärer Zugang":{"en":"Intraosseous access","es":"Acceso intraóseo","fr":"Voie intra-osseuse","it":"Accesso intraosseo","pt":"Acesso intraósseo"},"Thoraxdrainage":{"en":"Chest tube","es":"Drenaje torácico","fr":"Drain thoracique","it":"Drenaggio toracico","pt":"Dreno torácico"},"Wundversorgung":{"en":"Wound care","es":"Cuidado de heridas","fr":"Soins de plaie","it":"Medicazione di ferite","pt":"Tratamento de feridas"},"Immobilisation":{"en":"Immobilization","es":"Inmovilización","fr":"Immobilisation","it":"Immobilizzazione","pt":"Imobilização"},"EKG geschrieben":{"en":"ECG recorded","es":"ECG realizado","fr":"ECG réalisé","it":"ECG eseguito","pt":"ECG realizado"},"EKG interpretiert":{"en":"ECG interpreted","es":"ECG interpretado","fr":"ECG interprété","it":"ECG interpretato","pt":"ECG interpretado"},"Sonographie":{"en":"Ultrasound","es":"Ecografía","fr":"Échographie","it":"Ecografia","pt":"Ecografia"},"Harnkatheter":{"en":"Urinary catheter","es":"Sonda vesical","fr":"Sonde urinaire","it":"Catetere vescicale","pt":"Cateter vesical"},"Magensonde":{"en":"Gastric tube","es":"Sonda gástrica","fr":"Sonde gastrique","it":"Sondino gastrico","pt":"Sonda gástrica"},"Naht / Klammerung":{"en":"Suturing / stapling","es":"Sutura / grapado","fr":"Suture / agrafage","it":"Sutura / graffatura","pt":"Sutura / agrafagem"},"Zugänge & Punktionen":{"en":"Access & punctures","es":"Accesos y punciones","fr":"Abords & ponctions","it":"Accessi e punture","pt":"Acessos e punções"},"Atemweg & Beatmung":{"en":"Airway & ventilation","es":"Vía aérea y ventilación","fr":"Voies aériennes & ventilation","it":"Vie aeree e ventilazione","pt":"Via aérea e ventilação"},"Notfall & Trauma":{"en":"Emergency & trauma","es":"Emergencias y trauma","fr":"Urgence & traumatologie","it":"Emergenza e trauma","pt":"Emergência e trauma"},"Diagnostik":{"en":"Diagnostics","es":"Diagnóstico","fr":"Diagnostic","it":"Diagnostica","pt":"Diagnóstico"},"Medikamente":{"en":"Medication","es":"Medicación","fr":"Médicaments","it":"Farmaci","pt":"Medicação"},"Wunde & Naht":{"en":"Wound & suture","es":"Heridas y sutura","fr":"Plaie & suture","it":"Ferite e sutura","pt":"Feridas e sutura"},"Sonden & Katheter":{"en":"Tubes & catheters","es":"Sondas y catéteres","fr":"Sondes & cathéters","it":"Sonde e cateteri","pt":"Sondas e cateteres"},"Sonstiges":{"en":"Other","es":"Otros","fr":"Autres","it":"Altro","pt":"Outros"},"Rettungswache":{"en":"EMS station","es":"Base de ambulancias","fr":"Centre de secours","it":"Sede del soccorso","pt":"Base de ambulâncias"},"RTW-Einsatz":{"en":"Ambulance call","es":"Intervención en ambulancia","fr":"Intervention ambulance","it":"Intervento in ambulanza","pt":"Ocorrência de ambulância"},"NEF-Einsatz":{"en":"Physician response call","es":"Intervención con médico","fr":"Intervention SMUR","it":"Intervento con medico","pt":"Ocorrência VMER"},"Notaufnahme":{"en":"Emergency department","es":"Urgencias","fr":"Urgences","it":"Pronto soccorso","pt":"Urgências"},"Schockraum":{"en":"Resus room","es":"Sala de reanimación","fr":"Salle de déchocage","it":"Sala emergenza","pt":"Sala de emergência"},"OP":{"en":"OR","es":"Quirófano","fr":"Bloc opératoire","it":"Sala operatoria","pt":"Bloco operatório"},"Intensivstation":{"en":"ICU","es":"UCI","fr":"Soins intensifs","it":"Terapia intensiva","pt":"UCI"},"Station":{"en":"Ward","es":"Planta","fr":"Service","it":"Reparto","pt":"Enfermaria"},"Hausarztpraxis":{"en":"GP practice","es":"Consulta de atención primaria","fr":"Cabinet de médecine générale","it":"Ambulatorio di base","pt":"Consultório de MGF"},"Anästhesie":{"en":"Anesthesia","es":"Anestesia","fr":"Anesthésie","it":"Anestesia","pt":"Anestesia"},"Chirurgie":{"en":"Surgery","es":"Cirugía","fr":"Chirurgie","it":"Chirurgia","pt":"Cirurgia"},"Innere":{"en":"Internal medicine","es":"Medicina interna","fr":"Médecine interne","it":"Medicina interna","pt":"Medicina interna"},"Rettungswachenpraktikum":{"en":"EMS placement","es":"Prácticas de ambulancia","fr":"Stage ambulancier","it":"Tirocinio in ambulanza","pt":"Estágio de ambulância"},"Klinikpraktikum":{"en":"Hospital placement","es":"Prácticas hospitalarias","fr":"Stage hospitalier","it":"Tirocinio ospedaliero","pt":"Estágio hospitalar"},"Skills Lab":{"en":"Skills lab","es":"Skills lab","fr":"Skills lab","it":"Skills lab","pt":"Skills lab"},"Medizinstudent:in":{"en":"Medical student","es":"Estudiante de medicina","fr":"Étudiant·e en médecine","it":"Studente di medicina","pt":"Estudante de medicina"},"PJ-Student:in":{"en":"Final-year medical student","es":"Estudiante de último año","fr":"Externe (dernière année)","it":"Studente all'ultimo anno","pt":"Estudante do último ano"},"Ärztin/Arzt in Weiterbildung":{"en":"Resident physician","es":"Médico residente","fr":"Médecin interne","it":"Medico in formazione","pt":"Médico interno"},"Notfallsanitäter:in":{"en":"Paramedic","es":"Paramédico/a","fr":"Paramédic","it":"Paramedico","pt":"Paramédico/a"},"Rettungssanitäter:in":{"en":"EMT","es":"Técnico/a en emergencias","fr":"Ambulancier·ère","it":"Soccorritore/trice","pt":"Técnico/a de emergência"},"Physician-Assistant-Student:in":{"en":"PA student","es":"Estudiante de Physician Assistant","fr":"Étudiant·e Physician Assistant","it":"Studente Physician Assistant","pt":"Estudante de Physician Assistant"},"Pflegefachperson":{"en":"Nurse","es":"Enfermero/a","fr":"Infirmier·ère","it":"Infermiere/a","pt":"Enfermeiro/a"},"Sonstige":{"en":"Other","es":"Otro","fr":"Autre","it":"Altro","pt":"Outro"},"Dein Kompetenzlogbuch":{"en":"Your competency logbook","es":"Tu registro de competencias","fr":"Ton carnet de compétences","it":"Il tuo registro delle competenze","pt":"O teu registo de competências"},"Logbuch":{"en":"Logbook","es":"Registro","fr":"Journal","it":"Registro","pt":"Registo"},"Eintrag":{"en":"Entry","es":"Entrada","fr":"Entrée","it":"Voce","pt":"Registo"},"Einträge":{"en":"Entries","es":"Entradas","fr":"Entrées","it":"Voci","pt":"Registos"},"Statistik":{"en":"Statistics","es":"Estadística","fr":"Statistiques","it":"Statistiche","pt":"Estatística"},"Export":{"en":"Export","es":"Exportar","fr":"Export","it":"Esporta","pt":"Exportar"},"Katalog":{"en":"Catalog","es":"Catálogo","fr":"Catalogue","it":"Catalogo","pt":"Catálogo"},"Start":{"en":"Home","es":"Inicio","fr":"Accueil","it":"Home","pt":"Início"},"Suchen und filtern":{"en":"Search and filter","es":"Buscar y filtrar","fr":"Rechercher et filtrer","it":"Cerca e filtra","pt":"Pesquisar e filtrar"},"Details und Aktionen":{"en":"Details and actions","es":"Detalles y acciones","fr":"Détails et actions","it":"Dettagli e azioni","pt":"Detalhes e ações"},"Schnell dokumentieren":{"en":"Quick documentation","es":"Documentar rápido","fr":"Documenter vite","it":"Documenta in fretta","pt":"Documentar rápido"},"Auswertung deiner Einträge":{"en":"Analysis of your entries","es":"Análisis de tus entradas","fr":"Analyse de tes entrées","it":"Analisi delle tue voci","pt":"Análise dos teus registos"},"Bericht, CSV und Sicherung":{"en":"Report, CSV and backup","es":"Informe, CSV y copia","fr":"Rapport, CSV et sauvegarde","it":"Report, CSV e backup","pt":"Relatório, CSV e cópia"},"Maßnahmen, Orte und Tags":{"en":"Procedures, locations and tags","es":"Procedimientos, lugares y etiquetas","fr":"Gestes, lieux et tags","it":"Procedure, luoghi e tag","pt":"Procedimentos, locais e etiquetas"},"Dokumentierte Maßnahmen":{"en":"Documented procedures","es":"Procedimientos documentados","fr":"Gestes documentés","it":"Procedure documentate","pt":"Procedimentos documentados"},"Zuletzt:":{"en":"Last:","es":"Último:","fr":"Dernier :","it":"Ultimo:","pt":"Último:"},"am":{"en":"on","es":"el","fr":"le","it":"il","pt":"em"},"Heute":{"en":"Today","es":"Hoy","fr":"Aujourd'hui","it":"Oggi","pt":"Hoje"},"Gestern":{"en":"Yesterday","es":"Ayer","fr":"Hier","it":"Ieri","pt":"Ontem"},"7 Tage":{"en":"7 days","es":"7 días","fr":"7 jours","it":"7 giorni","pt":"7 dias"},"30 Tage":{"en":"30 days","es":"30 días","fr":"30 jours","it":"30 giorni","pt":"30 dias"},"90 Tage":{"en":"90 days","es":"90 días","fr":"90 jours","it":"90 giorni","pt":"90 dias"},"Monat":{"en":"Month","es":"Mes","fr":"Mois","it":"Mese","pt":"Mês"},"Dieses Jahr":{"en":"This year","es":"Este año","fr":"Cette année","it":"Quest'anno","pt":"Este ano"},"Alle":{"en":"All","es":"Todas","fr":"Tout","it":"Tutte","pt":"Todos"},"Alle anzeigen":{"en":"Show all","es":"Ver todas","fr":"Tout afficher","it":"Mostra tutte","pt":"Ver todos"},"Zuletzt dokumentiert":{"en":"Recently documented","es":"Documentado recientemente","fr":"Documenté récemment","it":"Documentate di recente","pt":"Documentado recentemente"},"Häufigste Maßnahmen":{"en":"Most frequent procedures","es":"Procedimientos más frecuentes","fr":"Gestes les plus fréquents","it":"Procedure più frequenti","pt":"Procedimentos mais frequentes"},"Noch keine Einträge vorhanden":{"en":"No entries yet","es":"Aún no hay entradas","fr":"Pas encore d'entrées","it":"Ancora nessuna voce","pt":"Ainda sem registos"},"Lege deinen ersten Skill-Eintrag an – Maßnahme, Stufe, Setting und Ort sind in wenigen Sekunden erfasst.":{"en":"Create your first skill entry – procedure, level, setting and location take just a few seconds.","es":"Crea tu primera entrada: procedimiento, nivel, contexto y lugar en pocos segundos.","fr":"Crée ta première entrée – geste, niveau, contexte et lieu en quelques secondes.","it":"Crea la tua prima voce: procedura, livello, contesto e luogo in pochi secondi.","pt":"Cria o teu primeiro registo – procedimento, nível, contexto e local em poucos segundos."},"Ersten Eintrag anlegen":{"en":"Create first entry","es":"Crear primera entrada","fr":"Créer la première entrée","it":"Crea la prima voce","pt":"Criar primeiro registo"},"Beispiele ansehen":{"en":"View examples","es":"Ver ejemplos","fr":"Voir des exemples","it":"Vedi esempi","pt":"Ver exemplos"},"Beispieldaten geladen":{"en":"Example data loaded","es":"Datos de ejemplo cargados","fr":"Données d'exemple chargées","it":"Dati di esempio caricati","pt":"Dados de exemplo carregados"},"Beispiel-Eintrag":{"en":"Example entry","es":"Entrada de ejemplo","fr":"Entrée d'exemple","it":"Voce di esempio","pt":"Registo de exemplo"},"Zeigt dir, wie ein Skill aussieht.":{"en":"Shows you what a skill looks like.","es":"Te muestra cómo se ve un registro.","fr":"Te montre à quoi ressemble une entrée.","it":"Ti mostra come appare una voce.","pt":"Mostra-te como fica um registo."},"Entfernen":{"en":"Remove","es":"Quitar","fr":"Retirer","it":"Rimuovi","pt":"Remover"},"Beispiel entfernt":{"en":"Example removed","es":"Ejemplo eliminado","fr":"Exemple retiré","it":"Esempio rimosso","pt":"Exemplo removido"},"Profil vervollständigen":{"en":"Complete your profile","es":"Completa tu perfil","fr":"Complète ton profil","it":"Completa il profilo","pt":"Completa o teu perfil"},"Name und Rolle erscheinen im PDF-Bericht.":{"en":"Name and role appear in the PDF report.","es":"El nombre y el rol aparecen en el informe PDF.","fr":"Le nom et le rôle figurent dans le rapport PDF.","it":"Nome e ruolo compaiono nel report PDF.","pt":"Nome e função aparecem no relatório PDF."},"Öffnen":{"en":"Open","es":"Abrir","fr":"Ouvrir","it":"Apri","pt":"Abrir"},"Sicherung empfohlen":{"en":"Backup recommended","es":"Copia de seguridad recomendada","fr":"Sauvegarde recommandée","it":"Backup consigliato","pt":"Cópia de segurança recomendada"},"Deine Daten liegen nur auf diesem Gerät. Letzte Sicherung:":{"en":"Your data lives only on this device. Last backup:","es":"Tus datos solo están en este dispositivo. Última copia:","fr":"Tes données ne sont que sur cet appareil. Dernière sauvegarde :","it":"I tuoi dati sono solo su questo dispositivo. Ultimo backup:","pt":"Os teus dados estão só neste aparelho. Última cópia:"},"noch nie":{"en":"never","es":"nunca","fr":"jamais","it":"mai","pt":"nunca"},"vor":{"en":"","es":"hace","fr":"il y a","it":"","pt":"há"},"Tagen":{"en":"days ago","es":"días","fr":"jours","it":"giorni fa","pt":"dias"},"Jetzt sichern":{"en":"Back up now","es":"Guardar copia ahora","fr":"Sauvegarder maintenant","it":"Esegui backup ora","pt":"Fazer cópia agora"},"Später":{"en":"Later","es":"Más tarde","fr":"Plus tard","it":"Più tardi","pt":"Mais tarde"},"SkillLog Med ist ein Ausbildungs- und Kompetenzlogbuch, keine Patientenakte.":{"en":"SkillLog Med is a training and competency logbook, not a patient record.","es":"SkillLog Med es un registro de formación y competencias, no una historia clínica.","fr":"SkillLog Med est un carnet de formation et de compétences, pas un dossier patient.","it":"SkillLog Med è un registro di formazione e competenze, non una cartella clinica.","pt":"SkillLog Med é um registo de formação e competências, não um processo clínico."},"Block":{"en":"Block","es":"Bloque","fr":"Bloc","it":"Blocco","pt":"Bloco"},"Filter":{"en":"Filter","es":"Filtros","fr":"Filtres","it":"Filtri","pt":"Filtros"},"Alle Blöcke":{"en":"All blocks","es":"Todos los bloques","fr":"Tous les blocs","it":"Tutti i blocchi","pt":"Todos os blocos"},"keine Einschränkung":{"en":"no restriction","es":"sin restricción","fr":"aucune restriction","it":"nessuna limitazione","pt":"sem restrição"},"– kein Block –":{"en":"– no block –","es":"– sin bloque –","fr":"– aucun bloc –","it":"– nessun blocco –","pt":"– sem bloco –"},"– kein Ort –":{"en":"– no location –","es":"– sin lugar –","fr":"– aucun lieu –","it":"– nessun luogo –","pt":"– sem local –"},"Keine Einträge gefunden":{"en":"No entries found","es":"No se encontraron entradas","fr":"Aucune entrée trouvée","it":"Nessuna voce trovata","pt":"Nenhum registo encontrado"},"Für die aktuellen Filter wurden keine Einträge gefunden.":{"en":"No entries match the current filters.","es":"Ningún resultado con los filtros actuales.","fr":"Aucune entrée ne correspond aux filtres actuels.","it":"Nessuna voce corrisponde ai filtri attuali.","pt":"Nenhum registo corresponde aos filtros atuais."},"Lege deinen ersten Skill-Eintrag an.":{"en":"Create your first skill entry.","es":"Crea tu primera entrada.","fr":"Crée ta première entrée.","it":"Crea la tua prima voce.","pt":"Cria o teu primeiro registo."},"ohne Ort":{"en":"no location","es":"sin lugar","fr":"sans lieu","it":"senza luogo","pt":"sem local"},"Zeitraum von / bis":{"en":"Period from / to","es":"Período desde / hasta","fr":"Période du / au","it":"Periodo dal / al","pt":"Período de / até"},"Kategorie":{"en":"Category","es":"Categoría","fr":"Catégorie","it":"Categoria","pt":"Categoria"},"Kategorien":{"en":"Categories","es":"Categorías","fr":"Catégories","it":"Categorie","pt":"Categorias"},"Maßnahme":{"en":"Procedure","es":"Procedimiento","fr":"Geste","it":"Procedura","pt":"Procedimento"},"Maßnahmen":{"en":"Procedures","es":"Procedimientos","fr":"Gestes","it":"Procedure","pt":"Procedimentos"},"Kompetenzstufe":{"en":"Competency level","es":"Nivel de competencia","fr":"Niveau de compétence","it":"Livello di competenza","pt":"Nível de competência"},"Setting":{"en":"Setting","es":"Contexto","fr":"Contexte","it":"Contesto","pt":"Contexto"},"Ort / Einsatzbereich":{"en":"Location / area","es":"Lugar / ámbito","fr":"Lieu / secteur","it":"Luogo / ambito","pt":"Local / área"},"Tag":{"en":"Tag","es":"Etiqueta","fr":"Tag","it":"Tag","pt":"Etiqueta"},"Tags":{"en":"Tags","es":"Etiquetas","fr":"Tags","it":"Tag","pt":"Etiquetas"},"Filter zurücksetzen":{"en":"Reset filters","es":"Restablecer filtros","fr":"Réinitialiser les filtres","it":"Azzera i filtri","pt":"Repor filtros"},"Alle Kategorien":{"en":"All categories","es":"Todas las categorías","fr":"Toutes les catégories","it":"Tutte le categorie","pt":"Todas as categorias"},"Alle Maßnahmen":{"en":"All procedures","es":"Todos los procedimientos","fr":"Tous les gestes","it":"Tutte le procedure","pt":"Todos os procedimentos"},"Alle Stufen":{"en":"All levels","es":"Todos los niveles","fr":"Tous les niveaux","it":"Tutti i livelli","pt":"Todos os níveis"},"Alle Settings":{"en":"All settings","es":"Todos los contextos","fr":"Tous les contextes","it":"Tutti i contesti","pt":"Todos os contextos"},"Alle Orte":{"en":"All locations","es":"Todos los lugares","fr":"Tous les lieux","it":"Tutti i luoghi","pt":"Todos os locais"},"Alle Tags":{"en":"All tags","es":"Todas las etiquetas","fr":"Tous les tags","it":"Tutti i tag","pt":"Todas as etiquetas"},"Suchen (Maßnahme, Ort, Notiz, Tag)":{"en":"Search (procedure, location, note, tag)","es":"Buscar (procedimiento, lugar, nota, etiqueta)","fr":"Rechercher (geste, lieu, note, tag)","it":"Cerca (procedura, luogo, nota, tag)","pt":"Pesquisar (procedimento, local, nota, etiqueta)"},"Suche leeren":{"en":"Clear search","es":"Borrar búsqueda","fr":"Effacer la recherche","it":"Svuota la ricerca","pt":"Limpar pesquisa"},"Neuer Eintrag":{"en":"New entry","es":"Nueva entrada","fr":"Nouvelle entrée","it":"Nuova voce","pt":"Novo registo"},"Eintrag bearbeiten":{"en":"Edit entry","es":"Editar entrada","fr":"Modifier l'entrée","it":"Modifica voce","pt":"Editar registo"},"mehrere möglich":{"en":"multiple allowed","es":"varios posibles","fr":"plusieurs possibles","it":"più di una possibile","pt":"vários possíveis"},"Bitte wähle mindestens eine Maßnahme.":{"en":"Please choose at least one procedure.","es":"Elige al menos un procedimiento.","fr":"Choisis au moins un geste.","it":"Scegli almeno una procedura.","pt":"Escolhe pelo menos um procedimento."},"Maßnahme suchen …":{"en":"Search procedures …","es":"Buscar procedimiento …","fr":"Rechercher un geste …","it":"Cerca procedura …","pt":"Pesquisar procedimento …"},"Maßnahmen gewählt":{"en":"procedures selected","es":"procedimientos elegidos","fr":"gestes sélectionnés","it":"procedure selezionate","pt":"procedimentos escolhidos"},"– beim Speichern entsteht je Maßnahme ein Eintrag.":{"en":"– saving creates one entry per procedure.","es":"– al guardar se crea una entrada por procedimiento.","fr":"– l'enregistrement crée une entrée par geste.","it":"– al salvataggio nasce una voce per procedura.","pt":"– ao guardar é criado um registo por procedimento."},"Datum & Uhrzeit":{"en":"Date & time","es":"Fecha y hora","fr":"Date et heure","it":"Data e ora","pt":"Data e hora"},"Jetzt":{"en":"Now","es":"Ahora","fr":"Maintenant","it":"Adesso","pt":"Agora"},"Bitte gib ein gültiges Datum ein.":{"en":"Please enter a valid date.","es":"Introduce una fecha válida.","fr":"Saisis une date valide.","it":"Inserisci una data valida.","pt":"Introduz uma data válida."},"Mehrfach an diesem Tag":{"en":"Multiple times this day","es":"Varias veces este día","fr":"Plusieurs fois ce jour","it":"Più volte in questo giorno","pt":"Várias vezes neste dia"},"Dieselbe Maßnahme mehrmals dokumentieren":{"en":"Document the same procedure several times","es":"Documentar el mismo procedimiento varias veces","fr":"Documenter le même geste plusieurs fois","it":"Documenta la stessa procedura più volte","pt":"Documentar o mesmo procedimento várias vezes"},"Anzahl":{"en":"Count","es":"Cantidad","fr":"Nombre","it":"Numero","pt":"Quantidade"},"Uhrzeiten einzeln erfassen":{"en":"Record times individually","es":"Registrar horas individualmente","fr":"Saisir les heures individuellement","it":"Registra gli orari singolarmente","pt":"Registar horas individualmente"},"Ohne Häkchen werden die Einträge nur mit Datum gespeichert":{"en":"Without the checkbox, entries are saved with the date only","es":"Sin la casilla, las entradas se guardan solo con fecha","fr":"Sans la coche, les entrées sont enregistrées avec la date seule","it":"Senza la spunta, le voci vengono salvate solo con la data","pt":"Sem o visto, os registos ficam só com a data"},"Für jede Maßnahme eine eigene Uhrzeit":{"en":"A separate time for each procedure","es":"Una hora propia para cada procedimiento","fr":"Une heure propre pour chaque geste","it":"Un orario proprio per ogni procedura","pt":"Uma hora própria para cada procedimento"},"Uhrzeit":{"en":"Time","es":"Hora","fr":"Heure","it":"Ora","pt":"Hora"},"Trainingsblock":{"en":"Training block","es":"Bloque de formación","fr":"Bloc de formation","it":"Blocco formativo","pt":"Bloco de formação"},"Trainingsblöcke":{"en":"Training blocks","es":"Bloques de formación","fr":"Blocs de formation","it":"Blocchi formativi","pt":"Blocos de formação"},"optional":{"en":"optional","es":"opcional","fr":"facultatif","it":"facoltativo","pt":"opcional"},"Freie Schlagworte zum Sammeln – etwa „Klinik“ für alle innerklinischen Maßnahmen. Mehrere pro Eintrag möglich.":{"en":"Free keywords for grouping – e.g. “Hospital” for all in-hospital procedures. Several per entry.","es":"Palabras clave libres para agrupar, p. ej. «Hospital». Varias por entrada.","fr":"Mots-clés libres pour regrouper – p. ex. « Hôpital ». Plusieurs par entrée.","it":"Parole chiave libere per raggruppare, ad es. “Ospedale”. Più di una per voce.","pt":"Palavras-chave livres para agrupar, p. ex. «Hospital». Várias por registo."},"Hinzufügen":{"en":"Add","es":"Añadir","fr":"Ajouter","it":"Aggiungi","pt":"Adicionar"},"Notiz":{"en":"Note","es":"Nota","fr":"Note","it":"Nota","pt":"Nota"},"Optional: Besonderheiten, Lernpunkte, Material":{"en":"Optional: specifics, learning points, equipment","es":"Opcional: particularidades, aprendizajes, material","fr":"Facultatif : particularités, points d'apprentissage, matériel","it":"Facoltativo: particolarità, punti di apprendimento, materiale","pt":"Opcional: particularidades, aprendizagens, material"},"Bitte keine identifizierenden Patientendaten notieren – SkillLog Med ist ein Ausbildungslogbuch, keine Patientenakte.":{"en":"Please do not note identifying patient data – SkillLog Med is a training logbook, not a patient record.","es":"No anotes datos identificativos de pacientes: SkillLog Med es un registro de formación, no una historia clínica.","fr":"Ne note aucune donnée identifiante de patient – SkillLog Med est un carnet de formation, pas un dossier patient.","it":"Non annotare dati identificativi dei pazienti: SkillLog Med è un registro di formazione, non una cartella clinica.","pt":"Não anotes dados identificativos de doentes – o SkillLog Med é um registo de formação, não um processo clínico."},"Speichern":{"en":"Save","es":"Guardar","fr":"Enregistrer","it":"Salva","pt":"Guardar"},"Speichern + Neu":{"en":"Save + new","es":"Guardar + nueva","fr":"Enregistrer + nouveau","it":"Salva + nuova","pt":"Guardar + novo"},"Abbrechen":{"en":"Cancel","es":"Cancelar","fr":"Annuler","it":"Annulla","pt":"Cancelar"},"Eintrag löschen":{"en":"Delete entry","es":"Eliminar entrada","fr":"Supprimer l'entrée","it":"Elimina voce","pt":"Eliminar registo"},"Änderungen gespeichert":{"en":"Changes saved","es":"Cambios guardados","fr":"Modifications enregistrées","it":"Modifiche salvate","pt":"Alterações guardadas"},"Eintrag gespeichert":{"en":"Entry saved","es":"Entrada guardada","fr":"Entrée enregistrée","it":"Voce salvata","pt":"Registo guardado"},"Einträge gespeichert":{"en":"entries saved","es":"entradas guardadas","fr":"entrées enregistrées","it":"voci salvate","pt":"registos guardados"},"– nächster Eintrag":{"en":"– next entry","es":"– siguiente entrada","fr":"– entrée suivante","it":"– prossima voce","pt":"– próximo registo"},"Eintrag gelöscht":{"en":"Entry deleted","es":"Entrada eliminada","fr":"Entrée supprimée","it":"Voce eliminata","pt":"Registo eliminado"},"Rückgängig":{"en":"Undo","es":"Deshacer","fr":"Annuler","it":"Annulla","pt":"Anular"},"Eintrag wiederhergestellt":{"en":"Entry restored","es":"Entrada restaurada","fr":"Entrée restaurée","it":"Voce ripristinata","pt":"Registo restaurado"},"Bearbeiten":{"en":"Edit","es":"Editar","fr":"Modifier","it":"Modifica","pt":"Editar"},"Nochmal erfasst":{"en":"Logged again","es":"Registrado otra vez","fr":"Saisi à nouveau","it":"Registrato di nuovo","pt":"Registado outra vez"},"Erfasst am":{"en":"Recorded on","es":"Registrado el","fr":"Saisi le","it":"Registrato il","pt":"Registado em"},"Durchgeführt am":{"en":"Performed on","es":"Realizado el","fr":"Réalisé le","it":"Eseguito il","pt":"Realizado em"},"Uhr":{"en":"","es":"","fr":"","it":"","pt":""},"weitere":{"en":"more","es":"más","fr":"autres","it":"altre","pt":"mais"},"Von":{"en":"From","es":"Desde","fr":"Du","it":"Dal","pt":"De"},"Bis":{"en":"To","es":"Hasta","fr":"Au","it":"Al","pt":"Até"},"Beginn":{"en":"Start","es":"Inicio","fr":"Début","it":"Inizio","pt":"Início"},"Ende":{"en":"End","es":"Fin","fr":"Fin","it":"Fine","pt":"Fim"},"Weniger":{"en":"Less","es":"Menos","fr":"Moins","it":"Meno","pt":"Menos"},"Mehr":{"en":"More","es":"Más","fr":"Plus","it":"Più","pt":"Mais"},"Datum":{"en":"Date","es":"Fecha","fr":"Date","it":"Data","pt":"Data"},"Zeit":{"en":"Time","es":"Hora","fr":"Heure","it":"Ora","pt":"Hora"},"Stufe":{"en":"Level","es":"Nivel","fr":"Niveau","it":"Livello","pt":"Nível"},"Ort":{"en":"Location","es":"Lugar","fr":"Lieu","it":"Luogo","pt":"Local"},"Orte":{"en":"Locations","es":"Lugares","fr":"Lieux","it":"Luoghi","pt":"Locais"},"Blöcke":{"en":"Blocks","es":"Bloques","fr":"Blocs","it":"Blocchi","pt":"Blocos"},"Trainingsblock wählen":{"en":"Choose training block","es":"Elegir bloque de formación","fr":"Choisir un bloc de formation","it":"Scegli blocco formativo","pt":"Escolher bloco de formação"},"Kompetenzstufen":{"en":"Competency levels","es":"Niveles de competencia","fr":"Niveaux de compétence","it":"Livelli di competenza","pt":"Níveis de competência"},"Settings":{"en":"Settings","es":"Contextos","fr":"Contextes","it":"Contesti","pt":"Contextos"},"Orte / Einsatzbereiche":{"en":"Locations / areas","es":"Lugares / ámbitos","fr":"Lieux / secteurs","it":"Luoghi / ambiti","pt":"Locais / áreas"},"Maßnahmen-Kategorien":{"en":"Procedure categories","es":"Categorías de procedimientos","fr":"Catégories de gestes","it":"Categorie di procedure","pt":"Categorias de procedimentos"},"Keine Einträge im Zeitraum":{"en":"No entries in this period","es":"Sin entradas en el período","fr":"Aucune entrée sur la période","it":"Nessuna voce nel periodo","pt":"Sem registos no período"},"Wähle oben einen größeren Zeitraum oder lege neue Einträge an.":{"en":"Choose a longer period above or create new entries.","es":"Elige arriba un período mayor o crea nuevas entradas.","fr":"Choisis une période plus longue ci-dessus ou crée de nouvelles entrées.","it":"Scegli sopra un periodo più lungo o crea nuove voci.","pt":"Escolhe acima um período maior ou cria novos registos."},"Tippe einen Block an, um seine Einträge im Logbuch zu sehen.":{"en":"Tap a block to see its entries in the logbook.","es":"Toca un bloque para ver sus entradas en el registro.","fr":"Touche un bloc pour voir ses entrées dans le journal.","it":"Tocca un blocco per vederne le voci nel registro.","pt":"Toca num bloco para ver os seus registos."},"Bericht konfigurieren":{"en":"Configure report","es":"Configurar informe","fr":"Configurer le rapport","it":"Configura il report","pt":"Configurar relatório"},"Zeitraum":{"en":"Period","es":"Período","fr":"Période","it":"Periodo","pt":"Período"},"Dieser Monat":{"en":"This month","es":"Este mes","fr":"Ce mois-ci","it":"Questo mese","pt":"Este mês"},"Letzter Monat":{"en":"Last month","es":"Mes pasado","fr":"Mois dernier","it":"Mese scorso","pt":"Mês passado"},"Alles":{"en":"Everything","es":"Todo","fr":"Tout","it":"Tutto","pt":"Tudo"},"Zusatz zum Block (optional)":{"en":"Addition to the block (optional)","es":"Añadido al bloque (opcional)","fr":"Complément au bloc (facultatif)","it":"Aggiunta al blocco (facoltativa)","pt":"Complemento ao bloco (opcional)"},"z. B. 2. Ausbildungsjahr, Station 4B":{"en":"e.g. 2nd training year, ward 4B","es":"p. ej. 2.º año, planta 4B","fr":"p. ex. 2e année, service 4B","it":"ad es. 2º anno, reparto 4B","pt":"p. ex. 2.º ano, enfermaria 4B"},"Bemerkungen / Bestätigung (optional)":{"en":"Remarks / confirmation (optional)","es":"Observaciones / confirmación (opcional)","fr":"Remarques / attestation (facultatif)","it":"Osservazioni / conferma (facoltativo)","pt":"Observações / confirmação (opcional)"},"Erscheint im Bericht über dem Unterschriftsfeld":{"en":"Appears in the report above the signature field","es":"Aparece en el informe sobre el campo de firma","fr":"Apparaît dans le rapport au-dessus de la signature","it":"Compare nel report sopra il campo firma","pt":"Aparece no relatório acima da assinatura"},"Status des Berichts":{"en":"Report status","es":"Estado del informe","fr":"Statut du rapport","it":"Stato del report","pt":"Estado do relatório"},"Entwurf":{"en":"Draft","es":"Borrador","fr":"Brouillon","it":"Bozza","pt":"Rascunho"},"Zur Unterschrift":{"en":"For signature","es":"Para firmar","fr":"Pour signature","it":"Per la firma","pt":"Para assinatura"},"Zur Unterschrift vorgesehen":{"en":"Intended for signature","es":"Previsto para firma","fr":"Destiné à la signature","it":"Destinato alla firma","pt":"Destinado a assinatura"},"im gewählten Zeitraum.":{"en":"in the selected period.","es":"en el período elegido.","fr":"sur la période choisie.","it":"nel periodo scelto.","pt":"no período escolhido."},"Im gewählten Zeitraum liegen keine Einträge vor – der Bericht wäre leer.":{"en":"There are no entries in the selected period – the report would be empty.","es":"No hay entradas en el período elegido: el informe estaría vacío.","fr":"Aucune entrée sur la période choisie – le rapport serait vide.","it":"Nessuna voce nel periodo scelto: il report sarebbe vuoto.","pt":"Não há registos no período escolhido – o relatório ficaria vazio."},"Bericht erzeugen":{"en":"Generate report","es":"Generar informe","fr":"Générer le rapport","it":"Genera report","pt":"Gerar relatório"},"Der Bericht ist für Ausbildungs-, Praktikums- und Portfolionachweise gedacht und kann zur Unterschrift vorgelegt werden.":{"en":"The report is intended as evidence for training, placements and portfolios and can be presented for signature.","es":"El informe sirve como justificante de formación, prácticas y portafolio, y puede presentarse para su firma.","fr":"Le rapport sert de justificatif de formation, de stage et de portfolio et peut être présenté pour signature.","it":"Il report serve da attestato per formazione, tirocini e portfolio e può essere presentato per la firma.","pt":"O relatório serve de comprovativo de formação, estágios e portefólio e pode ser apresentado para assinatura."},"PDF-Bericht erstellen":{"en":"Create PDF report","es":"Crear informe PDF","fr":"Créer le rapport PDF","it":"Crea report PDF","pt":"Criar relatório PDF"},"PDF-Bericht erstellen / teilen":{"en":"Create / share PDF report","es":"Crear / compartir informe PDF","fr":"Créer / partager le rapport PDF","it":"Crea / condividi report PDF","pt":"Criar / partilhar relatório PDF"},"PDF-Bericht herunterladen":{"en":"Download PDF report","es":"Descargar informe PDF","fr":"Télécharger le rapport PDF","it":"Scarica report PDF","pt":"Transferir relatório PDF"},"Druckansicht":{"en":"Print view","es":"Vista de impresión","fr":"Aperçu d'impression","it":"Anteprima di stampa","pt":"Vista de impressão"},"CSV-Export":{"en":"CSV export","es":"Exportar CSV","fr":"Export CSV","it":"Esporta CSV","pt":"Exportar CSV"},"Zeitraum des Blocks übernommen":{"en":"Block period applied","es":"Período del bloque aplicado","fr":"Période du bloc appliquée","it":"Periodo del blocco applicato","pt":"Período do bloco aplicado"},"Bericht teilen":{"en":"Share report","es":"Compartir informe","fr":"Partager le rapport","it":"Condividi report","pt":"Partilhar relatório"},"Bericht erstellt – jetzt teilen oder drucken":{"en":"Report created – share or print it now","es":"Informe creado: compártelo o imprímelo","fr":"Rapport créé – partage-le ou imprime-le","it":"Report creato: condividilo o stampalo","pt":"Relatório criado – partilha ou imprime"},"Bericht gespeichert":{"en":"Report saved","es":"Informe guardado","fr":"Rapport enregistré","it":"Report salvato","pt":"Relatório guardado"},"CSV-Datei erstellt":{"en":"CSV file created","es":"Archivo CSV creado","fr":"Fichier CSV créé","it":"File CSV creato","pt":"Ficheiro CSV criado"},"Sicherung":{"en":"Backup","es":"Copia de seguridad","fr":"Sauvegarde","it":"Backup","pt":"Cópia de segurança"},"Daten sichern (JSON)":{"en":"Back up data (JSON)","es":"Guardar datos (JSON)","fr":"Sauvegarder les données (JSON)","it":"Backup dei dati (JSON)","pt":"Guardar dados (JSON)"},"Alle Einträge und Stammdaten als Datei":{"en":"All entries and master data as a file","es":"Todas las entradas y datos maestros en un archivo","fr":"Toutes les entrées et données de base dans un fichier","it":"Tutte le voci e i dati di base in un file","pt":"Todos os registos e dados base num ficheiro"},"Daten wiederherstellen":{"en":"Restore data","es":"Restaurar datos","fr":"Restaurer les données","it":"Ripristina dati","pt":"Restaurar dados"},"Gesicherte JSON-Datei einlesen":{"en":"Read a saved JSON file","es":"Leer un archivo JSON guardado","fr":"Lire un fichier JSON sauvegardé","it":"Leggi un file JSON salvato","pt":"Ler um ficheiro JSON guardado"},"wiederhergestellt":{"en":"restored","es":"restauradas","fr":"restaurées","it":"ripristinate","pt":"restaurados"},"Die Datei konnte nicht gelesen werden.":{"en":"The file could not be read.","es":"No se pudo leer el archivo.","fr":"Le fichier n'a pas pu être lu.","it":"Impossibile leggere il file.","pt":"Não foi possível ler o ficheiro."},"Die Datei enthält keine SkillLog-Med-Einträge.":{"en":"The file contains no SkillLog Med entries.","es":"El archivo no contiene entradas de SkillLog Med.","fr":"Le fichier ne contient aucune entrée SkillLog Med.","it":"Il file non contiene voci di SkillLog Med.","pt":"O ficheiro não contém registos do SkillLog Med."},"Die Datei konnte nicht gespeichert werden.":{"en":"The file could not be saved.","es":"No se pudo guardar el archivo.","fr":"Le fichier n'a pas pu être enregistré.","it":"Impossibile salvare il file.","pt":"Não foi possível guardar o ficheiro."},"Die Datei konnte nicht erstellt werden.\n\n":{"en":"The file could not be created.\n\n","es":"No se pudo crear el archivo.\n\n","fr":"Le fichier n'a pas pu être créé.\n\n","it":"Impossibile creare il file.\n\n","pt":"Não foi possível criar o ficheiro.\n\n"},"Diese Funktion ist auf dem Gerät nicht verfügbar (Modul fehlt).":{"en":"This feature is not available on this device (module missing).","es":"Esta función no está disponible en el dispositivo (falta el módulo).","fr":"Cette fonction n'est pas disponible sur l'appareil (module manquant).","it":"Funzione non disponibile sul dispositivo (modulo mancante).","pt":"Esta função não está disponível no aparelho (módulo em falta)."},"Ausbildungs- und Kompetenznachweis":{"en":"Training and Competency Record","es":"Certificado de formación y competencias","fr":"Attestation de formation et de compétences","it":"Attestato di formazione e competenze","pt":"Comprovativo de formação e competências"},"Digitales Logbuch für klinische Maßnahmen und praktische Kompetenzen":{"en":"Digital logbook for clinical procedures and practical competencies","es":"Registro digital de procedimientos clínicos y competencias prácticas","fr":"Carnet numérique des gestes cliniques et compétences pratiques","it":"Registro digitale di procedure cliniche e competenze pratiche","pt":"Registo digital de procedimentos clínicos e competências práticas"},"Der Bericht wurde mit SkillLog Med erstellt, einem persönlichen Ausbildungs- und Kompetenzlogbuch. Er dient als Nachweis für Ausbildung, Praktikum und Portfolio und enthält keine Patientendaten.":{"en":"This report was created with SkillLog Med, a personal training and competency logbook. It serves as evidence for training, placements and portfolios and contains no patient data.","es":"Este informe se creó con SkillLog Med, un registro personal de formación y competencias. Sirve como justificante de formación, prácticas y portafolio y no contiene datos de pacientes.","fr":"Ce rapport a été créé avec SkillLog Med, un carnet personnel de formation et de compétences. Il sert de justificatif de formation, de stage et de portfolio et ne contient aucune donnée patient.","it":"Questo report è stato creato con SkillLog Med, un registro personale di formazione e competenze. Serve da attestato per formazione, tirocini e portfolio e non contiene dati dei pazienti.","pt":"Este relatório foi criado com o SkillLog Med, um registo pessoal de formação e competências. Serve de comprovativo de formação, estágios e portefólio e não contém dados de doentes."},"Name":{"en":"Name","es":"Nombre","fr":"Nom","it":"Nome","pt":"Nome"},"Rolle / Berufsgruppe":{"en":"Role / profession","es":"Rol / profesión","fr":"Rôle / profession","it":"Ruolo / professione","pt":"Função / profissão"},"Rollen / Berufsgruppen":{"en":"Roles / professions","es":"Roles / profesiones","fr":"Rôles / professions","it":"Ruoli / professioni","pt":"Funções / profissões"},"Ausbildungsstätte":{"en":"Training institution","es":"Centro de formación","fr":"Établissement de formation","it":"Sede di formazione","pt":"Instituição de formação"},"Praktikum / Block":{"en":"Placement / block","es":"Prácticas / bloque","fr":"Stage / bloc","it":"Tirocinio / blocco","pt":"Estágio / bloco"},"Eingrenzung":{"en":"Filter","es":"Filtro","fr":"Filtre","it":"Filtro","pt":"Filtro"},"Status":{"en":"Status","es":"Estado","fr":"Statut","it":"Stato","pt":"Estado"},"Erstellt am":{"en":"Created on","es":"Creado el","fr":"Créé le","it":"Creato il","pt":"Criado em"},"Beginn der Aufzeichnung":{"en":"start of recording","es":"inicio del registro","fr":"début des enregistrements","it":"inizio delle registrazioni","pt":"início dos registos"},"bis":{"en":"to","es":"hasta","fr":"au","it":"al","pt":"até"},"Zusammenfassung nach Maßnahme":{"en":"Summary by procedure","es":"Resumen por procedimiento","fr":"Synthèse par geste","it":"Riepilogo per procedura","pt":"Resumo por procedimento"},"Gesamt":{"en":"Total","es":"Total","fr":"Total","it":"Totale","pt":"Total"},"Einzelne Einträge":{"en":"Individual entries","es":"Entradas individuales","fr":"Entrées individuelles","it":"Voci singole","pt":"Registos individuais"},"Im gewählten Zeitraum liegen keine Einträge vor.":{"en":"There are no entries in the selected period.","es":"No hay entradas en el período elegido.","fr":"Aucune entrée sur la période choisie.","it":"Nessuna voce nel periodo scelto.","pt":"Não há registos no período escolhido."},"Bemerkungen / Bestätigung":{"en":"Remarks / confirmation","es":"Observaciones / confirmación","fr":"Remarques / attestation","it":"Osservazioni / conferma","pt":"Observações / confirmação"},"Ort, Datum":{"en":"Place, date","es":"Lugar y fecha","fr":"Lieu, date","it":"Luogo, data","pt":"Local, data"},"Unterschrift Praxisanleitung / Ausbildungsverantwortliche:r":{"en":"Signature of supervisor / training lead","es":"Firma del tutor / responsable de formación","fr":"Signature du tuteur / responsable de formation","it":"Firma del tutor / responsabile della formazione","pt":"Assinatura do orientador / responsável de formação"},"Seite":{"en":"Page","es":"Página","fr":"Page","it":"Pagina","pt":"Página"},"von":{"en":"of","es":"de","fr":"sur","it":"di","pt":"de"},"Einstellungen":{"en":"Settings","es":"Ajustes","fr":"Réglages","it":"Impostazioni","pt":"Definições"},"Darstellung":{"en":"Appearance","es":"Apariencia","fr":"Apparence","it":"Aspetto","pt":"Aspeto"},"Automatisch":{"en":"Automatic","es":"Automático","fr":"Automatique","it":"Automatico","pt":"Automático"},"Hell":{"en":"Light","es":"Claro","fr":"Clair","it":"Chiaro","pt":"Claro"},"Dunkel":{"en":"Dark","es":"Oscuro","fr":"Sombre","it":"Scuro","pt":"Escuro"},"Sprache":{"en":"Language","es":"Idioma","fr":"Langue","it":"Lingua","pt":"Idioma"},"Profil & Stammdaten":{"en":"Profile & master data","es":"Perfil y datos maestros","fr":"Profil & données de base","it":"Profilo e dati di base","pt":"Perfil e dados base"},"Profil":{"en":"Profile","es":"Perfil","fr":"Profil","it":"Profilo","pt":"Perfil"},"Name, Rolle und Standard-Ort":{"en":"Name, role and default location","es":"Nombre, rol y lugar predeterminado","fr":"Nom, rôle et lieu par défaut","it":"Nome, ruolo e luogo predefinito","pt":"Nome, função e local padrão"},"Name, Rollen und Standard-Ort":{"en":"Name, roles and default location","es":"Nombre, roles y lugar predeterminado","fr":"Nom, rôles et lieu par défaut","it":"Nome, ruoli e luogo predefinito","pt":"Nome, funções e local padrão"},"Katalog verwalten":{"en":"Manage catalog","es":"Gestionar catálogo","fr":"Gérer le catalogue","it":"Gestisci catalogo","pt":"Gerir catálogo"},"Maßnahmen, Orte und Tags bearbeiten":{"en":"Edit procedures, locations and tags","es":"Editar procedimientos, lugares y etiquetas","fr":"Modifier gestes, lieux et tags","it":"Modifica procedure, luoghi e tag","pt":"Editar procedimentos, locais e etiquetas"},"Bericht":{"en":"Report","es":"Informe","fr":"Rapport","it":"Report","pt":"Relatório"},"Tags im Bericht":{"en":"Tags in the report","es":"Etiquetas en el informe","fr":"Tags dans le rapport","it":"Tag nel report","pt":"Etiquetas no relatório"},"Tags im PDF-Bericht und in der Druckansicht mit ausgeben – standardmäßig bleiben sie privat":{"en":"Include tags in the PDF report and print view – by default they stay private","es":"Incluir etiquetas en el informe PDF y la vista de impresión; por defecto son privadas","fr":"Inclure les tags dans le rapport PDF et l'aperçu d'impression – privés par défaut","it":"Includi i tag nel report PDF e nell'anteprima di stampa; per impostazione predefinita restano privati","pt":"Incluir etiquetas no relatório PDF e na vista de impressão – por defeito ficam privadas"},"Daten":{"en":"Data","es":"Datos","fr":"Données","it":"Dati","pt":"Dados"},"Beispieldaten laden":{"en":"Load example data","es":"Cargar datos de ejemplo","fr":"Charger des données d'exemple","it":"Carica dati di esempio","pt":"Carregar dados de exemplo"},"Zum Ausprobieren – ergänzt vorhandene Einträge":{"en":"For trying things out – adds to existing entries","es":"Para probar; se añade a las entradas existentes","fr":"Pour essayer – s'ajoute aux entrées existantes","it":"Per fare prove; si aggiunge alle voci esistenti","pt":"Para experimentar – junta-se aos registos existentes"},"Beispieleinträge geladen":{"en":"example entries loaded","es":"entradas de ejemplo cargadas","fr":"entrées d'exemple chargées","it":"voci di esempio caricate","pt":"registos de exemplo carregados"},"Alle Daten löschen":{"en":"Delete all data","es":"Eliminar todos los datos","fr":"Supprimer toutes les données","it":"Elimina tutti i dati","pt":"Eliminar todos os dados"},"Setzt die App vollständig zurück":{"en":"Resets the app completely","es":"Restablece la app por completo","fr":"Réinitialise complètement l'appli","it":"Ripristina completamente l'app","pt":"Repõe a app por completo"},"Wirklich alle Einträge, Stammdaten und das Profil löschen? Das lässt sich nicht rückgängig machen.":{"en":"Really delete all entries, master data and the profile? This cannot be undone.","es":"¿Eliminar de verdad todas las entradas, datos maestros y el perfil? No se puede deshacer.","fr":"Vraiment supprimer toutes les entrées, les données de base et le profil ? C'est irréversible.","it":"Eliminare davvero tutte le voci, i dati di base e il profilo? Non si può annullare.","pt":"Eliminar mesmo todos os registos, dados base e o perfil? Não pode ser anulado."},"Alle Daten gelöscht":{"en":"All data deleted","es":"Todos los datos eliminados","fr":"Toutes les données supprimées","it":"Tutti i dati eliminati","pt":"Todos os dados eliminados"},"Über die App":{"en":"About the app","es":"Acerca de la app","fr":"À propos de l'appli","it":"Informazioni sull'app","pt":"Sobre a app"},"Kurzeinführung":{"en":"Quick intro","es":"Introducción rápida","fr":"Introduction rapide","it":"Introduzione rapida","pt":"Introdução rápida"},"Die drei Schritte noch einmal ansehen":{"en":"See the three steps again","es":"Ver de nuevo los tres pasos","fr":"Revoir les trois étapes","it":"Rivedi i tre passaggi","pt":"Rever os três passos"},"Datenschutz & Impressum":{"en":"Privacy & legal notice","es":"Privacidad y aviso legal","fr":"Confidentialité & mentions légales","it":"Privacy e note legali","pt":"Privacidade e informação legal"},"Alle Daten bleiben auf diesem Gerät":{"en":"All data stays on this device","es":"Todos los datos permanecen en este dispositivo","fr":"Toutes les données restent sur cet appareil","it":"Tutti i dati restano su questo dispositivo","pt":"Todos os dados ficam neste aparelho"},"SkillLog Med ist ein persönliches Ausbildungs- und Kompetenzlogbuch, keine Patientenakte. Bitte dokumentiere keine direkt identifizierenden Patientendaten.":{"en":"SkillLog Med is a personal training and competency logbook, not a patient record. Please do not document directly identifying patient data.","es":"SkillLog Med es un registro personal de formación y competencias, no una historia clínica. No documentes datos identificativos de pacientes.","fr":"SkillLog Med est un carnet personnel de formation et de compétences, pas un dossier patient. Ne documente aucune donnée identifiante de patient.","it":"SkillLog Med è un registro personale di formazione e competenze, non una cartella clinica. Non documentare dati identificativi dei pazienti.","pt":"O SkillLog Med é um registo pessoal de formação e competências, não um processo clínico. Não documentes dados identificativos de doentes."},"Erscheint im PDF-Bericht – alles optional.":{"en":"Appears in the PDF report – all optional.","es":"Aparece en el informe PDF; todo opcional.","fr":"Apparaît dans le rapport PDF – tout est facultatif.","it":"Compare nel report PDF; tutto facoltativo.","pt":"Aparece no relatório PDF – tudo opcional."},"Vor- und Nachname":{"en":"First and last name","es":"Nombre y apellidos","fr":"Prénom et nom","it":"Nome e cognome","pt":"Nome e apelido"},"Übernehmen":{"en":"Apply","es":"Aplicar","fr":"Appliquer","it":"Applica","pt":"Aplicar"},"Weitere Rolle hinzufügen":{"en":"Add another role","es":"Añadir otro rol","fr":"Ajouter un autre rôle","it":"Aggiungi un altro ruolo","pt":"Adicionar outra função"},"Rolle hinzufügen":{"en":"Add role","es":"Añadir rol","fr":"Ajouter un rôle","it":"Aggiungi ruolo","pt":"Adicionar função"},"Rolle entfernen":{"en":"Remove role","es":"Quitar rol","fr":"Retirer le rôle","it":"Rimuovi ruolo","pt":"Remover função"},"Noch keine Rolle gewählt.":{"en":"No role chosen yet.","es":"Aún sin rol elegido.","fr":"Aucun rôle choisi pour l'instant.","it":"Nessun ruolo scelto finora.","pt":"Ainda sem função escolhida."},"Diese Rolle steht schon in der Liste":{"en":"This role is already in the list","es":"Este rol ya está en la lista","fr":"Ce rôle est déjà dans la liste","it":"Questo ruolo è già in elenco","pt":"Esta função já está na lista"},"Bitte eine Rolle wählen":{"en":"Please choose a role","es":"Elige un rol","fr":"Choisis un rôle","it":"Scegli un ruolo","pt":"Escolhe uma função"},"Profil gespeichert":{"en":"Profile saved","es":"Perfil guardado","fr":"Profil enregistré","it":"Profilo salvato","pt":"Perfil guardado"},"Eigene Bezeichnung":{"en":"Custom name","es":"Denominación propia","fr":"Intitulé personnalisé","it":"Denominazione propria","pt":"Designação própria"},"Eigene Bezeichnung …":{"en":"Custom name …","es":"Denominación propia …","fr":"Intitulé personnalisé …","it":"Denominazione propria …","pt":"Designação própria …"},"Mehrere Rollen sind möglich – etwa „Physician-Assistant-Student:in“":{"en":"Several roles are possible – e.g. “PA student”","es":"Se permiten varios roles, p. ej. «estudiante de PA»","fr":"Plusieurs rôles possibles – p. ex. « étudiant·e PA »","it":"Sono possibili più ruoli, ad es. “studente PA”","pt":"São possíveis várias funções, p. ex. «estudante de PA»"},"und":{"en":"and","es":"y","fr":"et","it":"e","pt":"e"},"„Notfallsanitäter:in“. Alle erscheinen im PDF-Bericht.":{"en":"“paramedic”. All of them appear in the PDF report.","es":"«paramédico». Todos aparecen en el informe PDF.","fr":"« paramédic ». Tous figurent dans le rapport PDF.","it":"“paramedico”. Tutti compaiono nel report PDF.","pt":"«paramédico». Todas aparecem no relatório PDF."},"Ausbildungsstätte / Institution":{"en":"Training institution","es":"Centro de formación / institución","fr":"Établissement / institution","it":"Sede di formazione / istituzione","pt":"Instituição de formação"},"z. B. Uniklinik, Rettungsdienstschule":{"en":"e.g. university hospital, EMS academy","es":"p. ej. hospital universitario, escuela de emergencias","fr":"p. ex. CHU, école d'ambulanciers","it":"ad es. policlinico, scuola di soccorso","pt":"p. ex. hospital universitário, escola de emergência"},"Standard-Ort für neue Einträge":{"en":"Default location for new entries","es":"Lugar predeterminado para nuevas entradas","fr":"Lieu par défaut des nouvelles entrées","it":"Luogo predefinito per nuove voci","pt":"Local padrão para novos registos"},"Neue Maßnahme":{"en":"New procedure","es":"Nuevo procedimiento","fr":"Nouveau geste","it":"Nuova procedura","pt":"Novo procedimento"},"Maßnahme bearbeiten":{"en":"Edit procedure","es":"Editar procedimiento","fr":"Modifier le geste","it":"Modifica procedura","pt":"Editar procedimento"},"Bezeichnung":{"en":"Name","es":"Denominación","fr":"Intitulé","it":"Denominazione","pt":"Designação"},"z. B. Lumbalpunktion":{"en":"e.g. lumbar puncture","es":"p. ej. punción lumbar","fr":"p. ex. ponction lombaire","it":"ad es. puntura lombare","pt":"p. ex. punção lombar"},"Symbol":{"en":"Icon","es":"Símbolo","fr":"Symbole","it":"Simbolo","pt":"Símbolo"},"… oder ein Emoji eintippen, z. B. 🩺":{"en":"… or type an emoji, e.g. 🩺","es":"… o escribe un emoji, p. ej. 🩺","fr":"… ou saisis un émoji, p. ex. 🩺","it":"… o digita un'emoji, ad es. 🩺","pt":"… ou escreve um emoji, p. ex. 🩺"},"Kein Symbol – Monogramm":{"en":"No icon – monogram","es":"Sin símbolo: monograma","fr":"Aucun symbole – monogramme","it":"Nessun simbolo: monogramma","pt":"Sem símbolo – monograma"},"Maßnahme geändert":{"en":"Procedure updated","es":"Procedimiento modificado","fr":"Geste modifié","it":"Procedura modificata","pt":"Procedimento alterado"},"angelegt":{"en":"created","es":"creado","fr":"créé","it":"creata","pt":"criado"},"Neue Kategorie":{"en":"New category","es":"Nueva categoría","fr":"Nouvelle catégorie","it":"Nuova categoria","pt":"Nova categoria"},"Neue Kategorie …":{"en":"New category …","es":"Nueva categoría …","fr":"Nouvelle catégorie …","it":"Nuova categoria …","pt":"Nova categoria …"},"＋ Neue Kategorie …":{"en":"＋ New category …","es":"＋ Nueva categoría …","fr":"＋ Nouvelle catégorie …","it":"＋ Nuova categoria …","pt":"＋ Nova categoria …"},"＋ Neue Maßnahme":{"en":"＋ New procedure","es":"＋ Nuevo procedimiento","fr":"＋ Nouveau geste","it":"＋ Nuova procedura","pt":"＋ Novo procedimento"},"＋ Neuer Ort …":{"en":"＋ New location …","es":"＋ Nuevo lugar …","fr":"＋ Nouveau lieu …","it":"＋ Nuovo luogo …","pt":"＋ Novo local …"},"＋ Neuer Block …":{"en":"＋ New block …","es":"＋ Nuevo bloque …","fr":"＋ Nouveau bloc …","it":"＋ Nuovo blocco …","pt":"＋ Novo bloco …"},"z. B. Anästhesie, Pädiatrie":{"en":"e.g. anesthesia, pediatrics","es":"p. ej. anestesia, pediatría","fr":"p. ex. anesthésie, pédiatrie","it":"ad es. anestesia, pediatria","pt":"p. ex. anestesia, pediatria"},"Kategorie geändert":{"en":"Category updated","es":"Categoría modificada","fr":"Catégorie modifiée","it":"Categoria modificata","pt":"Categoria alterada"},"Neuer Ort":{"en":"New location","es":"Nuevo lugar","fr":"Nouveau lieu","it":"Nuovo luogo","pt":"Novo local"},"Ort bearbeiten":{"en":"Edit location","es":"Editar lugar","fr":"Modifier le lieu","it":"Modifica luogo","pt":"Editar local"},"z. B. Notaufnahme Haus B":{"en":"e.g. ED building B","es":"p. ej. urgencias edificio B","fr":"p. ex. urgences bâtiment B","it":"ad es. pronto soccorso edificio B","pt":"p. ex. urgências edifício B"},"Ort geändert":{"en":"Location updated","es":"Lugar modificado","fr":"Lieu modifié","it":"Luogo modificato","pt":"Local alterado"},"Neuer Trainingsblock":{"en":"New training block","es":"Nuevo bloque de formación","fr":"Nouveau bloc de formation","it":"Nuovo blocco formativo","pt":"Novo bloco de formação"},"Neuer Unterblock":{"en":"New sub-block","es":"Nuevo subbloque","fr":"Nouveau sous-bloc","it":"Nuovo sottoblocco","pt":"Novo sub-bloco"},"Block bearbeiten":{"en":"Edit block","es":"Editar bloque","fr":"Modifier le bloc","it":"Modifica blocco","pt":"Editar bloco"},"z. B. Rettungswachenpraktikum":{"en":"e.g. EMS placement","es":"p. ej. prácticas de ambulancia","fr":"p. ex. stage ambulancier","it":"ad es. tirocinio in ambulanza","pt":"p. ex. estágio de ambulância"},"Wann läuft dieser Block? Der Zeitraum erscheint in der Verwaltung und wird im Bericht als Berichtszeitraum vorgeschlagen.":{"en":"When does this block run? The period appears in the catalog and is suggested as the report period.","es":"¿Cuándo transcurre este bloque? El período aparece en el catálogo y se propone como período del informe.","fr":"Quand ce bloc a-t-il lieu ? La période apparaît dans le catalogue et est proposée comme période du rapport.","it":"Quando si svolge questo blocco? Il periodo compare nel catalogo e viene proposto come periodo del report.","pt":"Quando decorre este bloco? O período aparece no catálogo e é sugerido como período do relatório."},"Gehört zu":{"en":"Belongs to","es":"Pertenece a","fr":"Appartient à","it":"Appartiene a","pt":"Pertence a"},"Als Unterblock einordnen – etwa „OP“ innerhalb von „Klinikpraktikum“. Sonst „– eigenständiger Block –“ wählen.":{"en":"File as a sub-block – e.g. “OR” within “Hospital placement”. Otherwise choose “– standalone block –”.","es":"Clasificar como subbloque, p. ej. «Quirófano» dentro de «Prácticas hospitalarias». Si no, elige «– bloque independiente –».","fr":"Classer comme sous-bloc – p. ex. « Bloc opératoire » dans « Stage hospitalier ». Sinon, choisis « – bloc autonome – ».","it":"Classifica come sottoblocco, ad es. “Sala operatoria” dentro “Tirocinio ospedaliero”. Altrimenti scegli “– blocco autonomo –”.","pt":"Classificar como sub-bloco, p. ex. «Bloco operatório» dentro de «Estágio hospitalar». Caso contrário escolhe «– bloco autónomo –»."},"– eigenständiger Block –":{"en":"– standalone block –","es":"– bloque independiente –","fr":"– bloc autonome –","it":"– blocco autonomo –","pt":"– bloco autónomo –"},"Unterblock von":{"en":"Sub-block of","es":"Subbloque de","fr":"Sous-bloc de","it":"Sottoblocco di","pt":"Sub-bloco de"},"Das Ende liegt vor dem Beginn.":{"en":"The end is before the start.","es":"El fin es anterior al inicio.","fr":"La fin précède le début.","it":"La fine precede l'inizio.","pt":"O fim é anterior ao início."},"Block geändert":{"en":"Block updated","es":"Bloque modificado","fr":"Bloc modifié","it":"Blocco modificato","pt":"Bloco alterado"},"Neuer Tag":{"en":"New tag","es":"Nueva etiqueta","fr":"Nouveau tag","it":"Nuovo tag","pt":"Nova etiqueta"},"Tag umbenennen":{"en":"Rename tag","es":"Renombrar etiqueta","fr":"Renommer le tag","it":"Rinomina tag","pt":"Renomear etiqueta"},"Tag anlegen":{"en":"Create tag","es":"Crear etiqueta","fr":"Créer un tag","it":"Crea tag","pt":"Criar etiqueta"},"Tag geändert":{"en":"Tag updated","es":"Etiqueta modificada","fr":"Tag modifié","it":"Tag modificato","pt":"Etiqueta alterada"},"Tag gelöscht":{"en":"Tag deleted","es":"Etiqueta eliminada","fr":"Tag supprimé","it":"Tag eliminato","pt":"Etiqueta eliminada"},"Bitte einen Tag-Namen eingeben":{"en":"Please enter a tag name","es":"Introduce un nombre de etiqueta","fr":"Saisis un nom de tag","it":"Inserisci un nome per il tag","pt":"Introduz um nome de etiqueta"},"Diesen Tag gibt es schon.":{"en":"This tag already exists.","es":"Esta etiqueta ya existe.","fr":"Ce tag existe déjà.","it":"Questo tag esiste già.","pt":"Esta etiqueta já existe."},"Maßnahme hinzufügen":{"en":"Add procedure","es":"Añadir procedimiento","fr":"Ajouter un geste","it":"Aggiungi procedura","pt":"Adicionar procedimento"},"Kategorie hinzufügen":{"en":"Add category","es":"Añadir categoría","fr":"Ajouter une catégorie","it":"Aggiungi categoria","pt":"Adicionar categoria"},"Ort hinzufügen":{"en":"Add location","es":"Añadir lugar","fr":"Ajouter un lieu","it":"Aggiungi luogo","pt":"Adicionar local"},"Block hinzufügen":{"en":"Add block","es":"Añadir bloque","fr":"Ajouter un bloc","it":"Aggiungi blocco","pt":"Adicionar bloco"},"Unterblock hinzufügen":{"en":"Add sub-block","es":"Añadir subbloque","fr":"Ajouter un sous-bloc","it":"Aggiungi sottoblocco","pt":"Adicionar sub-bloco"},"Umbenennen":{"en":"Rename","es":"Renombrar","fr":"Renommer","it":"Rinomina","pt":"Renomear"},"Löschen":{"en":"Delete","es":"Eliminar","fr":"Supprimer","it":"Elimina","pt":"Eliminar"},"löschen?":{"en":"delete?","es":"¿eliminar?","fr":"supprimer ?","it":"eliminare?","pt":"eliminar?"},"Favorit":{"en":"Favorite","es":"Favorito","fr":"Favori","it":"Preferito","pt":"Favorito"},"Archivieren":{"en":"Archive","es":"Archivar","fr":"Archiver","it":"Archivia","pt":"Arquivar"},"archiviert":{"en":"archived","es":"archivado","fr":"archivé","it":"archiviata","pt":"arquivado"},"eigene":{"en":"custom","es":"propia","fr":"personnalisé","it":"propria","pt":"própria"},"eigener":{"en":"custom","es":"propio","fr":"personnalisé","it":"proprio","pt":"próprio"},"Maßnahme archiviert":{"en":"Procedure archived","es":"Procedimiento archivado","fr":"Geste archivé","it":"Procedura archiviata","pt":"Procedimento arquivado"},"Maßnahme wieder aktiv":{"en":"Procedure active again","es":"Procedimiento activo de nuevo","fr":"Geste de nouveau actif","it":"Procedura di nuovo attiva","pt":"Procedimento ativo de novo"},"Maßnahme gelöscht":{"en":"Procedure deleted","es":"Procedimiento eliminado","fr":"Geste supprimé","it":"Procedura eliminata","pt":"Procedimento eliminado"},"Kategorie gelöscht":{"en":"Category deleted","es":"Categoría eliminada","fr":"Catégorie supprimée","it":"Categoria eliminata","pt":"Categoria eliminada"},"Ort gelöscht":{"en":"Location deleted","es":"Lugar eliminado","fr":"Lieu supprimé","it":"Luogo eliminato","pt":"Local eliminado"},"Block gelöscht":{"en":"Block deleted","es":"Bloque eliminado","fr":"Bloc supprimé","it":"Blocco eliminato","pt":"Bloco eliminado"},"Bitte eine Bezeichnung eingeben.":{"en":"Please enter a name.","es":"Introduce una denominación.","fr":"Saisis un intitulé.","it":"Inserisci una denominazione.","pt":"Introduz uma designação."},"Bitte einen Namen eingeben.":{"en":"Please enter a name.","es":"Introduce un nombre.","fr":"Saisis un nom.","it":"Inserisci un nome.","pt":"Introduz um nome."},"Diese Maßnahme gibt es schon.":{"en":"This procedure already exists.","es":"Este procedimiento ya existe.","fr":"Ce geste existe déjà.","it":"Questa procedura esiste già.","pt":"Este procedimento já existe."},"Diese Kategorie gibt es schon.":{"en":"This category already exists.","es":"Esta categoría ya existe.","fr":"Cette catégorie existe déjà.","it":"Questa categoria esiste già.","pt":"Esta categoria já existe."},"Diesen Ort gibt es schon.":{"en":"This location already exists.","es":"Este lugar ya existe.","fr":"Ce lieu existe déjà.","it":"Questo luogo esiste già.","pt":"Este local já existe."},"Diesen Block gibt es an dieser Stelle schon.":{"en":"This block already exists here.","es":"Este bloque ya existe aquí.","fr":"Ce bloc existe déjà à cet endroit.","it":"Questo blocco esiste già qui.","pt":"Este bloco já existe aqui."},"Skills in Sekunden dokumentieren":{"en":"Document skills in seconds","es":"Documenta habilidades en segundos","fr":"Documente tes gestes en quelques secondes","it":"Documenta le competenze in pochi secondi","pt":"Documenta competências em segundos"},"Maßnahme, Kompetenzstufe, Setting, Ort – ein Eintrag dauert keine 20 Sekunden. Zuletzt genutzte Maßnahmen und Favoriten stehen ganz oben.":{"en":"Procedure, competency level, setting, location – an entry takes less than 20 seconds. Recently used procedures and favorites sit at the top.","es":"Procedimiento, nivel, contexto y lugar: una entrada lleva menos de 20 segundos. Los recientes y favoritos están arriba.","fr":"Geste, niveau, contexte, lieu – une entrée prend moins de 20 secondes. Les gestes récents et favoris sont en haut.","it":"Procedura, livello, contesto, luogo: una voce richiede meno di 20 secondi. Recenti e preferite stanno in alto.","pt":"Procedimento, nível, contexto, local – um registo demora menos de 20 segundos. Recentes e favoritos ficam no topo."},"Fortschritt sehen und belegen":{"en":"See and prove your progress","es":"Ve y demuestra tu progreso","fr":"Voir et prouver ta progression","it":"Vedi e dimostra i tuoi progressi","pt":"Vê e comprova o teu progresso"},"Statistik nach Maßnahme und Stufe – und ein druckbarer PDF-Bericht mit Unterschriftsfeld für Praktika, PJ und Ausbildung.":{"en":"Statistics by procedure and level – and a printable PDF report with a signature field for placements and training.","es":"Estadística por procedimiento y nivel, y un informe PDF imprimible con campo de firma para prácticas y formación.","fr":"Statistiques par geste et niveau – et un rapport PDF imprimable avec signature pour stages et formation.","it":"Statistiche per procedura e livello e un report PDF stampabile con campo firma per tirocini e formazione.","pt":"Estatística por procedimento e nível – e um relatório PDF imprimível com campo de assinatura para estágios e formação."},"Keine Patientendaten, alles lokal":{"en":"No patient data, everything local","es":"Sin datos de pacientes, todo local","fr":"Aucune donnée patient, tout en local","it":"Nessun dato dei pazienti, tutto in locale","pt":"Sem dados de doentes, tudo local"},"SkillLog Med ist ein Ausbildungslogbuch, keine Patientenakte. Kein Konto, kein Server – alle Daten bleiben auf diesem Gerät.":{"en":"SkillLog Med is a training logbook, not a patient record. No account, no server – all data stays on this device.","es":"SkillLog Med es un registro de formación, no una historia clínica. Sin cuenta ni servidor: todo queda en este dispositivo.","fr":"SkillLog Med est un carnet de formation, pas un dossier patient. Pas de compte, pas de serveur – tout reste sur cet appareil.","it":"SkillLog Med è un registro di formazione, non una cartella clinica. Niente account né server: tutto resta su questo dispositivo.","pt":"O SkillLog Med é um registo de formação, não um processo clínico. Sem conta, sem servidor – tudo fica neste aparelho."},"Weiter":{"en":"Next","es":"Siguiente","fr":"Suivant","it":"Avanti","pt":"Seguinte"},"Überspringen":{"en":"Skip","es":"Omitir","fr":"Passer","it":"Salta","pt":"Saltar"},"Zurück":{"en":"Back","es":"Atrás","fr":"Retour","it":"Indietro","pt":"Voltar"},"Schließen":{"en":"Close","es":"Cerrar","fr":"Fermer","it":"Chiudi","pt":"Fechar"},"Los geht's":{"en":"Let's go","es":"Empezar","fr":"C'est parti","it":"Iniziamo","pt":"Começar"},"Zum Verlassen der App erneut „Zurück“ drücken":{"en":"Press “Back” again to exit the app","es":"Pulsa «Atrás» otra vez para salir","fr":"Appuie encore sur « Retour » pour quitter","it":"Premi di nuovo “Indietro” per uscire","pt":"Prime «Voltar» outra vez para sair"},"★ Favoriten stehen im Formular oben. Archivierte Maßnahmen erscheinen nicht mehr in der Auswahl, alte Einträge bleiben erhalten.":{"en":"★ Favorites appear at the top of the form. Archived procedures no longer show up in the selection; old entries are kept.","es":"★ Los favoritos aparecen arriba en el formulario. Los procedimientos archivados dejan de mostrarse; las entradas antiguas se conservan.","fr":"★ Les favoris apparaissent en haut du formulaire. Les gestes archivés ne sont plus proposés ; les anciennes entrées sont conservées.","it":"★ I preferiti compaiono in alto nel modulo. Le procedure archiviate non vengono più proposte; le voci vecchie restano.","pt":"★ Os favoritos aparecem no topo do formulário. Procedimentos arquivados deixam de aparecer; os registos antigos mantêm-se."},"Gruppieren den Katalog im Formular, in der Verwaltung, im Filter und in der Statistik. „Sonstiges“ ist der feste Auffangwert und bleibt bestehen.":{"en":"Group the catalog in the form, catalog view, filters and statistics. “Other” is the fixed fallback and always remains.","es":"Agrupan el catálogo en el formulario, la gestión, los filtros y la estadística. «Otros» es el valor fijo de reserva.","fr":"Regroupent le catalogue dans le formulaire, la gestion, les filtres et les statistiques. « Autres » est la valeur de repli fixe.","it":"Raggruppano il catalogo nel modulo, nella gestione, nei filtri e nelle statistiche. “Altro” è il valore fisso di riserva.","pt":"Agrupam o catálogo no formulário, na gestão, nos filtros e na estatística. «Outros» é o valor fixo de reserva."},"Beim Löschen behalten vorhandene Einträge die Ortsangabe als Schnappschuss.":{"en":"When deleting, existing entries keep the location as a snapshot.","es":"Al eliminar, las entradas existentes conservan el lugar como instantánea.","fr":"En cas de suppression, les entrées existantes gardent le lieu en instantané.","it":"All'eliminazione, le voci esistenti conservano il luogo come istantanea.","pt":"Ao eliminar, os registos existentes mantêm o local como instantâneo."},"Praktika, Rotationen und Ausbildungsabschnitte. Ein Block kann Unterblöcke haben – etwa „Klinikpraktikum“ mit „OP“ und „Intensivstation“. In der Statistik zählt der Oberblock seine Unterblöcke mit.":{"en":"Placements, rotations and training phases. A block can have sub-blocks – e.g. “Hospital placement” with “OR” and “ICU”. In statistics, the parent block includes its sub-blocks.","es":"Prácticas, rotaciones y fases de formación. Un bloque puede tener subbloques, p. ej. «Prácticas hospitalarias» con «Quirófano» y «UCI». En la estadística, el bloque padre incluye sus subbloques.","fr":"Stages, rotations et phases de formation. Un bloc peut avoir des sous-blocs – p. ex. « Stage hospitalier » avec « Bloc opératoire » et « Soins intensifs ». Dans les statistiques, le bloc parent inclut ses sous-blocs.","it":"Tirocini, rotazioni e fasi di formazione. Un blocco può avere sottoblocchi, ad es. “Tirocinio ospedaliero” con “Sala operatoria” e “Terapia intensiva”. Nelle statistiche il blocco padre include i sottoblocchi.","pt":"Estágios, rotações e fases de formação. Um bloco pode ter sub-blocos, p. ex. «Estágio hospitalar» com «Bloco operatório» e «UCI». Na estatística, o bloco pai inclui os seus sub-blocos."},"Tags fassen Einträge zu Praktika, Kursen oder Ausbildungsblöcken zusammen – im Logbuch und im Bericht filterbar.":{"en":"Tags group entries by placements, courses or training blocks – filterable in the logbook and report.","es":"Las etiquetas agrupan entradas por prácticas, cursos o bloques; filtrables en el registro y el informe.","fr":"Les tags regroupent les entrées par stages, cours ou blocs – filtrables dans le journal et le rapport.","it":"I tag raggruppano le voci per tirocini, corsi o blocchi; filtrabili nel registro e nel report.","pt":"As etiquetas agrupam registos por estágios, cursos ou blocos – filtráveis no registo e no relatório."},"Noch keine Blöcke. Leg den ersten an – z. B. „Rettungswachenpraktikum“.":{"en":"No blocks yet. Create the first one – e.g. “EMS placement”.","es":"Aún sin bloques. Crea el primero, p. ej. «Prácticas de ambulancia».","fr":"Pas encore de blocs. Crée le premier – p. ex. « Stage ambulancier ».","it":"Ancora nessun blocco. Crea il primo, ad es. “Tirocinio in ambulanza”.","pt":"Ainda sem blocos. Cria o primeiro, p. ex. «Estágio de ambulância»."},"Eintrag behält":{"en":"entry keeps","es":"entrada conserva","fr":"entrée garde","it":"voce conserva","pt":"registo mantém"},"Einträge behalten":{"en":"entries keep","es":"entradas conservan","fr":"entrées gardent","it":"voci conservano","pt":"registos mantêm"},"die Bezeichnung als Schnappschuss.":{"en":"the name as a snapshot.","es":"la denominación como instantánea.","fr":"l'intitulé en instantané.","it":"la denominazione come istantanea.","pt":"a designação como instantâneo."},"die Ortsangabe als Schnappschuss.":{"en":"the location as a snapshot.","es":"el lugar como instantánea.","fr":"le lieu en instantané.","it":"il luogo come istantanea.","pt":"o local como instantâneo."},"Unterblock wird":{"en":"sub-block will be","es":"subbloque se","fr":"sous-bloc sera","it":"sottoblocco sarà","pt":"sub-bloco será"},"Unterblöcke werden":{"en":"sub-blocks will be","es":"subbloques se","fr":"sous-blocs seront","it":"sottoblocchi saranno","pt":"sub-blocos serão"},"mitgelöscht.":{"en":"deleted too.","es":"eliminan también.","fr":"supprimés aussi.","it":"eliminati anch'essi.","pt":"eliminados também."},"nach „Sonstiges“. Einträge bleiben unverändert.":{"en":"moved to “Other”. Entries stay unchanged.","es":"pasan a «Otros». Las entradas no cambian.","fr":"déplacés vers « Autres ». Les entrées restent inchangées.","it":"spostate in “Altro”. Le voci restano invariate.","pt":"passam para «Outros». Os registos não mudam."},"Maßnahmen erscheinen nicht mehr in der Auswahl, alte Einträge bleiben erhalten.":{"en":"Procedures no longer appear in the selection; old entries are kept.","es":"Los procedimientos dejan de aparecer; las entradas antiguas se conservan.","fr":"Les gestes ne sont plus proposés ; les anciennes entrées sont conservées.","it":"Le procedure non vengono più proposte; le voci vecchie restano.","pt":"Os procedimentos deixam de aparecer; os registos antigos mantêm-se."},"Unbekannte Maßnahme":{"en":"Unknown procedure","es":"Procedimiento desconocido","fr":"Geste inconnu","it":"Procedura sconosciuta","pt":"Procedimento desconhecido"},"Datei erstellt":{"en":"File created","es":"Archivo creado","fr":"Fichier créé","it":"File creato","pt":"Ficheiro criado"},"Datei im Browser gespeichert":{"en":"File saved in the browser","es":"Archivo guardado en el navegador","fr":"Fichier enregistré dans le navigateur","it":"File salvato nel browser","pt":"Ficheiro guardado no navegador"},"Teilen-Menü geöffnet":{"en":"Share menu opened","es":"Menú de compartir abierto","fr":"Menu de partage ouvert","it":"Menu di condivisione aperto","pt":"Menu de partilha aberto"},"Mehr als":{"en":"More than","es":"Más de","fr":"Plus de","it":"Più di","pt":"Mais de"},"Maßnahmen sind nicht vorgesehen.":{"en":"procedures are not supported.","es":"procedimientos no están previstos.","fr":"gestes ne sont pas prévus.","it":"procedure non sono previste.","pt":"procedimentos não estão previstos."},"Kategorien sind nicht vorgesehen.":{"en":"categories are not supported.","es":"categorías no están previstas.","fr":"catégories ne sont pas prévues.","it":"categorie non sono previste.","pt":"categorias não estão previstas."},"Orte sind nicht vorgesehen.":{"en":"locations are not supported.","es":"lugares no están previstos.","fr":"lieux ne sont pas prévus.","it":"luoghi non sono previsti.","pt":"locais não estão previstos."},"Blöcke sind nicht vorgesehen.":{"en":"blocks are not supported.","es":"bloques no están previstos.","fr":"blocs ne sont pas prévus.","it":"blocchi non sono previsti.","pt":"blocos não estão previstos."},"keine":{"en":"none","es":"ninguna","fr":"aucune","it":"nessuna","pt":"nenhuma"},"ab":{"en":"from","es":"desde","fr":"à partir du","it":"dal","pt":"desde"},"Maßnahme:":{"en":"Procedure:","es":"Procedimiento:","fr":"Geste :","it":"Procedura:","pt":"Procedimento:"},"Kategorie:":{"en":"Category:","es":"Categoría:","fr":"Catégorie :","it":"Categoria:","pt":"Categoria:"},"Ort:":{"en":"Location:","es":"Lugar:","fr":"Lieu :","it":"Luogo:","pt":"Local:"},"Tag:":{"en":"Tag:","es":"Etiqueta:","fr":"Tag :","it":"Tag:","pt":"Etiqueta:"},"Notiz:":{"en":"Note:","es":"Nota:","fr":"Note :","it":"Nota:","pt":"Nota:"},"Archiviert":{"en":"Archived","es":"Archivados","fr":"Archivés","it":"Archiviate","pt":"Arquivados"},"Aus dem Archiv holen":{"en":"Restore from archive","es":"Sacar del archivo","fr":"Sortir des archives","it":"Recupera dall'archivio","pt":"Tirar do arquivo"},"Maßnahme wandert":{"en":"procedure moves","es":"procedimiento pasa","fr":"geste passera","it":"procedura passa","pt":"procedimento passa"},"Maßnahmen wandern":{"en":"procedures move","es":"procedimientos pasan","fr":"gestes passeront","it":"procedure passano","pt":"procedimentos passam"},"kein Ort":{"en":"no location","es":"sin lugar","fr":"aucun lieu","it":"nessun luogo","pt":"sem local"},"kein Block":{"en":"no block","es":"sin bloque","fr":"aucun bloc","it":"nessun blocco","pt":"sem bloco"},"Eintrag nicht gefunden":{"en":"Entry not found","es":"Entrada no encontrada","fr":"Entrée introuvable","it":"Voce non trovata","pt":"Registo não encontrado"}};
+Object.assign(UEB, {
+  "Der Tag wird aus": { en:"The tag will be removed from", es:"La etiqueta se quitará de", fr:"Le tag sera retiré de", it:"Il tag sarà rimosso da", pt:"A etiqueta será removida de" },
+  "entfernt.": { en:"", es:"", fr:"", it:"", pt:"" },
+  "Einträgen": { en:"entries", es:"entradas", fr:"entrées", it:"voci", pt:"registos" },
+  "Unterblock wird": { en:"sub-block will be", es:"subbloque se", fr:"sous-bloc sera", it:"sottoblocco sarà", pt:"sub-bloco será" },
+  "Los geht’s": { en:"Let’s go", es:"Empezar", fr:"C’est parti", it:"Iniziamo", pt:"Começar" }
+});
+function t(s){
+  if (SPRACHE === "de") return s;
+  const u = UEB[s];
+  return u && (SPRACHE in u) ? u[SPRACHE] : s;
+}
+function uebersetzeDom(wurzel){
+  if (SPRACHE === "de" || !wurzel) return;
+  const w = document.createTreeWalker(wurzel, NodeFilter.SHOW_TEXT, {
+    acceptNode: n => {
+      const p = n.parentElement;
+      return p && (p.tagName === "SCRIPT" || p.tagName === "STYLE")
+        ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  let n;
+  while ((n = w.nextNode())){
+    const norm = n.nodeValue.replace(/\u00a0/g, " ");
+    const kern = norm.replace(/\s+/g, " ").trim();
+    if (!kern) continue;
+    const u = UEB[kern];
+    if (!u || !(SPRACHE in u)) continue;
+    const i = norm.indexOf(kern);
+    n.nodeValue = i >= 0
+      ? norm.slice(0, i) + u[SPRACHE] + norm.slice(i + kern.length)
+      : u[SPRACHE];
+  }
+  wurzel.querySelectorAll("[placeholder],[aria-label],[title]").forEach(el => {
+    ["placeholder", "aria-label", "title"].forEach(a => {
+      const v = el.getAttribute(a);
+      if (v && UEB[v] && (SPRACHE in UEB[v])) el.setAttribute(a, UEB[v][SPRACHE]);
+    });
+  });
+}
 /* =========================================================================
    SkillLog Med – Digitales Logbuch für klinische Maßnahmen und praktische
    Kompetenzen. Persönliches Ausbildungslogbuch, keine Patientenakte.
@@ -1391,8 +1448,8 @@ const Core = {
     const von = this.istIso(b.von) ? this.fmtDatum(b.von) : "";
     const bis = this.istIso(b.bis) ? this.fmtDatum(b.bis) : "";
     if (von && bis) return von + " – " + bis;
-    if (von) return "ab " + von;
-    if (bis) return "bis " + bis;
+    if (von) return t("ab") + " " + von;
+    if (bis) return t("bis") + " " + bis;
     return "";
   },
 
@@ -1482,8 +1539,9 @@ const Core = {
   jahresanfang(iso){ return iso.slice(0, 5) + "01-01"; },
   fmtDatum(iso){
     if (!this.istIso(iso)) return "–";
+    const s = SPRACHE === "de" ? "." : "/";
     const t = iso.split("-");
-    return t[2] + "." + t[1] + "." + t[0];
+    return t[2] + s + t[1] + s + t[0];
   },
   fmtDatumKurz(iso){
     if (!this.istIso(iso)) return "–";
@@ -1494,7 +1552,7 @@ const Core = {
   wochentag(iso){
     if (!this.istIso(iso)) return "";
     const t = iso.split("-").map(Number);
-    return ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][new Date(t[0], t[1] - 1, t[2]).getDay()];
+    return (WTAGE[SPRACHE] || WTAGE.de)[new Date(t[0], t[1] - 1, t[2]).getDay()];
   },
 
   /* Schnellfilter auf Von/Bis abbilden. Leere Grenzen bedeuten "offen". */
@@ -1689,7 +1747,7 @@ const Core = {
       return /[";\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
     };
     const kopf = ["Datum", "Uhrzeit", "Maßnahme", "Kompetenzstufe", "Setting",
-      "Ort", "Trainingsblock", "Tags", "Notiz", "Erstellt am"];
+      "Ort", "Trainingsblock", "Tags", "Notiz", "Erstellt am"].map(s => t(s));
     const zeilen = this.sortieren(liste).map(e => [
       e.datum, e.zeit, this.mLabel(e),
       (this.stufe(e.stufe) || {}).label || e.stufe,
@@ -1713,26 +1771,26 @@ const Core = {
     const eintraege = this.sortieren(gefiltert).reverse();
     const stat = this.statistik(gefiltert);
     const zeitraumText =
-      (k.von && this.istIso(k.von) ? this.fmtDatum(k.von) : "Beginn der Aufzeichnung")
-      + " bis " + (k.bis && this.istIso(k.bis) ? this.fmtDatum(k.bis) : this.fmtDatum(this.heute()));
+      (k.von && this.istIso(k.von) ? this.fmtDatum(k.von) : t("Beginn der Aufzeichnung"))
+      + " " + t("bis") + " " + (k.bis && this.istIso(k.bis) ? this.fmtDatum(k.bis) : this.fmtDatum(this.heute()));
     const filterTeile = [];
     if (k.massnahme && k.massnahme !== "alle"){
       const m = this.massnahme(k.massnahme);
-      filterTeile.push("Maßnahme: " + ((m && m.label) || k.massnahme));
+      filterTeile.push(t("Maßnahme:") + " " + ((m && m.label) || k.massnahme));
     }
     if (k.mkategorie && k.mkategorie !== "alle"){
       const mk = this.mkategorie(k.mkategorie);
-      filterTeile.push("Kategorie: " + ((mk && mk.label) || k.mkategorie));
+      filterTeile.push(t("Kategorie:") + " " + ((mk && mk.label) || k.mkategorie));
     }
     if (k.ort && k.ort !== "alle"){
       const o = this.ort(k.ort);
-      filterTeile.push("Ort: " + ((o && o.label) || k.ort));
+      filterTeile.push(t("Ort:") + " " + ((o && o.label) || k.ort));
     }
-    if (k.tag && k.tag !== "alle") filterTeile.push("Tag: " + k.tag);
+    if (k.tag && k.tag !== "alle") filterTeile.push(t("Tag:") + " " + k.tag);
 
     const p = profil || {};
     const meta = [];
-    if (p.name) meta.push(["Name", p.name]);
+    if (p.name) meta.push([t("Name"), p.name]);
     /* Mehrere Rollen sind möglich; das Feld heißt dann im Plural. Der alte
        Einzelwert wird weiterhin gelesen, damit Berichte aus Sicherungen
        älterer Stände unverändert funktionieren. */
@@ -1741,35 +1799,33 @@ const Core = {
     if (rollen.length){
       /* Komma statt Mittelpunkt: mancher PDF-Betrachter zeigt "·" als
          Kästchen, weil er die Standardschrift durch eine eigene ersetzt. */
-      meta.push([rollen.length > 1 ? "Rollen / Berufsgruppen" : "Rolle / Berufsgruppe",
+      meta.push([rollen.length > 1 ? t("Rollen / Berufsgruppen") : t("Rolle / Berufsgruppe"),
         rollen.join(", ")]);
     }
-    if (p.institution) meta.push(["Ausbildungsstätte", p.institution]);
+    if (p.institution) meta.push([t("Ausbildungsstätte"), p.institution]);
     /* Der gewählte Trainingsblock steht im Kopf des Berichts – genau das
        verlangt eine Praktikumsbescheinigung. Ein Freitext-Zusatz bleibt
        daneben möglich. */
     if (k.block && k.block !== "alle"){
       const zr = this.blockZeitraum(k.block);
-      meta.push(["Trainingsblock", this.blockPfad(k.block) + (zr ? " (" + zr + ")" : "")]);
+      meta.push([t("Trainingsblock"), this.blockPfad(k.block) + (zr ? " (" + zr + ")" : "")]);
     }
-    if (k.blockText) meta.push(["Praktikum / Block", k.blockText]);
-    meta.push(["Zeitraum", zeitraumText]);
-    if (filterTeile.length) meta.push(["Eingrenzung", filterTeile.join(" · ")]);
-    meta.push(["Einträge", String(stat.gesamt)]);
-    meta.push(["Status", k.status === "unterschrift" ? "Zur Unterschrift vorgesehen" : "Entwurf"]);
-    meta.push(["Erstellt am", this.fmtDatum(this.heute())]);
+    if (k.blockText) meta.push([t("Praktikum / Block"), k.blockText]);
+    meta.push([t("Zeitraum"), zeitraumText]);
+    if (filterTeile.length) meta.push([t("Eingrenzung"), filterTeile.join(" · ")]);
+    meta.push([t("Einträge"), String(stat.gesamt)]);
+    meta.push([t("Status"), k.status === "unterschrift" ? t("Zur Unterschrift vorgesehen") : t("Entwurf")]);
+    meta.push([t("Erstellt am"), this.fmtDatum(this.heute())]);
     return {
-      titel: "Ausbildungs- und Kompetenznachweis",
+      titel: t("Ausbildungs- und Kompetenznachweis"),
       app: "SkillLog Med",
-      untertitel: "Digitales Logbuch für klinische Maßnahmen und praktische Kompetenzen",
+      untertitel: t("Digitales Logbuch für klinische Maßnahmen und praktische Kompetenzen"),
       meta,
       stat,
       eintraege,
       bemerkung: String(k.bemerkung == null ? "" : k.bemerkung).trim().slice(0, 500),
       status: k.status === "unterschrift" ? "unterschrift" : "entwurf",
-      hinweis: "Der Bericht wurde mit SkillLog Med erstellt, einem persönlichen Ausbildungs- "
-        + "und Kompetenzlogbuch. Er dient als Nachweis für Ausbildung, Praktikum und Portfolio "
-        + "und enthält keine Patientendaten."
+      hinweis: t("Der Bericht wurde mit SkillLog Med erstellt, einem persönlichen Ausbildungs- und Kompetenzlogbuch. Er dient als Nachweis für Ausbildung, Praktikum und Portfolio und enthält keine Patientendaten.")
     };
   }
 };
@@ -1954,16 +2010,16 @@ const Pdf = {
     /* ---------- Zusammenfassung ---------- */
     if (b.stat.gesamt){
       platz(40);
-      text(M, y, "Zusammenfassung nach Maßnahme", 10.5, true, AKZENT);
+      text(M, y, t("Zusammenfassung nach Maßnahme"), 10.5, true, AKZENT);
       y -= 16;
-      const stufenTitel = Core.STUFEN_REIHE.map(s => Core.STUFEN[s].label);
+      const stufenTitel = Core.STUFEN_REIHE.map(s => t(Core.STUFEN[s].label));
       const spalten = [
-        { titel: "Maßnahme", breite: INNEN - 60 - 74 * stufenTitel.length },
-        { titel: "Gesamt", breite: 60 }
+        { titel: t("Maßnahme"), breite: INNEN - 60 - 74 * stufenTitel.length },
+        { titel: t("Gesamt"), breite: 60 }
       ].concat(stufenTitel.map(t => ({ titel: t, breite: 74 })));
       const zeilen = b.stat.massnahmen.map(m =>
         [m.label, String(m.gesamt)].concat(Core.STUFEN_REIHE.map(s => String(m.stufen[s] || 0))));
-      zeilen.push(["Gesamt", String(b.stat.gesamt)]
+      zeilen.push([t("Gesamt"), String(b.stat.gesamt)]
         .concat(Core.STUFEN_REIHE.map(s => String(b.stat.stufen[s] || 0))));
       tabelle(spalten, zeilen, null, zi => zi === zeilen.length - 1);
       y -= 12;
@@ -1972,31 +2028,31 @@ const Pdf = {
     /* ---------- Detailliste ---------- */
     if (b.eintraege.length){
       platz(40);
-      text(M, y, "Einzelne Einträge", 10.5, true, AKZENT);
+      text(M, y, t("Einzelne Einträge"), 10.5, true, AKZENT);
       y -= 16;
       const spalten = b.mitTags
         ? [
-          { titel: "Datum", breite: 52 }, { titel: "Zeit", breite: 30 },
-          { titel: "Maßnahme", breite: 102 }, { titel: "Stufe", breite: 56 },
-          { titel: "Setting", breite: 50 }, { titel: "Ort", breite: 64 },
-          { titel: "Block", breite: 76 }, { titel: "Tags", breite: INNEN - 430 }
+          { titel: t("Datum"), breite: 52 }, { titel: t("Zeit"), breite: 30 },
+          { titel: t("Maßnahme"), breite: 102 }, { titel: t("Stufe"), breite: 56 },
+          { titel: t("Setting"), breite: 50 }, { titel: t("Ort"), breite: 64 },
+          { titel: t("Block"), breite: 76 }, { titel: t("Tags"), breite: INNEN - 430 }
         ]
         : [
-          { titel: "Datum", breite: 54 }, { titel: "Zeit", breite: 32 },
-          { titel: "Maßnahme", breite: 130 }, { titel: "Stufe", breite: 58 },
-          { titel: "Setting", breite: 52 }, { titel: "Ort", breite: 80 },
-          { titel: "Block", breite: INNEN - 406 }
+          { titel: t("Datum"), breite: 54 }, { titel: t("Zeit"), breite: 32 },
+          { titel: t("Maßnahme"), breite: 130 }, { titel: t("Stufe"), breite: 58 },
+          { titel: t("Setting"), breite: 52 }, { titel: t("Ort"), breite: 80 },
+          { titel: t("Block"), breite: INNEN - 406 }
         ];
       const zeilen = b.eintraege.map(e => [
         Core.fmtDatum(e.datum), e.zeit || "–", Core.mLabel(e),
-        (Core.stufe(e.stufe) || {}).label || e.stufe,
-        (Core.setting(e.setting) || {}).label || e.setting,
+        t((Core.stufe(e.stufe) || {}).label || e.stufe),
+        t((Core.setting(e.setting) || {}).label || e.setting),
         Core.oLabel(e) || "–", Core.bLabel(e) || "–"
       ].concat(b.mitTags ? [e.tags.join(", ") || "–"] : []));
-      tabelle(spalten, zeilen, zi => b.eintraege[zi].notiz ? "Notiz: " + b.eintraege[zi].notiz : null);
+      tabelle(spalten, zeilen, zi => b.eintraege[zi].notiz ? t("Notiz:") + " " + b.eintraege[zi].notiz : null);
     } else {
       platz(30);
-      text(M, y, "Im gewählten Zeitraum liegen keine Einträge vor.", 9, false, "0.35");
+      text(M, y, t("Im gewählten Zeitraum liegen keine Einträge vor."), 9, false, "0.35");
       y -= 20;
     }
 
@@ -2004,7 +2060,7 @@ const Pdf = {
     if (b.bemerkung){
       platz(46);
       y -= 8;
-      text(M, y, "Bemerkungen / Bestätigung", 10.5, true, AKZENT);
+      text(M, y, t("Bemerkungen / Bestätigung"), 10.5, true, AKZENT);
       y -= 15;
       this.umbrechen(b.bemerkung, INNEN, 9).forEach(z => {
         platz(14); text(M, y, z, 9); y -= 12.5;
@@ -2017,8 +2073,8 @@ const Pdf = {
     const halbe = (INNEN - 40) / 2;
     linie(M, y, M + halbe, y, 0.8, "0.1");
     linie(M + halbe + 40, y, M + INNEN, y, 0.8, "0.1");
-    text(M, y - 11, "Ort, Datum", 7.6, false, "0.35");
-    text(M + halbe + 40, y - 11, "Unterschrift Praxisanleitung / Ausbildungsverantwortliche:r", 7.6, false, "0.35");
+    text(M, y - 11, t("Ort, Datum"), 7.6, false, "0.35");
+    text(M + halbe + 40, y - 11, t("Unterschrift Praxisanleitung / Ausbildungsverantwortliche:r"), 7.6, false, "0.35");
     y -= 34;
     this.umbrechen(b.hinweis, INNEN, 7.4).forEach(z => {
       text(M, y, z, 7.4, false, "0.45"); y -= 9.6;
@@ -2029,7 +2085,7 @@ const Pdf = {
       const alt = ops; ops = s;
       linie(M, M - 14, M + INNEN, M - 14, 0.5, "0.8");
       text(M, M - 24, b.app + " – " + b.untertitel, 7, false, "0.5");
-      const st = "Seite " + (i + 1) + " von " + seiten.length;
+      const st = t("Seite") + " " + (i + 1) + " " + t("von") + " " + seiten.length;
       text(M + INNEN - this._breite(st, 7), M - 24, st, 7, false, "0.5");
       ops = alt;
     });
@@ -2160,11 +2216,11 @@ const MKategorien = {
 
   hinzufuegen(label){
     const name = String(label == null ? "" : label).trim().slice(0, 40);
-    if (!name) throw new Error("Bitte einen Namen eingeben.");
+    if (!name) throw new Error(t("Bitte einen Namen eingeben."));
     if (Core.mkategorien.some(k => k.label.toLowerCase() === name.toLowerCase()))
-      throw new Error("Diese Kategorie gibt es schon.");
+      throw new Error(t("Diese Kategorie gibt es schon."));
     if (Core.mkategorien.length >= this.MAX)
-      throw new Error("Mehr als " + this.MAX + " Kategorien sind nicht vorgesehen.");
+      throw new Error(t("Mehr als") + " " + this.MAX + " " + t("Kategorien sind nicht vorgesehen."));
     const k = { id: this.neueId(name), label: name, eigen: true };
     Core.mkategorien.push(k);
     this.speichern();
@@ -2175,9 +2231,9 @@ const MKategorien = {
     const k = Core.mkategorie(id);
     if (!k) return null;
     const name = String(label == null ? "" : label).trim().slice(0, 40);
-    if (!name) throw new Error("Bitte einen Namen eingeben.");
+    if (!name) throw new Error(t("Bitte einen Namen eingeben."));
     if (Core.mkategorien.some(x => x.id !== id && x.label.toLowerCase() === name.toLowerCase()))
-      throw new Error("Diese Kategorie gibt es schon.");
+      throw new Error(t("Diese Kategorie gibt es schon."));
     k.label = name;
     this.speichern();
     return k;
@@ -2288,11 +2344,11 @@ const Katalog = {
 
   hinzufuegen(label, kategorieId, icon){
     const name = String(label == null ? "" : label).trim().slice(0, 60);
-    if (!name) throw new Error("Bitte eine Bezeichnung eingeben.");
+    if (!name) throw new Error(t("Bitte eine Bezeichnung eingeben."));
     if (Core.katalog.some(m => m.label.toLowerCase() === name.toLowerCase()))
-      throw new Error("Diese Maßnahme gibt es schon.");
+      throw new Error(t("Diese Maßnahme gibt es schon."));
     if (Core.katalog.length >= this.MAX)
-      throw new Error("Mehr als " + this.MAX + " Maßnahmen sind nicht vorgesehen.");
+      throw new Error(t("Mehr als") + " " + this.MAX + " " + t("Maßnahmen sind nicht vorgesehen."));
     const m = { id: this.neueId(name), label: name,
       kategorie: Core.mkategorie(kategorieId) ? kategorieId : "sonstiges",
       favorit: false, archiviert: false, eigen: true };
@@ -2307,9 +2363,9 @@ const Katalog = {
     const m = Core.massnahme(id);
     if (!m) return null;
     const name = String(label == null ? "" : label).trim().slice(0, 60);
-    if (!name) throw new Error("Bitte eine Bezeichnung eingeben.");
+    if (!name) throw new Error(t("Bitte eine Bezeichnung eingeben."));
     if (Core.katalog.some(x => x.id !== id && x.label.toLowerCase() === name.toLowerCase()))
-      throw new Error("Diese Maßnahme gibt es schon.");
+      throw new Error(t("Diese Maßnahme gibt es schon."));
     m.label = name;
     if (kategorieId !== undefined && Core.mkategorie(kategorieId)) m.kategorie = kategorieId;
     if (icon !== undefined){
@@ -2400,11 +2456,11 @@ const Orte = {
 
   hinzufuegen(label){
     const name = String(label == null ? "" : label).trim().slice(0, 40);
-    if (!name) throw new Error("Bitte eine Bezeichnung eingeben.");
+    if (!name) throw new Error(t("Bitte eine Bezeichnung eingeben."));
     if (Core.orte.some(o => o.label.toLowerCase() === name.toLowerCase()))
-      throw new Error("Diesen Ort gibt es schon.");
+      throw new Error(t("Diesen Ort gibt es schon."));
     if (Core.orte.length >= this.MAX)
-      throw new Error("Mehr als " + this.MAX + " Orte sind nicht vorgesehen.");
+      throw new Error(t("Mehr als") + " " + this.MAX + " " + t("Orte sind nicht vorgesehen."));
     const o = { id: this.neueId(name), label: name, eigen: true };
     Core.orte.push(o);
     this.speichern();
@@ -2415,9 +2471,9 @@ const Orte = {
     const o = Core.ort(id);
     if (!o) return null;
     const name = String(label == null ? "" : label).trim().slice(0, 40);
-    if (!name) throw new Error("Bitte eine Bezeichnung eingeben.");
+    if (!name) throw new Error(t("Bitte eine Bezeichnung eingeben."));
     if (Core.orte.some(x => x.id !== id && x.label.toLowerCase() === name.toLowerCase()))
-      throw new Error("Diesen Ort gibt es schon.");
+      throw new Error(t("Diesen Ort gibt es schon."));
     o.label = name;
     this.speichern();
     Daten.alle().forEach(e => { if (e.ortId === id) e.ortLabel = name; });
@@ -2489,14 +2545,14 @@ const Bloecke = {
      umgehängt. */
   hinzufuegen(label, elternId, von, bis){
     const name = String(label == null ? "" : label).trim().slice(0, 60);
-    if (!name) throw new Error("Bitte eine Bezeichnung eingeben.");
+    if (!name) throw new Error(t("Bitte eine Bezeichnung eingeben."));
     const eltern = elternId ? Core.block(elternId) : null;
     const echterEltern = eltern ? (eltern.elternId || eltern.id) : "";
     if (Core.bloecke.some(b => b.elternId === echterEltern
       && b.label.toLowerCase() === name.toLowerCase()))
-      throw new Error("Diesen Block gibt es an dieser Stelle schon.");
+      throw new Error(t("Diesen Block gibt es an dieser Stelle schon."));
     if (Core.bloecke.length >= this.MAX)
-      throw new Error("Mehr als " + this.MAX + " Blöcke sind nicht vorgesehen.");
+      throw new Error(t("Mehr als") + " " + this.MAX + " " + t("Blöcke sind nicht vorgesehen."));
     const b = { id: this.neueId(name), label: name, elternId: echterEltern,
       von: Core.istIso(von) ? von : "", bis: Core.istIso(bis) ? bis : "", eigen: true };
     Core.bloecke.push(b);
@@ -2508,10 +2564,10 @@ const Bloecke = {
     const b = Core.block(id);
     if (!b) return null;
     const name = String(label == null ? "" : label).trim().slice(0, 60);
-    if (!name) throw new Error("Bitte eine Bezeichnung eingeben.");
+    if (!name) throw new Error(t("Bitte eine Bezeichnung eingeben."));
     if (Core.bloecke.some(x => x.id !== id && x.elternId === b.elternId
       && x.label.toLowerCase() === name.toLowerCase()))
-      throw new Error("Diesen Block gibt es an dieser Stelle schon.");
+      throw new Error(t("Diesen Block gibt es an dieser Stelle schon."));
     b.label = name;
     /* undefined lässt den Zeitraum unangetastet, "" löscht ihn bewusst. */
     if (von !== undefined) b.von = Core.istIso(von) ? von : "";
@@ -2583,10 +2639,10 @@ const TagDaten = {
 
   umbenennen(alt, neu){
     const name = Core.tagSaeubern(neu);
-    if (!name) throw new Error("Bitte einen Namen eingeben.");
+    if (!name) throw new Error(t("Bitte einen Namen eingeben."));
     const kollision = this.alle().some(t =>
       t.toLowerCase() !== String(alt).toLowerCase() && t.toLowerCase() === name.toLowerCase());
-    if (kollision) throw new Error("Diesen Tag gibt es schon.");
+    if (kollision) throw new Error(t("Diesen Tag gibt es schon."));
     this.liste = this.liste.map(t => t.toLowerCase() === String(alt).toLowerCase() ? name : t);
     if (!this.liste.some(t => t.toLowerCase() === name.toLowerCase())) this.liste.push(name);
     this.speichern();
@@ -2730,7 +2786,7 @@ const Daten = {
   },
   importObjekt(obj){
     const arr = obj && Array.isArray(obj.eintraege) ? obj.eintraege : null;
-    if (!arr) throw new Error("Die Datei enthält keine SkillLog-Med-Einträge.");
+    if (!arr) throw new Error(t("Die Datei enthält keine SkillLog-Med-Einträge."));
     /* Erst die Stammdaten wiederherstellen, dann die Einträge: sonst kennt
        die Normalisierung deren IDs nicht und verwirft die Zuordnung.
        Reihenfolge auch hier: Kategorien vor dem Katalog. */
@@ -2865,7 +2921,7 @@ const Einst = {
      die Praxisanleitung bleiben sie deshalb standardmäßig außen vor.
      sicherungAm/sicherungSpaeter steuern den Sicherungs-Hinweis auf dem
      Dashboard (letzte JSON-Sicherung bzw. "Später"-Aufschub). */
-  werte: { theme: "auto", tagsImBericht: false, sicherungAm: "", sicherungSpaeter: "" },
+  werte: { theme: "auto", tagsImBericht: false, sicherungAm: "", sicherungSpaeter: "", sprache: "de" },
   laden(){
     const v = load(this.KEY, null);
     if (v && typeof v === "object"){
@@ -2873,7 +2929,10 @@ const Einst = {
       this.werte.tagsImBericht = v.tagsImBericht === true;
       this.werte.sicherungAm = typeof v.sicherungAm === "string" ? v.sicherungAm : "";
       this.werte.sicherungSpaeter = Core.istIso(v.sicherungSpaeter) ? v.sicherungSpaeter : "";
+      if (SPRACHEN[v.sprache]) this.werte.sprache = v.sprache;
     }
+    SPRACHE = this.werte.sprache;
+    document.documentElement.lang = SPRACHE;
     return this.werte;
   },
   set(k, v){ this.werte[k] = v; store(this.KEY, this.werte); }
@@ -3088,11 +3147,11 @@ function zeigeToast(html, ms){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove("show"), ms || 2600);
 }
-function toast(msg, ms){ zeigeToast(esc(msg), ms); }
+function toast(msg, ms){ zeigeToast(esc(t(msg)), ms); }
 /* Toast mit Aktions-Knopf – z. B. "Eintrag gelöscht – Rückgängig".
    Läuft bewusst länger (gut 5 Sekunden), damit der Tipp noch gelingt. */
 function toastAktion(msg, knopf, cb){
-  zeigeToast(esc(msg) + ' <button type="button" id="toast-aktion">' + esc(knopf) + "</button>", 5200);
+  zeigeToast(esc(t(msg)) + ' <button type="button" id="toast-aktion">' + esc(t(knopf)) + "</button>", 5200);
   $("toast-aktion").addEventListener("click", () => {
     clearTimeout(toastTimer);
     $("toast").classList.remove("show");
@@ -3123,8 +3182,8 @@ function zeige(view, ersetzen){
     detail: "Details und Aktionen", form: "Schnell dokumentieren",
     stats: "Auswertung deiner Einträge", export: "Bericht, CSV und Sicherung",
     stamm: "Maßnahmen, Orte und Tags" };
-  $("head-title").textContent = titel[view];
-  $("head-sub").textContent = sub[view];
+  $("head-title").textContent = t(titel[view]);
+  $("head-sub").textContent = t(sub[view]);
   window.scrollTo(0, 0);
 }
 function zurueck(){
@@ -3162,7 +3221,7 @@ document.querySelectorAll(".modal-back").forEach(m => m.addEventListener("click"
 /* ---------- Gemeinsame Bausteine ---------- */
 function stufePill(st){
   const s = Core.stufe(st);
-  return '<span class="pill st-' + st + '"><span class="dot"></span>' + (s ? s.label : st) + "</span>";
+  return '<span class="pill st-' + st + '"><span class="dot"></span>' + esc(s ? t(s.label) : st) + "</span>";
 }
 /* Symbol einer Maßnahme auflösen: erst das selbst gewählte (`icon` im
    Katalog – ein Schlüssel aus Core.ICONS oder ein Emoji), sonst das zur
@@ -3192,13 +3251,13 @@ function miniIconHtml(massnahmeId){
 }
 function zeileHtml(e){
   const label = Core.mLabel(e);
-  const teile = [Core.oLabel(e), (Core.setting(e.setting) || {}).label,
+  const teile = [Core.oLabel(e), t((Core.setting(e.setting) || {}).label || ""),
     Core.bLabel(e), e.tags.map(t => "#" + t).join(" ")].filter(Boolean);
   /* Die Stufenklasse trägt die schmale Farbleiste am linken Zeilenrand. */
   return '<li><button class="row st-' + e.stufe + '" data-detail="' + e.id + '">'
     + kachelHtml(e.massnahmeId, label)
     + '<span class="mid"><span class="tit">' + esc(label) + "</span>"
-    + '<span class="sub">' + esc(teile.join(" · ") || "ohne Ort") + "</span></span>"
+    + '<span class="sub">' + esc(teile.join(" · ") || t("ohne Ort")) + "</span></span>"
     + '<span class="right">' + stufePill(e.stufe)
     + '<span class="zeit">' + esc(e.zeit || "") + "</span></span>"
     + "</button></li>";
@@ -3214,7 +3273,7 @@ function listeGruppiertHtml(arr){
     if (e.datum !== datum){
       if (offen) html += "</ul></div>";
       datum = e.datum;
-      const name = datum === heute ? "Heute" : datum === gestern ? "Gestern" : Core.wochentag(datum);
+      const name = datum === heute ? t("Heute") : datum === gestern ? t("Gestern") : Core.wochentag(datum);
       html += '<div class="datum-kopf">' + name + " · " + Core.fmtDatum(datum) + "</div>"
         + '<div class="card flush" style="margin-top:4px"><ul class="liste">';
       offen = true;
@@ -3266,8 +3325,8 @@ function renderHome(){
     sicherungKarte = '<div class="card" style="display:flex;gap:12px;align-items:center">'
       + '<svg class="ic" viewBox="0 0 24 24" style="width:22px;height:22px;color:var(--accent);flex:none"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/></svg>'
       + '<div style="flex:1;min-width:0"><b style="font-size:.94rem">Sicherung empfohlen</b>'
-      + '<div class="muted" style="font-size:.8rem">Deine Daten liegen nur auf diesem Gerät. Letzte Sicherung: '
-      + (sichTage == null ? "noch nie" : "vor " + sichTage + " Tagen") + ".</div>"
+      + '<div class="muted" style="font-size:.8rem">' + t("Deine Daten liegen nur auf diesem Gerät. Letzte Sicherung:") + " "
+      + (sichTage == null ? t("noch nie") : (t("vor") + " " + sichTage + " " + t("Tagen")).trim()) + ".</div>"
       + '<div class="btn-row" style="margin-top:8px"><button class="btn small" id="home-sichern">Jetzt sichern</button>'
       + '<button class="btn ghost small" id="home-sichern-spaeter">Später</button></div></div></div>';
   }
@@ -3297,8 +3356,8 @@ function renderHome(){
   const letzter = sortiert[0];
 
   let html = '<div class="hero"><p class="lead">Dokumentierte Maßnahmen</p>'
-    + '<p class="big">' + alle.length + '<small>' + (alle.length === 1 ? "Eintrag" : "Einträge") + "</small></p>"
-    + '<p class="meta">Zuletzt: ' + esc(Core.mLabel(letzter)) + " am " + Core.fmtDatum(letzter.datum) + "</p></div>";
+    + '<p class="big">' + alle.length + '<small>' + t(alle.length === 1 ? "Eintrag" : "Einträge") + "</small></p>"
+    + '<p class="meta">' + t("Zuletzt:") + " " + esc(Core.mLabel(letzter)) + " " + t("am") + " " + Core.fmtDatum(letzter.datum) + "</p></div>";
 
   html += '<div class="stats">'
     + '<button class="stat" data-schnell="heute"><b>' + heuteN + "</b><span>Heute</span></button>"
@@ -3425,8 +3484,8 @@ function blockWahlDialog(aktuell, opts, fertig){
     '<button data-bw="' + esc(v) + '"' + (String(aktuell || "") === v ? ' class="active' + (unter ? " unter" : "") + '"' : (unter ? ' class="unter"' : "")) + ">"
     + "<b>" + titel + "</b>" + (sub ? "<span>" + esc(sub) + "</span>" : "") + "</button>";
   let html = o.alle
-    ? eintrag("alle", "Alle Blöcke", "keine Einschränkung", false)
-    : eintrag("", "– kein Block –", "", false);
+    ? eintrag("alle", esc(t("Alle Blöcke")), t("keine Einschränkung"), false)
+    : eintrag("", esc(t("– kein Block –")), "", false);
   Core.blockBaum().forEach(({ block, kinder }) => {
     html += eintrag(block.id, esc(block.label), Core.blockZeitraum(block.id), false);
     kinder.forEach(k =>
@@ -3451,7 +3510,7 @@ function renderFilterPanel(){
   selectFuellen($("fp-massnahme"),
     [{ v: "alle", l: "Alle Maßnahmen" }].concat(
       Core.katalog.slice().sort((a, b) => a.label.localeCompare(b.label, "de"))
-        .map(m => ({ v: m.id, l: m.label + (m.archiviert ? " (archiviert)" : "") }))),
+        .map(m => ({ v: m.id, l: m.label + (m.archiviert ? " (" + t("archiviert") + ")" : "") }))),
     filter.massnahme);
   selectFuellen($("fp-stufe"),
     [{ v: "alle", l: "Alle Stufen" }].concat(
@@ -3504,8 +3563,9 @@ function renderListe(){
     return;
   }
   el.innerHTML = '<p class="muted" style="margin:2px 0 0">' + arr.length
-    + (arr.length === 1 ? " Eintrag" : " Einträge") + "</p>" + listeGruppiertHtml(arr);
+    + " " + t(arr.length === 1 ? "Eintrag" : "Einträge") + "</p>" + listeGruppiertHtml(arr);
   bindeDetailKlicks(el);
+  uebersetzeDom($("view-liste"));
 }
 
 $("such-feld").addEventListener("input", e => {
@@ -3527,7 +3587,7 @@ function detailOeffnen(id){
 function renderDetail(){
   const e = Daten.get(detailId);
   const el = $("detail-inhalt");
-  if (!e){ el.innerHTML = '<div class="card empty"><b>Eintrag nicht gefunden</b></div>'; return; }
+  if (!e){ el.innerHTML = '<div class="card empty"><b>' + t("Eintrag nicht gefunden") + "</b></div>"; return; }
   const label = Core.mLabel(e);
 
   let html = '<div class="detail-head">' + kachelHtml(e.massnahmeId, label)
@@ -3536,17 +3596,17 @@ function renderDetail(){
 
   html += '<div class="card"><div class="muted">Durchgeführt am</div>'
     + '<div class="bigdate">' + Core.fmtDatum(e.datum)
-    + '<span class="rest">' + (e.zeit ? e.zeit + " Uhr · " : "") + Core.wochentag(e.datum) + "</span></div></div>";
+    + '<span class="rest">' + (e.zeit ? e.zeit + (t("Uhr") ? " " + t("Uhr") : "") + " · " : "") + Core.wochentag(e.datum) + "</span></div></div>";
 
   html += '<div class="card"><dl class="dl">';
-  html += "<dt>Setting</dt><dd>" + esc((Core.setting(e.setting) || {}).label || e.setting) + "</dd>";
+  html += "<dt>Setting</dt><dd>" + esc(t((Core.setting(e.setting) || {}).label || e.setting)) + "</dd>";
   html += "<dt>Ort</dt><dd>" + (Core.oLabel(e) ? esc(Core.oLabel(e)) : '<span class="muted">kein Ort</span>') + "</dd>";
   html += "<dt>Block</dt><dd>" + (Core.bLabel(e) ? esc(Core.bLabel(e)) : '<span class="muted">kein Block</span>') + "</dd>";
   html += "<dt>Tags</dt><dd>" + (e.tags.length
     ? '<span class="tagchips">' + e.tags.map(t => '<span class="tagchip">#' + esc(t) + "</span>").join("") + "</span>"
     : '<span class="muted">keine</span>') + "</dd>";
   if (e.notiz) html += "<dt>Notiz</dt><dd>" + esc(e.notiz).replace(/\n/g, "<br>") + "</dd>";
-  html += "<dt>Erfasst am</dt><dd>" + esc(new Date(e.erstelltAm).toLocaleDateString("de-DE")) + "</dd>";
+  html += "<dt>Erfasst am</dt><dd>" + esc(new Date(e.erstelltAm).toLocaleDateString(LOCALES[SPRACHE] || "de-DE")) + "</dd>";
   html += "</dl></div>";
 
   html += '<div class="actions">'
@@ -3556,6 +3616,7 @@ function renderDetail(){
     + '<div class="btn-row"><button class="btn danger block" id="d-loeschen">Eintrag löschen</button></div>';
 
   el.innerHTML = html;
+  uebersetzeDom($("view-detail"));
   $("d-bearbeiten").addEventListener("click", () => formOeffnen(e.id));
   /* "Nochmal erfasst": dieselbe Maßnahme mit denselben Angaben, aber mit
      Datum und Uhrzeit von jetzt – der typische Wiederholungsfall. */
@@ -3607,15 +3668,15 @@ function renderMWahlHinweis(){
   const el = $("f-m-mehr");
   if (formMassnahmen.length < 2){ el.style.display = "none"; return; }
   el.style.display = "";
-  el.textContent = formMassnahmen.length + " Maßnahmen gewählt ("
+  el.textContent = formMassnahmen.length + " " + t("Maßnahmen gewählt") + " ("
     + formMassnahmen.map(id => (Core.massnahme(id) || {}).label).filter(Boolean).join(", ")
-    + ") – beim Speichern entsteht je Maßnahme ein Eintrag.";
+    + ") " + t("– beim Speichern entsteht je Maßnahme ein Eintrag.");
 }
 
 function segFuellen(el, reihe, dict, wert, klick){
   el.innerHTML = reihe.map(id =>
     '<button type="button" data-v="' + id + '"' + (id === wert ? ' class="active"' : "") + ">"
-    + esc(dict[id].label) + "</button>").join("");
+    + esc(t(dict[id].label)) + "</button>").join("");
   el.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
     el.querySelectorAll("button").forEach(x => x.classList.toggle("active", x === b));
     klick(b.dataset.v);
@@ -3660,7 +3721,7 @@ function renderMGrid(){
     }).join("");
   }
   $("f-mgrid").innerHTML = html
-    + '<button type="button" class="neu" id="f-m-neu">＋ Neue Maßnahme</button>';
+    + '<button type="button" class="neu" id="f-m-neu">' + esc(t("＋ Neue Maßnahme")) + "</button>";
   $("f-mgrid").querySelectorAll("[data-m]").forEach(b =>
     b.addEventListener("click", () => mWahlToggle(b.dataset.m)));
   /* Eine hier angelegte Maßnahme wird gleich mit ausgewählt. */
@@ -3677,20 +3738,20 @@ $("f-msuche").addEventListener("input", renderMGrid);
 function blockSelectFuellen(sel, wert, opts){
   const o = opts || {};
   const optionen = o.alle
-    ? [{ v: "alle", l: "Alle Blöcke" }]
-    : [{ v: "", l: "– kein Block –" }];
+    ? [{ v: "alle", l: t("Alle Blöcke") }]
+    : [{ v: "", l: t("– kein Block –") }];
   Core.blockBaum().forEach(({ block, kinder }) => {
     optionen.push({ v: block.id, l: block.label });
     kinder.forEach(k => optionen.push({ v: k.id, l: "   ↳ " + k.label }));
   });
-  if (o.mitNeu) optionen.push({ v: "__neu", l: "＋ Neuer Block …" });
+  if (o.mitNeu) optionen.push({ v: "__neu", l: t("＋ Neuer Block …") });
   selectFuellen(sel, optionen, wert || (o.alle ? "alle" : ""));
 }
 
 function ortSelectFuellen(sel, wert, mitNeu){
-  const optionen = [{ v: "", l: "– kein Ort –" }]
+  const optionen = [{ v: "", l: t("– kein Ort –") }]
     .concat(Orte.alle().map(o => ({ v: o.id, l: o.label })));
-  if (mitNeu) optionen.push({ v: "__neu", l: "＋ Neuer Ort …" });
+  if (mitNeu) optionen.push({ v: "__neu", l: t("＋ Neuer Ort …") });
   selectFuellen(sel, optionen, wert || "");
 }
 $("f-ort").addEventListener("change", e => {
@@ -3744,7 +3805,7 @@ function formOeffnen(id, vorlage){
   const e = id ? Daten.get(id) : null;
   const v = e || vorlage || null;
   const letzte = Daten.letzteWahl();
-  $("form-titel").textContent = e ? "Eintrag bearbeiten" : "Neuer Eintrag";
+  $("form-titel").textContent = e ? t("Eintrag bearbeiten") : t("Neuer Eintrag");
   formMassnahmen = v && v.massnahmeId && Core.massnahme(v.massnahmeId) ? [v.massnahmeId] : [];
   formStufe = v ? v.stufe : (letzte ? letzte.stufe : "durchgefuehrt");
   formSetting = v ? v.setting : (letzte ? letzte.setting : "mensch");
@@ -3795,8 +3856,8 @@ function renderZeitliste(){
   const einzeln = $("f-zeiten-an").checked;
   $("f-zeitliste").style.display = einzeln ? "" : "none";
   $("f-zeiten-sub").textContent = einzeln
-    ? "Für jede Maßnahme eine eigene Uhrzeit"
-    : "Ohne Häkchen werden die Einträge nur mit Datum gespeichert";
+    ? t("Für jede Maßnahme eine eigene Uhrzeit")
+    : t("Ohne Häkchen werden die Einträge nur mit Datum gespeichert");
   if (!einzeln) return;
   const n = formAnzahl();
   /* Bereits eingetragene Zeiten beim Ändern der Anzahl erhalten. */
@@ -3806,7 +3867,7 @@ function renderZeitliste(){
   for (let i = 0; i < n; i++){
     html += '<li><span class="nr">' + (i + 1) + ".</span>"
       + '<input type="time" data-zeit="' + i + '" value="' + esc(alt[i] || (i === 0 ? start : ""))
-      + '" aria-label="Uhrzeit ' + (i + 1) + '"></li>';
+      + '" aria-label="' + t("Uhrzeit") + " " + (i + 1) + '"></li>';
   }
   $("f-zeitliste").innerHTML = html;
 }
@@ -3888,8 +3949,8 @@ function formSpeichern(){
   }));
 }
 function gespeichertText(e, bearbeitet){
-  if (bearbeitet) return "Änderungen gespeichert";
-  return e.__anzahl ? e.__anzahl + " Einträge gespeichert" : "Eintrag gespeichert";
+  if (bearbeitet) return t("Änderungen gespeichert");
+  return e.__anzahl ? e.__anzahl + " " + t("Einträge gespeichert") : t("Eintrag gespeichert");
 }
 $("f-speichern").addEventListener("click", () => {
   const bearbeitet = !!formId;
@@ -3910,7 +3971,7 @@ $("f-speichern-neu").addEventListener("click", () => {
   const bearbeitet = !!formId;
   const e = formSpeichern();
   if (!e) return;
-  toast(gespeichertText(e, bearbeitet) + " – nächster Eintrag");
+  toast(gespeichertText(e, bearbeitet) + " " + t("– nächster Eintrag"));
   const tags = formTags.slice();
   formOeffnen(null, { ortId: e.ortId, blockId: e.blockId, tags,
     stufe: e.stufe, setting: e.setting });
@@ -3980,7 +4041,7 @@ function renderStats(){
 
   html += '<div class="card"><div class="z" style="display:flex;justify-content:space-between;font-size:.875rem">'
     + "<b>Kompetenzstufen</b><span class=\"muted\">" + stat.gesamt
-    + (stat.gesamt === 1 ? " Eintrag" : " Einträge") + "</span></div>"
+    + " " + t(stat.gesamt === 1 ? "Eintrag" : "Einträge") + "</span></div>"
     + '<div class="stapel">'
     + Core.STUFEN_REIHE.map(s => {
         const p = stat.stufen[s] / stat.gesamt * 100;
@@ -3991,7 +4052,7 @@ function renderStats(){
     + '<div class="legende">'
     + Core.STUFEN_REIHE.map(s => {
         const farbe = s === "beobachtet" ? "var(--beo)" : s === "assistiert" ? "var(--ass)" : "var(--dur)";
-        return '<span><i style="background:' + farbe + '"></i>' + Core.STUFEN[s].label
+        return '<span><i style="background:' + farbe + '"></i>' + t(Core.STUFEN[s].label)
           + " (" + stat.stufen[s] + ")</span>";
       }).join("")
     + "</div></div>";
@@ -4017,7 +4078,7 @@ function renderStats(){
 
   html += "<h3>Setting</h3><div class=\"card\"><ul class=\"bars\">"
     + Core.SETTINGS_REIHE.filter(s => stat.settings[s]).map(s =>
-      '<li><div class="z"><b>' + Core.SETTINGS[s].label + "</b><span>" + stat.settings[s] + "</span></div>"
+      '<li><div class="z"><b>' + t(Core.SETTINGS[s].label) + "</b><span>" + stat.settings[s] + "</span></div>"
       + '<div class="track"><div class="fill" style="width:' + Math.round(stat.settings[s] / stat.gesamt * 100) + '%"></div></div></li>').join("")
     + "</ul></div>";
 
@@ -4047,6 +4108,7 @@ function renderStats(){
   }
 
   el.innerHTML = html;
+  uebersetzeDom($("view-stats"));
   /* Beide Auswertungen führen mit demselben Zeitraum ins Logbuch. */
   const insLogbuch = teil => {
     filterReset();
@@ -4124,13 +4186,14 @@ function renderExport(){
     blockWahlDialog(exKonfig.block, { alle: true }, id => exBlockSetzen(id)));
   const n = exGefiltert().length;
   $("ex-anzahl").textContent = n
-    ? n + (n === 1 ? " Eintrag" : " Einträge") + " im gewählten Zeitraum."
-    : "Im gewählten Zeitraum liegen keine Einträge vor – der Bericht wäre leer.";
+    ? n + " " + t(n === 1 ? "Eintrag" : "Einträge") + " " + t("im gewählten Zeitraum.")
+    : t("Im gewählten Zeitraum liegen keine Einträge vor – der Bericht wäre leer.");
   $("ex-pdf-label").textContent = Bridge.isNative()
-    ? "PDF-Bericht erstellen / teilen" : "PDF-Bericht herunterladen";
+    ? t("PDF-Bericht erstellen / teilen") : t("PDF-Bericht herunterladen");
   /* window.print() funktioniert in der WebView nicht – dort übernimmt der
      PDF-Weg das Drucken über das Teilen-Menü. */
   $("ex-druck").style.display = Bridge.isNative() ? "none" : "";
+  uebersetzeDom($("view-export"));
 }
 $("ex-von").addEventListener("change", e => { exKonfig.von = e.target.value; renderExport(); });
 $("ex-bis").addEventListener("change", e => { exKonfig.bis = e.target.value; renderExport(); });
@@ -4204,31 +4267,31 @@ const Report = {
       + b.meta.map(p => "<tr><td>" + esc(p[0]) + "</td><td>" + esc(p[1]) + "</td></tr>").join("")
       + "</tbody></table>";
     if (b.stat.gesamt){
-      h += "<h2>Zusammenfassung nach Maßnahme</h2><table><thead><tr><th>Maßnahme</th><th>Gesamt</th>"
-        + Core.STUFEN_REIHE.map(s => "<th>" + Core.STUFEN[s].label + "</th>").join("") + "</tr></thead><tbody>"
+      h += "<h2>" + esc(t("Zusammenfassung nach Maßnahme")) + "</h2><table><thead><tr><th>" + esc(t("Maßnahme")) + "</th><th>" + esc(t("Gesamt")) + "</th>"
+        + Core.STUFEN_REIHE.map(s => "<th>" + esc(t(Core.STUFEN[s].label)) + "</th>").join("") + "</tr></thead><tbody>"
         + b.stat.massnahmen.map(m => "<tr><td>" + esc(m.label) + "</td><td>" + m.gesamt + "</td>"
           + Core.STUFEN_REIHE.map(s => "<td>" + (m.stufen[s] || 0) + "</td>").join("") + "</tr>").join("")
-        + "<tr><td><b>Gesamt</b></td><td><b>" + b.stat.gesamt + "</b></td>"
+        + "<tr><td><b>" + esc(t("Gesamt")) + "</b></td><td><b>" + b.stat.gesamt + "</b></td>"
         + Core.STUFEN_REIHE.map(s => "<td><b>" + (b.stat.stufen[s] || 0) + "</b></td>").join("") + "</tr>"
         + "</tbody></table>";
-      h += "<h2>Einzelne Einträge</h2><table><thead><tr><th>Datum</th><th>Zeit</th><th>Maßnahme</th>"
-        + "<th>Stufe</th><th>Setting</th><th>Ort</th><th>Block</th>"
+      h += "<h2>" + esc(t("Einzelne Einträge")) + "</h2><table><thead><tr><th>" + esc(t("Datum")) + "</th><th>" + esc(t("Zeit")) + "</th><th>" + esc(t("Maßnahme")) + "</th>"
+        + "<th>" + esc(t("Stufe")) + "</th><th>" + esc(t("Setting")) + "</th><th>" + esc(t("Ort")) + "</th><th>" + esc(t("Block")) + "</th>"
         + (b.mitTags ? "<th>Tags</th>" : "") + "</tr></thead><tbody>"
         + b.eintraege.map(e => "<tr><td>" + Core.fmtDatum(e.datum) + "</td><td>" + esc(e.zeit || "–")
-          + "</td><td>" + esc(Core.mLabel(e)) + "</td><td>" + esc((Core.stufe(e.stufe) || {}).label || "")
-          + "</td><td>" + esc((Core.setting(e.setting) || {}).label || "") + "</td><td>"
+          + "</td><td>" + esc(Core.mLabel(e)) + "</td><td>" + esc(t((Core.stufe(e.stufe) || {}).label || ""))
+          + "</td><td>" + esc(t((Core.setting(e.setting) || {}).label || "")) + "</td><td>"
           + esc(Core.oLabel(e) || "–") + "</td><td>" + esc(Core.bLabel(e) || "–") + "</td>"
           + (b.mitTags ? "<td>" + esc(e.tags.join(", ") || "–") + "</td>" : "") + "</tr>"
           + (e.notiz ? '<tr><td></td><td colspan="' + (b.mitTags ? 7 : 6)
-            + '" class="p-notiz">Notiz: ' + esc(e.notiz) + "</td></tr>" : ""))
+            + '" class="p-notiz">' + esc(t("Notiz:")) + " " + esc(e.notiz) + "</td></tr>" : ""))
           .join("")
         + "</tbody></table>";
     } else {
-      h += "<p>Im gewählten Zeitraum liegen keine Einträge vor.</p>";
+      h += "<p>" + esc(t("Im gewählten Zeitraum liegen keine Einträge vor.")) + "</p>";
     }
-    if (b.bemerkung) h += "<h2>Bemerkungen / Bestätigung</h2><p>" + esc(b.bemerkung).replace(/\n/g, "<br>") + "</p>";
-    h += '<div class="p-unterschrift"><div>Ort, Datum</div>'
-      + "<div>Unterschrift Praxisanleitung / Ausbildungsverantwortliche:r</div></div>"
+    if (b.bemerkung) h += "<h2>" + esc(t("Bemerkungen / Bestätigung")) + "</h2><p>" + esc(b.bemerkung).replace(/\n/g, "<br>") + "</p>";
+    h += '<div class="p-unterschrift"><div>' + esc(t("Ort, Datum")) + "</div>"
+      + "<div>" + esc(t("Unterschrift Praxisanleitung / Ausbildungsverantwortliche:r")) + "</div></div>"
       + '<p class="p-fuss">' + esc(b.hinweis) + "</p>";
     return h;
   }
@@ -4262,10 +4325,10 @@ $("ex-restore-file").addEventListener("change", e => {
          das zählt für den Dashboard-Hinweis wie eine frische Sicherung. */
       Einst.set("sicherungAm", new Date().toISOString());
       render();
-      toast(n + (n === 1 ? " Eintrag" : " Einträge") + " wiederhergestellt");
-    } catch(err){ alert("Die Datei konnte nicht gelesen werden.\n\n" + (err && err.message ? err.message : err)); }
+      toast(n + " " + t(n === 1 ? "Eintrag" : "Einträge") + " " + t("wiederhergestellt"));
+    } catch(err){ alert(t("Die Datei konnte nicht gelesen werden.") + "\n\n" + (err && err.message ? err.message : err)); }
   };
-  fr.onerror = () => alert("Die Datei konnte nicht gelesen werden.");
+  fr.onerror = () => alert(t("Die Datei konnte nicht gelesen werden."));
   fr.readAsText(f);
   e.target.value = "";
 });
@@ -4294,10 +4357,10 @@ function renderStamm(){
       return stammZeile('<button class="' + (m.favorit ? "fav-an" : "") + '" data-fav="' + m.id
         + '" aria-label="Favorit">' + (m.favorit ? "★" : "☆") + "</button>"
         + '<span class="n' + (m.archiviert ? " arch" : "") + '"><span class="lbl">' + esc(m.label)
-        + '</span><span class="anz">' + (n === 1 ? "1 Eintrag" : n + " Einträge")
-        + (m.eigen ? " · eigene" : "") + "</span></span>"
+        + '</span><span class="anz">' + (n === 1 ? "1 " + t("Eintrag") : n + " " + t("Einträge"))
+        + (m.eigen ? " · " + t("eigene") : "") + "</span></span>"
         + '<button data-edit="' + m.id + '" aria-label="Umbenennen">' + IC_STIFT + "</button>"
-        + '<button data-arch="' + m.id + '" aria-label="' + (m.archiviert ? "Aus dem Archiv holen" : "Archivieren") + '">' + IC_BOX + "</button>"
+        + '<button data-arch="' + m.id + '" aria-label="' + (m.archiviert ? t("Aus dem Archiv holen") : t("Archivieren")) + '">' + IC_BOX + "</button>"
         + (m.eigen ? '<button class="loesch" data-del="' + m.id + '" aria-label="Löschen">' + IC_MUELL + "</button>" : ""));
     };
     /* Nach Kategorien gruppiert – dieselbe Ordnung wie im Formular. */
@@ -4313,7 +4376,7 @@ function renderStamm(){
       + "Maßnahmen erscheinen nicht mehr in der Auswahl, alte Einträge bleiben erhalten.</p>"
       + gruppen
       + (archivierte.length
-        ? "<h3>Archiviert</h3><ul class=\"stammliste\">" + archivierte.map(zeile).join("") + "</ul>" : "")
+        ? "<h3>" + t("Archiviert") + "</h3><ul class=\"stammliste\">" + archivierte.map(zeile).join("") + "</ul>" : "")
       + '<div class="btn-row"><button class="btn secondary block" id="stamm-m-neu">Maßnahme hinzufügen</button></div>'
       + "</div>";
     el.querySelectorAll("[data-fav]").forEach(b => b.addEventListener("click", () => {
@@ -4331,9 +4394,9 @@ function renderStamm(){
     el.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => {
       const m = Core.massnahme(b.dataset.del);
       const n = Katalog.anzahl(m.id);
-      if (!confirm("„" + m.label + "“ löschen?" + (n
-        ? "\n\n" + (n === 1 ? "1 Eintrag behält" : n + " Einträge behalten")
-          + " die Bezeichnung als Schnappschuss." : ""))) return;
+      if (!confirm("„" + m.label + "“ " + t("löschen?") + (n
+        ? "\n\n" + (n === 1 ? "1 " + t("Eintrag behält") : n + " " + t("Einträge behalten"))
+          + " " + t("die Bezeichnung als Schnappschuss.") : ""))) return;
       Katalog.entfernen(m.id);
       toast("Maßnahme gelöscht");
       renderStamm(); render();
@@ -4344,8 +4407,8 @@ function renderStamm(){
     const zeile = k => {
       const n = MKategorien.anzahl(k.id);
       return stammZeile('<span class="n"><span class="lbl">' + esc(k.label)
-        + '</span><span class="anz">' + (n === 1 ? "1 Maßnahme" : n + " Maßnahmen")
-        + (k.eigen ? " · eigene" : "") + "</span></span>"
+        + '</span><span class="anz">' + (n === 1 ? "1 " + t("Maßnahme") : n + " " + t("Maßnahmen"))
+        + (k.eigen ? " · " + t("eigene") : "") + "</span></span>"
         + '<button data-edit="' + k.id + '" aria-label="Umbenennen">' + IC_STIFT + "</button>"
         + (k.id !== "sonstiges"
           ? '<button class="loesch" data-del="' + k.id + '" aria-label="Löschen">' + IC_MUELL + "</button>"
@@ -4363,9 +4426,9 @@ function renderStamm(){
     el.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => {
       const k = Core.mkategorie(b.dataset.del);
       const n = MKategorien.anzahl(k.id);
-      if (!confirm("„" + k.label + "“ löschen?" + (n
-        ? "\n\n" + (n === 1 ? "1 Maßnahme wandert" : n + " Maßnahmen wandern")
-          + " nach „Sonstiges“. Einträge bleiben unverändert." : ""))) return;
+      if (!confirm("„" + k.label + "“ " + t("löschen?") + (n
+        ? "\n\n" + (n === 1 ? "1 " + t("Maßnahme wandert") : n + " " + t("Maßnahmen wandern"))
+          + " " + t("nach „Sonstiges“. Einträge bleiben unverändert.") : ""))) return;
       MKategorien.entfernen(k.id);
       if (filter.mkategorie === k.id) filter.mkategorie = "alle";
       if (exKonfig.mkategorie === k.id) exKonfig.mkategorie = "alle";
@@ -4378,8 +4441,8 @@ function renderStamm(){
     const zeile = o => {
       const n = Orte.anzahl(o.id);
       return stammZeile('<span class="n"><span class="lbl">' + esc(o.label)
-        + '</span><span class="anz">' + (n === 1 ? "1 Eintrag" : n + " Einträge")
-        + (o.eigen ? " · eigener" : "") + "</span></span>"
+        + '</span><span class="anz">' + (n === 1 ? "1 " + t("Eintrag") : n + " " + t("Einträge"))
+        + (o.eigen ? " · " + t("eigener") : "") + "</span></span>"
         + '<button data-edit="' + o.id + '" aria-label="Umbenennen">' + IC_STIFT + "</button>"
         + '<button class="loesch" data-del="' + o.id + '" aria-label="Löschen">' + IC_MUELL + "</button>");
     };
@@ -4394,9 +4457,9 @@ function renderStamm(){
     el.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => {
       const o = Core.ort(b.dataset.del);
       const n = Orte.anzahl(o.id);
-      if (!confirm("„" + o.label + "“ löschen?" + (n
-        ? "\n\n" + (n === 1 ? "1 Eintrag behält" : n + " Einträge behalten")
-          + " die Ortsangabe als Schnappschuss." : ""))) return;
+      if (!confirm("„" + o.label + "“ " + t("löschen?") + (n
+        ? "\n\n" + (n === 1 ? "1 " + t("Eintrag behält") : n + " " + t("Einträge behalten"))
+          + " " + t("die Ortsangabe als Schnappschuss.") : ""))) return;
       Orte.entfernen(o.id);
       toast("Ort gelöscht");
       renderStamm(); render();
@@ -4408,9 +4471,9 @@ function renderStamm(){
       const n = Bloecke.anzahl(b.id);
       return '<li' + (unter ? ' class="unter"' : "") + '>'
         + '<span class="n"><span class="lbl">' + (unter ? "↳ " : "") + esc(b.label)
-        + '</span><span class="anz">' + (n === 1 ? "1 Eintrag" : n + " Einträge")
+        + '</span><span class="anz">' + (n === 1 ? "1 " + t("Eintrag") : n + " " + t("Einträge"))
         + (Core.blockZeitraum(b.id) ? " · " + esc(Core.blockZeitraum(b.id)) : "")
-        + (b.eigen ? " · eigener" : "") + "</span></span>"
+        + (b.eigen ? " · " + t("eigener") : "") + "</span></span>"
         + (unter ? "" : '<button data-sub="' + b.id + '" aria-label="Unterblock hinzufügen">'
           + '<svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>')
         + '<button data-edit="' + b.id + '" aria-label="Umbenennen">' + IC_STIFT + "</button>"
@@ -4437,11 +4500,11 @@ function renderStamm(){
       const n = Bloecke.anzahl(blk.id);
       const kinder = Core.bloecke.filter(x => x.elternId === blk.id).length;
       const zusatz = [];
-      if (kinder) zusatz.push((kinder === 1 ? "1 Unterblock wird" : kinder + " Unterblöcke werden")
-        + " mitgelöscht.");
-      if (n) zusatz.push((n === 1 ? "1 Eintrag behält" : n + " Einträge behalten")
-        + " die Bezeichnung als Schnappschuss.");
-      if (!confirm("„" + blk.label + "“ löschen?" + (zusatz.length ? "\n\n" + zusatz.join(" ") : ""))) return;
+      if (kinder) zusatz.push((kinder === 1 ? "1 " + t("Unterblock wird") : kinder + " " + t("Unterblöcke werden"))
+        + " " + t("mitgelöscht."));
+      if (n) zusatz.push((n === 1 ? "1 " + t("Eintrag behält") : n + " " + t("Einträge behalten"))
+        + " " + t("die Bezeichnung als Schnappschuss."));
+      if (!confirm("„" + blk.label + "“ " + t("löschen?") + (zusatz.length ? "\n\n" + zusatz.join(" ") : ""))) return;
       Bloecke.entfernen(blk.id);
       if (filter.block === blk.id) filter.block = "alle";
       if (exKonfig.block === blk.id) exKonfig.block = "alle";
@@ -4459,7 +4522,7 @@ function renderStamm(){
         ? '<ul class="stammliste">' + tags.map(t => {
             const n = TagDaten.anzahl(t);
             return stammZeile('<span class="n"><span class="lbl">#' + esc(t)
-              + '</span><span class="anz">' + (n === 1 ? "1 Eintrag" : n + " Einträge") + "</span></span>"
+              + '</span><span class="anz">' + (n === 1 ? "1 " + t("Eintrag") : n + " " + t("Einträge")) + "</span></span>"
               + '<button data-edit="' + esc(t) + '" aria-label="Umbenennen">' + IC_STIFT + "</button>"
               + '<button class="loesch" data-del="' + esc(t) + '" aria-label="Löschen">' + IC_MUELL + "</button>");
           }).join("") + "</ul>"
@@ -4469,11 +4532,11 @@ function renderStamm(){
     el.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () =>
       tagDialog(b.dataset.edit)));
     el.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => {
-      const t = b.dataset.del;
-      const n = TagDaten.anzahl(t);
-      if (!confirm("„#" + t + "“ löschen?" + (n
-        ? "\n\nDer Tag wird aus " + (n === 1 ? "1 Eintrag" : n + " Einträgen") + " entfernt." : ""))) return;
-      TagDaten.entfernen(t);
+      const tg = b.dataset.del;
+      const n = TagDaten.anzahl(tg);
+      if (!confirm("„#" + tg + "“ " + t("löschen?") + (n
+        ? "\n\n" + t("Der Tag wird aus") + " " + (n === 1 ? "1 " + t("Eintrag") : n + " " + t("Einträgen")) + " " + t("entfernt.") : ""))) return;
+      TagDaten.entfernen(tg);
       toast("Tag gelöscht");
       renderStamm(); render();
     }));
@@ -4488,7 +4551,7 @@ let mBearbeitet = null, mFertig = null, mSymbolWahl = "";
 function mKategorieSelectFuellen(wert){
   selectFuellen($("m-kategorie"),
     Core.mkategorien.map(k => ({ v: k.id, l: k.label }))
-      .concat([{ v: "__neu", l: "＋ Neue Kategorie …" }]),
+      .concat([{ v: "__neu", l: t("＋ Neue Kategorie …") }]),
     Core.mkategorie(wert) ? wert : "sonstiges");
 }
 /* Symbolraster: zuerst die allgemeinen Piktogramme (Stethoskop, Skalpell …),
@@ -4502,7 +4565,7 @@ function mSymbolReihe(){
 function renderMSymbole(){
   const ausIcons = Core.ICONS[mSymbolWahl] ? mSymbolWahl : "";
   let html = '<button type="button" class="ohne' + (mSymbolWahl ? "" : " active")
-    + '" data-sym="" title="Kein Symbol – Monogramm">Aa</button>';
+    + '" data-sym="" title="' + esc(t("Kein Symbol – Monogramm")) + '">Aa</button>';
   mSymbolReihe().forEach(k => {
     html += '<button type="button"' + (ausIcons === k ? ' class="active"' : "")
       + ' data-sym="' + k + '" title="' + esc(k.replace(/-/g, " ")) + '">'
@@ -4525,13 +4588,14 @@ $("m-emoji").addEventListener("input", () => {
 function massnahmeDialog(id, fertig){
   mBearbeitet = id ? Core.massnahme(id) : null;
   mFertig = fertig || null;
-  $("m-dlg-titel").textContent = mBearbeitet ? "Maßnahme bearbeiten" : "Neue Maßnahme";
+  $("m-dlg-titel").textContent = mBearbeitet ? t("Maßnahme bearbeiten") : t("Neue Maßnahme");
   $("m-name").value = mBearbeitet ? mBearbeitet.label : "";
   mKategorieSelectFuellen(mBearbeitet ? mBearbeitet.kategorie : "sonstiges");
   mSymbolWahl = mBearbeitet && mBearbeitet.icon ? mBearbeitet.icon : "";
   $("m-emoji").value = mSymbolWahl && !Core.ICONS[mSymbolWahl] ? mSymbolWahl : "";
   renderMSymbole();
   $("m-err").classList.remove("show");
+  uebersetzeDom($("modal-massnahme"));
   openModal("modal-massnahme");
   setTimeout(() => $("m-name").focus(), 60);
 }
@@ -4551,7 +4615,7 @@ $("m-ok").addEventListener("click", () => {
     closeModal("modal-massnahme");
     if (mFertig) mFertig(m);
     renderStamm(); render();
-    toast(mBearbeitet ? "Maßnahme geändert" : "Maßnahme „" + m.label + "“ angelegt");
+    toast(mBearbeitet ? t("Maßnahme geändert") : t("Maßnahme") + " „" + m.label + "“ " + t("angelegt"));
   } catch(err){
     fehler.textContent = err && err.message ? err.message : String(err);
     fehler.classList.add("show");
@@ -4563,9 +4627,10 @@ let kBearbeitet = null, kFertig = null;
 function mkategorieDialog(id, fertig){
   kBearbeitet = id ? Core.mkategorie(id) : null;
   kFertig = fertig || null;
-  $("k-dlg-titel").textContent = kBearbeitet ? "Kategorie bearbeiten" : "Neue Kategorie";
+  $("k-dlg-titel").textContent = kBearbeitet ? t("Kategorie bearbeiten") : t("Neue Kategorie");
   $("k-name").value = kBearbeitet ? kBearbeitet.label : "";
   $("k-err").classList.remove("show");
+  uebersetzeDom($("modal-mkategorie"));
   openModal("modal-mkategorie");
   setTimeout(() => $("k-name").focus(), 60);
 }
@@ -4578,7 +4643,7 @@ $("k-ok").addEventListener("click", () => {
     closeModal("modal-mkategorie");
     if (kFertig) kFertig(k);
     renderStamm(); render();
-    toast(kBearbeitet ? "Kategorie geändert" : "Kategorie „" + k.label + "“ angelegt");
+    toast(kBearbeitet ? t("Kategorie geändert") : t("Kategorie") + " „" + k.label + "“ " + t("angelegt"));
   } catch(err){
     fehler.textContent = err && err.message ? err.message : String(err);
     fehler.classList.add("show");
@@ -4590,9 +4655,10 @@ let oBearbeitet = null, oFertig = null;
 function ortDialog(id, fertig){
   oBearbeitet = id ? Core.ort(id) : null;
   oFertig = fertig || null;
-  $("o-dlg-titel").textContent = oBearbeitet ? "Ort bearbeiten" : "Neuer Ort";
+  $("o-dlg-titel").textContent = oBearbeitet ? t("Ort bearbeiten") : t("Neuer Ort");
   $("o-name").value = oBearbeitet ? oBearbeitet.label : "";
   $("o-err").classList.remove("show");
+  uebersetzeDom($("modal-ort"));
   openModal("modal-ort");
   setTimeout(() => $("o-name").focus(), 60);
 }
@@ -4605,7 +4671,7 @@ $("o-ok").addEventListener("click", () => {
     closeModal("modal-ort");
     if (oFertig) oFertig(o);
     renderStamm(); render();
-    toast(oBearbeitet ? "Ort geändert" : "Ort „" + o.label + "“ angelegt");
+    toast(oBearbeitet ? t("Ort geändert") : t("Ort") + " „" + o.label + "“ " + t("angelegt"));
   } catch(err){
     fehler.textContent = err && err.message ? err.message : String(err);
     fehler.classList.add("show");
@@ -4619,8 +4685,8 @@ let blkBearbeitet = null, blkFertig = null;
 function blockDialog(id, elternVorgabe, fertig){
   blkBearbeitet = id ? Core.block(id) : null;
   blkFertig = fertig || null;
-  $("b-dlg-titel").textContent = blkBearbeitet ? "Block bearbeiten"
-    : (elternVorgabe ? "Neuer Unterblock" : "Neuer Trainingsblock");
+  $("b-dlg-titel").textContent = blkBearbeitet ? t("Block bearbeiten")
+    : (elternVorgabe ? t("Neuer Unterblock") : t("Neuer Trainingsblock"));
   $("b-name").value = blkBearbeitet ? blkBearbeitet.label : "";
   $("b-von").value = blkBearbeitet ? blkBearbeitet.von : "";
   $("b-bis").value = blkBearbeitet ? blkBearbeitet.bis : "";
@@ -4633,9 +4699,10 @@ function blockDialog(id, elternVorgabe, fertig){
     $("b-eltern-zeile").style.display = "";
     selectFuellen($("b-eltern"),
       [{ v: "", l: "– eigenständiger Block –" }].concat(
-        Core.blockBaum().map(({ block }) => ({ v: block.id, l: "Unterblock von " + block.label }))),
+        Core.blockBaum().map(({ block }) => ({ v: block.id, l: t("Unterblock von") + " " + block.label }))),
       elternVorgabe || "");
   }
+  uebersetzeDom($("modal-block"));
   openModal("modal-block");
   setTimeout(() => $("b-name").focus(), 60);
 }
@@ -4644,14 +4711,14 @@ $("b-ok").addEventListener("click", () => {
   try {
     const von = $("b-von").value, bis = $("b-bis").value;
     if (von && bis && Core.istIso(von) && Core.istIso(bis) && bis < von)
-      throw new Error("Das Ende liegt vor dem Beginn.");
+      throw new Error(t("Das Ende liegt vor dem Beginn."));
     const b = blkBearbeitet
       ? Bloecke.umbenennen(blkBearbeitet.id, $("b-name").value, von, bis)
       : Bloecke.hinzufuegen($("b-name").value, $("b-eltern").value, von, bis);
     closeModal("modal-block");
     if (blkFertig) blkFertig(b);
     renderStamm(); render();
-    toast(blkBearbeitet ? "Block geändert" : "Block „" + b.label + "“ angelegt");
+    toast(blkBearbeitet ? t("Block geändert") : t("Block") + " „" + b.label + "“ " + t("angelegt"));
   } catch(err){
     fehler.textContent = err && err.message ? err.message : String(err);
     fehler.classList.add("show");
@@ -4662,9 +4729,10 @@ $("b-ok").addEventListener("click", () => {
 let tBearbeitet = null;
 function tagDialog(name){
   tBearbeitet = name || null;
-  $("t-dlg-titel").textContent = tBearbeitet ? "Tag umbenennen" : "Neuer Tag";
+  $("t-dlg-titel").textContent = tBearbeitet ? t("Tag umbenennen") : t("Neuer Tag");
   $("t-name").value = tBearbeitet || "";
   $("t-err").classList.remove("show");
+  uebersetzeDom($("modal-tag"));
   openModal("modal-tag");
   setTimeout(() => $("t-name").focus(), 60);
 }
@@ -4672,17 +4740,17 @@ $("t-ok").addEventListener("click", () => {
   const fehler = $("t-err");
   try {
     const name = Core.tagSaeubern($("t-name").value);
-    if (!name) throw new Error("Bitte einen Namen eingeben.");
+    if (!name) throw new Error(t("Bitte einen Namen eingeben."));
     if (tBearbeitet){
       TagDaten.umbenennen(tBearbeitet, name);
     } else {
       if (TagDaten.alle().some(t => t.toLowerCase() === name.toLowerCase()))
-        throw new Error("Diesen Tag gibt es schon.");
+        throw new Error(t("Diesen Tag gibt es schon."));
       TagDaten.merken([name]);
     }
     closeModal("modal-tag");
     renderStamm(); render();
-    toast(tBearbeitet ? "Tag geändert" : "Tag „" + name + "“ angelegt");
+    toast(tBearbeitet ? t("Tag geändert") : t("Tag") + " „" + name + "“ " + t("angelegt"));
   } catch(err){
     fehler.textContent = err && err.message ? err.message : String(err);
     fehler.classList.add("show");
@@ -4700,15 +4768,15 @@ function renderProfilRollen(){
   ul.innerHTML = profilRollen.length
     ? profilRollen.map((r, i) =>
         '<li><span class="lbl">' + esc(r) + "</span>"
-        + '<button type="button" class="del" data-weg="' + i + '" aria-label="Rolle entfernen">'
+        + '<button type="button" class="del" data-weg="' + i + '" aria-label="' + t("Rolle entfernen") + '">'
         + '<svg class="ic" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></li>').join("")
-    : '<li class="leer"><span class="lbl muted">Noch keine Rolle gewählt.</span></li>';
+    : '<li class="leer"><span class="lbl muted">' + t("Noch keine Rolle gewählt.") + "</span></li>";
   ul.querySelectorAll("[data-weg]").forEach(b => b.addEventListener("click", () => {
     profilRollen.splice(Number(b.dataset.weg), 1);
     renderProfilRollen();
   }));
   $("p-rolle-neu-text").textContent = profilRollen.length
-    ? "Weitere Rolle hinzufügen" : "Rolle hinzufügen";
+    ? t("Weitere Rolle hinzufügen") : t("Rolle hinzufügen");
   /* Ist das Höchstmaß erreicht, verschwindet der Knopf statt zu scheitern. */
   const voll = profilRollen.length >= Profil.MAX_ROLLEN;
   $("p-rolle-neu").style.display = voll ? "none" : "";
@@ -4725,7 +4793,7 @@ function rolleAuswahlOeffnen(){
   const offen = Core.ROLLEN.filter(r =>
     !profilRollen.some(x => x.toLowerCase() === r.toLowerCase()));
   selectFuellen($("p-rolle-wahl"),
-    offen.map(r => ({ v: r, l: r })).concat([{ v: "__frei", l: "Eigene Bezeichnung …" }]),
+    offen.map(r => ({ v: t(r), l: t(r) })).concat([{ v: "__frei", l: t("Eigene Bezeichnung …") }]),
     offen.length ? offen[0] : "__frei");
   $("p-rolle-add").style.display = "";
   $("p-rolle-frei").style.display = $("p-rolle-wahl").value === "__frei" ? "" : "none";
@@ -4745,7 +4813,7 @@ $("p-rolle-ok").addEventListener("click", () => {
   const wert = wahl === "__frei" ? $("p-rolle-frei").value : wahl;
   const sauber = Profil.rollenSaeubern(profilRollen.concat([wert]));
   if (sauber.length === profilRollen.length){
-    toast(String(wert).trim() ? "Diese Rolle steht schon in der Liste" : "Bitte eine Rolle wählen");
+    toast(String(wert).trim() ? t("Diese Rolle steht schon in der Liste") : t("Bitte eine Rolle wählen"));
     return;
   }
   profilRollen = sauber;
@@ -4764,6 +4832,7 @@ function profilDialog(){
   $("p-institution").value = Profil.werte.institution;
   ortSelectFuellen($("p-standardort"), Profil.werte.standardOrt, false);
   closeModal("modal-settings");
+  uebersetzeDom($("modal-profil"));
   openModal("modal-profil");
 }
 $("p-ok").addEventListener("click", () => {
@@ -4799,9 +4868,50 @@ function renderSettings(){
     : "";
   $("s-profil-sub").textContent = p.name
     ? p.name + (rollenKurz ? " · " + rollenKurz : "")
-    : "Name, Rollen und Standard-Ort";
+    : t("Name, Rollen und Standard-Ort");
   $("s-tags-bericht").checked = Einst.werte.tagsImBericht === true;
+  /* Sprachwahl: Eigennamen der Sprachen, daher bewusst unübersetzt. */
+  selectFuellen($("s-sprache"),
+    Object.keys(SPRACHEN).map(k => ({ v: k, l: SPRACHEN[k] })), SPRACHE);
   applyTheme();
+}
+$("s-sprache").addEventListener("change", e => sprachWechsel(e.target.value));
+
+/* Sprachwechsel: Die Labels der Standard-Kataloge werden im Speicher in die
+   neue Sprache überführt – aber nur, wenn der Nutzer sie nicht umbenannt
+   hat (das aktuelle Label ist eine bekannte Übersetzung der Vorlage).
+   Danach werden die Schnappschüsse der Einträge aufgefrischt und die App
+   neu geladen, damit jede Ansicht sauber in der neuen Sprache startet. */
+function sprachWechsel(neu){
+  if (!SPRACHEN[neu] || neu === SPRACHE) return;
+  const ziel = de => {
+    const u = UEB[de] || {};
+    return neu === "de" ? de : (u[neu] || de);
+  };
+  const bekannt = de => [de].concat(Object.values(UEB[de] || {}));
+  const uebertrage = (item, de) => {
+    if (item && bekannt(de).indexOf(item.label) >= 0) item.label = ziel(de);
+  };
+  Core.MASSNAHMEN_VORLAGE.forEach(v => uebertrage(Core.massnahme(v.id), v.label));
+  Core.MKATEGORIEN_VORLAGE.forEach(v => uebertrage(Core.mkategorie(v.id), v.label));
+  Core.ORTE_VORLAGE.forEach(v => uebertrage(Core.ort(v.id), v.label));
+  Core.BLOECKE_VORLAGE.forEach(v => uebertrage(Core.block(v.id), v.label));
+  Katalog.speichern(); MKategorien.speichern(); Orte.speichern(); Bloecke.speichern();
+  /* Standard-Rollen im Profil ziehen mit; eigene Bezeichnungen bleiben. */
+  Profil.werte.rollen = Profil.werte.rollen.map(r => {
+    const de = Core.ROLLEN.find(x => bekannt(x).indexOf(r) >= 0);
+    return de ? ziel(de) : r;
+  });
+  Profil.speichern();
+  /* Schnappschüsse in den Einträgen auffrischen. */
+  Daten.alle().forEach(e => {
+    const m = Core.massnahme(e.massnahmeId); if (m) e.massnahmeLabel = m.label;
+    const o = Core.ort(e.ortId); if (o) e.ortLabel = o.label;
+    if (e.blockId && Core.block(e.blockId)) e.blockLabel = Core.blockPfad(e.blockId);
+  });
+  Daten.speichern();
+  Einst.set("sprache", neu);
+  location.reload();
 }
 $("s-tags-bericht").addEventListener("change", e =>
   Einst.set("tagsImBericht", e.target.checked));
@@ -4814,15 +4924,15 @@ $("s-stamm").addEventListener("click", () => {
   viewStack = ["home", "stamm"];
   zeige("stamm", true);
   renderStamm();
+  uebersetzeDom($("view-stamm"));
 });
 $("s-beispiele").addEventListener("click", () => {
   const n = Daten.beispieleLaden();
   closeModal("modal-settings"); render();
-  toast(n + " Beispieleinträge geladen");
+  toast(n + " " + t("Beispieleinträge geladen"));
 });
 $("s-reset").addEventListener("click", () => {
-  if (!confirm("Wirklich alle Einträge, Stammdaten und das Profil löschen? "
-    + "Das lässt sich nicht rückgängig machen.")) return;
+  if (!confirm(t("Wirklich alle Einträge, Stammdaten und das Profil löschen? Das lässt sich nicht rückgängig machen."))) return;
   Daten.alleLoeschen();
   [MKategorien.KEY, Katalog.KEY, Orte.KEY, Bloecke.KEY, TagDaten.KEY, Profil.KEY].forEach(k => {
     try { localStorage.removeItem(k); } catch(e){}
@@ -4853,7 +4963,7 @@ function obShow(step){
   obStep = Math.max(0, Math.min(2, step));
   document.querySelectorAll(".ob-step").forEach(s => s.classList.toggle("active", Number(s.dataset.step) === obStep));
   document.querySelectorAll("#ob-dots i").forEach((d, i) => d.classList.toggle("on", i === obStep));
-  $("ob-next").textContent = obStep === 2 ? "Los geht’s" : "Weiter";
+  $("ob-next").textContent = obStep === 2 ? t("Los geht’s") : t("Weiter");
 }
 function obFinish(){
   store(OB_KEY, true);
@@ -4941,6 +5051,7 @@ function render(){
   renderExport();
   if (aktuelleView() === "detail") renderDetail();
   if (aktuelleView() === "stamm") renderStamm();
+  uebersetzeDom(document.body);
 }
 
 /* ---------- Start ---------- */
@@ -4966,6 +5077,7 @@ exKonfig.von = Core.monatsanfang(Core.heute());
 exKonfig.bis = Core.heute();
 applyTheme();
 Edition.apply();
+uebersetzeDom(document.body);
 render();
 zeige("home", true);
 

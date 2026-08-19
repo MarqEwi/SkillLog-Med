@@ -67,6 +67,13 @@ Rettungssanitäter und verwandte Gesundheitsberufe.
 - **Profil:** Name, **mehrere Rollen** (z. B. PA-Student:in *und*
   Notfallsanitäter:in, eigene Bezeichnungen möglich), Institution und
   Standard-Ort – erscheint im Bericht
+- **Sechs Sprachen:** Deutsch, Englisch, Spanisch, Französisch, Italienisch
+  und Portugiesisch – umschaltbar in den Einstellungen. Übersetzt werden
+  die komplette Oberfläche, der PDF-Bericht, die Druckansicht, der
+  CSV-Kopf **und** die Labels der Standard-Kataloge (nur solange sie nicht
+  umbenannt wurden – eigene Begriffe und Einträge bleiben unangetastet).
+  Deutsch ist die Quellsprache; alle Zielsprachen nutzen nur Zeichen, die
+  die PDF-Standardschrift sicher darstellt
 - Helles Design mit Dark Mode, responsiv, Ersteinrichtungs-Dialog
 
 ## Technik
