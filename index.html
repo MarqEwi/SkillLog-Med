@@ -3713,7 +3713,10 @@ function renderDetail(){
     ? '<span class="tagchips">' + e.tags.map(t => '<span class="tagchip">#' + esc(t) + "</span>").join("") + "</span>"
     : '<span class="muted">keine</span>') + "</dd>";
   if (e.notiz) html += "<dt>Notiz</dt><dd>" + esc(e.notiz).replace(/\n/g, "<br>") + "</dd>";
-  html += "<dt>Erfasst am</dt><dd>" + esc(new Date(e.erstelltAm).toLocaleDateString(LOCALES[SPRACHE] || "de-DE")) + "</dd>";
+  html += "<dt>Erfasst am</dt><dd>" + esc((() => {
+    const d = new Date(e.erstelltAm);
+    return Core.fmtDatum(Core.iso(d.getFullYear(), d.getMonth() + 1, d.getDate()));
+  })()) + "</dd>";
   html += "</dl></div>";
 
   html += '<div class="actions">'

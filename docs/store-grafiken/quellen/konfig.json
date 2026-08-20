@@ -1,0 +1,81 @@
+{
+  "_hinweis": "Store-Grafiken für SkillLog Med (Skill mercwerk-store-grafiken). Alle Pfade relativ zu dieser Datei. Demoprofil ist erkennbar erfunden (Max Mustermann) – keine echten Personendaten.",
+  "ausgabe": "..",
+  "aufnahmen": {
+    "url": "http://localhost:8931/index.html",
+    "anlauf": 1000,
+    "vorbereiten": "localStorage.setItem('slm_onboarding_done','true');localStorage.setItem('slm_daten',JSON.stringify({v:1,eintraege:[]}));localStorage.setItem('slm_profil',JSON.stringify({name:'Max Mustermann',rollen:['Notfallsanitäter:in'],institution:'Rettungsdienstschule Musterstadt',standardOrt:'notaufnahme'}));",
+    "schritte": [
+      { "klicken": "#btn-settings", "warten": 500 },
+      { "klicken": "#s-beispiele", "warten": 4200 },
+      { "datei": "roh1.png", "warten": 500 },
+      { "klicken": "#btn-neu", "warten": 800 },
+      { "js": "const d=document.getElementById('f-datum');d.type='text';d.value='20.08.2026';const z=document.getElementById('f-zeit');z.type='text';z.value='10:15';", "warten": 300, "datei": "roh2.png" },
+      { "klicken": "#f-abbrechen", "warten": 500 },
+      { "klicken": "nav [data-tab=\"stats\"]", "warten": 800, "datei": "roh3.png" },
+      { "klicken": "nav [data-tab=\"export\"]", "warten": 800, "datei": "roh4.png" },
+      { "klicken": "nav [data-tab=\"liste\"]", "warten": 800, "datei": "roh5.png" },
+      { "breite": 360, "hoehe": 780, "klicken": "nav [data-tab=\"home\"]", "js": "window.scrollTo(0,0)", "warten": 900, "datei": "roh-banner.png" }
+    ]
+  },
+  "feature": {
+    "hintergrund": "fb1.png",
+    "aufnahme": "roh-banner.png",
+    "symbol": "../../../icons/icon-512.png",
+    "wortmarke": [
+      [["Skill", "#12283A"], ["Log", "#1B7ACD"]],
+      [["Med", "#0E5A9C"]]
+    ],
+    "untertitel": "Erfassen, auswerten, Bericht zur Unterschrift",
+    "pillen": ["Ohne Konto", "Offline", "PDF-Bericht"],
+    "fusszeile": "Alle Daten bleiben auf deinem Gerät",
+    "datei": "feature-grafik-1024x500.png",
+    "geraet": {
+      "vollstaendig": false,
+      "breite": 660,
+      "rahmen": 26,
+      "oben_links": [645, 52],
+      "oben_rechts": [945, 14],
+      "_hinweis": "läuft unten bewusst aus dem Bild – erzeugt Tiefe."
+    },
+    "pillen_luft": 17
+  },
+  "screenshots": {},
+  "seiten": [
+    {
+      "aufnahme": "roh1.png",
+      "hintergrund": "v1.png",
+      "titel": "Deine Skills. Deine Zahlen.",
+      "unter": "Jede Maßnahme in 20 Sekunden dokumentiert",
+      "datei": "screenshot-1-1080x1920.png"
+    },
+    {
+      "aufnahme": "roh2.png",
+      "hintergrund": "v2.png",
+      "titel": "Eintragen in Sekunden",
+      "unter": "27 Standardmaßnahmen – plus deine eigenen",
+      "datei": "screenshot-2-1080x1920.png"
+    },
+    {
+      "aufnahme": "roh3.png",
+      "hintergrund": "v3.png",
+      "titel": "Sofort sehen, wo du stehst",
+      "unter": "Auswertung je Zeitraum und Trainingsblock",
+      "datei": "screenshot-3-1080x1920.png"
+    },
+    {
+      "aufnahme": "roh4.png",
+      "hintergrund": "v4.png",
+      "titel": "Bericht zur Unterschrift",
+      "unter": "PDF mit Unterschriftsfeld, CSV und Sicherung",
+      "datei": "screenshot-4-1080x1920.png"
+    },
+    {
+      "aufnahme": "roh5.png",
+      "hintergrund": "v5.png",
+      "titel": "Alles sauber wiederfinden",
+      "unter": "Suche, Filter und Trainingsblöcke",
+      "datei": "screenshot-5-1080x1920.png"
+    }
+  ]
+}
