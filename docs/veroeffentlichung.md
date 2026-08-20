@@ -36,8 +36,8 @@ und prüf, dass die Seite wirklich erscheint – Google prüft das auch.
    - Kurzbeschreibung und vollständige Beschreibung von dort einfügen
    - App-Symbol: `icons/icon-512.png`
    - Feature-Grafik: `docs/store-grafiken/feature-grafik-1024x500.png`
-   - Telefon-Screenshots: die sieben Dateien aus `docs/store-grafiken/`
-     (`screenshot-1…7-1080x1920.png`)
+   - Telefon-Screenshots: die fünf Dateien aus `docs/store-grafiken/`
+     (`screenshot-1…5-1080x1920.png`)
    - Kategorie: **Bildung** – bewusst **nicht** „Medizin“ und **nicht**
      „Gesundheit & Fitness“: beide lösen zusätzliche Prüfungen und
      Nachweispflichten aus, und SkillLog Med ist ein Ausbildungs-Logbuch,
