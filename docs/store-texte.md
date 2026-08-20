@@ -68,15 +68,20 @@ Ob ein Bericht als offizieller Nachweis anerkannt wird, entscheidet deine Ausbil
 |---|---|
 | App-Icon 512 × 512 | `icons/icon-512.png` |
 | Feature-Grafik 1024 × 500 | `docs/store-grafiken/feature-grafik-1024x500.png` |
-| Screenshots 1080 × 1920 (7 Stück) | `docs/store-grafiken/screenshot-1…7-1080x1920.png` |
+| Screenshots 1080 × 1920 (5 Stück) | `docs/store-grafiken/screenshot-1…5-1080x1920.png` |
 
-Neu erzeugen lassen sie sich mit:
+Erzeugt mit dem Skill `mercwerk-store-grafiken`; die Konfiguration samt
+Rohaufnahmen und Higgsfield-Hintergründen liegt in
+`docs/store-grafiken/quellen/konfig.json`. Neu bauen:
 
 ```
 python3 -m http.server 8931 &
-node scripts/screenshots.mjs
-node scripts/store-grafiken.mjs
+node <skill>/scripts/aufnehmen.mjs docs/store-grafiken/quellen/konfig.json
+python3 <skill>/scripts/storegrafik.py docs/store-grafiken/quellen/konfig.json
 ```
+
+Das Demoprofil in den Aufnahmen ist erkennbar erfunden („Max Mustermann“,
+Rettungsdienstschule Musterstadt) – keine echten Personendaten.
 
 ## Data Safety – die Antworten in Kurzform
 
